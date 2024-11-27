@@ -6,7 +6,6 @@ import lombok.Setter;
 import se.sowl.devlydomain.user.domain.User;
 
 @Getter
-@Setter
 @Builder
 public class OAuth2Profile {
     private String name;

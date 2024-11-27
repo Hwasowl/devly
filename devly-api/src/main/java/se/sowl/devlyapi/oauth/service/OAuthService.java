@@ -29,16 +29,14 @@ public class OAuthService implements OAuth2UserService<OAuth2UserRequest, OAuth2
         OAuth2User loadedUser = defaultOAuth2UserService.loadUser(userRequest);
         OAuth2Profile profile = extractOAuth2Profile(userRequest, loadedUser);
         User user = getOrCreateUser(profile);
-        OAuth2User oAuth2User = oAuth2UserFactory.createOAuth2User(userRequest, loadedUser, profile, user);
+        OAuth2User oAuth2User = oAuth2UserFactory.createOAuth2User(userRequest, loadedUser, profile);
         return oAuth2UserFactory.createCustomOAuth2User(user, oAuth2User);
     }
 
     private OAuth2Profile extractOAuth2Profile(OAuth2UserRequest userRequest, OAuth2User oAuth2User) {
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
         OAuth2Provider provider = OAuth2Provider.valueOf(registrationId.toUpperCase());
-        OAuth2Profile profile = OAuth2Extractor.extract(provider, oAuth2User.getAttributes());
-        profile.setProvider(registrationId);
-        return profile;
+        return OAuth2Extractor.extract(provider, oAuth2User.getAttributes());
     }
 
     private User getOrCreateUser(OAuth2Profile oAuth2Profile) {

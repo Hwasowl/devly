@@ -27,6 +27,7 @@ public enum OAuth2Extractor {
         return OAuth2Profile.builder()
             .name((String) attributes.get("name"))
             .email((String) attributes.get("email"))
+            .provider(OAuth2Provider.GOOGLE.getRegistrationId())
             .build();
     }
 
@@ -35,6 +36,7 @@ public enum OAuth2Extractor {
         return OAuth2Profile.builder()
             .name((String) response.get("name"))
             .email((String) response.get("email"))
+            .provider(OAuth2Provider.NAVER.getRegistrationId())
             .build();
     }
 
@@ -44,6 +46,7 @@ public enum OAuth2Extractor {
         return OAuth2Profile.builder()
             .name((String) kakaoProfile.get("nickname"))
             .email((String) kakaoAccount.get("email"))
+            .provider(OAuth2Provider.KAKAO.getRegistrationId())
             .build();
     }
 }

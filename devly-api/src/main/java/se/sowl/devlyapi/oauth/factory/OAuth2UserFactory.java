@@ -16,7 +16,7 @@ import java.util.Collections;
 @Component
 public class OAuth2UserFactory {
 
-    public OAuth2User createOAuth2User(OAuth2UserRequest userRequest, OAuth2User oAuth2User, OAuth2Profile userProfile, User user) {
+    public OAuth2User createOAuth2User(OAuth2UserRequest userRequest, OAuth2User oAuth2User, OAuth2Profile userProfile) {
         String userNameAttributeName = getUserNameAttributeName(userRequest);
         OAuth2UserAttribute oAuth2UserAttribute = new OAuth2UserAttribute(oAuth2User.getAttributes(), userNameAttributeName, userProfile);
         return new DefaultOAuth2User(
