@@ -26,7 +26,7 @@ public class OAuthService implements OAuth2UserService<OAuth2UserRequest, OAuth2
 
     @Override
     @Transactional
-    public OAuth2User loadUser(OAuth2UserRequest userRequest){
+    public OAuth2User loadUser(OAuth2UserRequest userRequest) {
         try {
             OAuth2User loadedUser = defaultOAuth2UserService.loadUser(userRequest);
             OAuth2Profile profile = extractOAuth2Profile(userRequest, loadedUser);

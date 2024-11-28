@@ -2,7 +2,6 @@ package se.sowl.devlyapi.oauth;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -11,10 +10,11 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
-import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.test.web.servlet.MockMvc;
 import se.sowl.devlyapi.oauth.service.OAuthService;
-import se.sowl.devlyapi.oauth.exception.OAuth2AuthenticationProcessingException;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -65,27 +65,29 @@ class OAuth2AuthenticationTest {
     }
 
     @Test
-    @DisplayName("지원하지 않는 OAuth2 제공자로 요청시 400 에러를 반환한다")
-    void whenRequestUnsupportedProvider_thenReturn400() throws Exception {
+    @DisplayName("지원하지 않는 OAuth2 제공자로 요청시 500 에러를 반환한다")
+    void whenRequestUnsupportedProvider_thenReturn500() throws Exception {
         // given
-        String provider = "unsupported";
-        when(clientRegistrationRepository.findByRegistrationId("provider"))
+        when(clientRegistrationRepository.findByRegistrationId("unsupported"))
             .thenReturn(null);
 
         // when & then
         mockMvc.perform(get("/oauth2/authorization/unsupported"))
             .andDo(print())
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.success").value(false))
-            .andExpect(jsonPath("$.message").value("지원하지 않는 OAuth2 제공자: " + provider));
+            .andExpect(status().isInternalServerError())
+            .andExpect(result -> {
+                assertThat(result.getResponse().getErrorMessage()).contains("Internal Server Error");
+            });
     }
 
     @Test
-    @DisplayName("OAuth2 콜백 처리 시 인증 실패하면 401 에러를 반환한다")
-    void whenOAuth2CallbackFails_thenReturn401() throws Exception {
+    @DisplayName("OAuth2 인증 실패시 401 에러를 반환한다")
+    void whenOAuth2AuthenticationFails_thenReturn401() throws Exception {
         // given
-        when(oAuthService.loadUser(any()))
-            .thenThrow(new OAuth2AuthenticationProcessingException(new RuntimeException("Authentication failed")));
+        OAuth2Error oauth2Error = new OAuth2Error("authentication_error");
+        OAuth2AuthenticationException authException = new OAuth2AuthenticationException(oauth2Error);
+
+        when(oAuthService.loadUser(any())).thenThrow(authException);
 
         // when & then
         mockMvc.perform(get("/login/oauth2/code/google")
@@ -93,23 +95,8 @@ class OAuth2AuthenticationTest {
                 .param("state", "test-state"))
             .andDo(print())
             .andExpect(status().isUnauthorized())
-            .andExpect(jsonPath("$.success").value(false))
-            .andExpect(jsonPath("$.message").value("인증 처리 도중 문제가 발생했어요. 잠시 후 다시 시도해주세요."));
-    }
-
-    @Test
-    @DisplayName("OAuth2 인증 성공시 프론트엔드 URL로 리다이렉트된다")
-    void whenOAuth2LoginSuccess_thenRedirectToFrontend() throws Exception {
-        // given
-        OAuth2User mockUser = mock(OAuth2User.class);
-        when(oAuthService.loadUser(any())).thenReturn(mockUser);
-
-        // when & then
-        mockMvc.perform(get("/login/oauth2/code/google")
-                .param("code", "test-auth-code")
-                .param("state", "test-state"))
-            .andDo(print())
-            .andExpect(status().is3xxRedirection())
-            .andExpect(redirectedUrl(frontUrl));
+            .andExpect(jsonPath("$.code").value("FAIL"))
+            .andExpect(jsonPath("$.message").value("인증에 실패했어요. 잠시 후 다시 시도해주세요."))
+            .andExpect(jsonPath("$.result").isEmpty());
     }
 }

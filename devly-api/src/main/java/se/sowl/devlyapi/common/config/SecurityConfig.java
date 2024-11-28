@@ -11,11 +11,10 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import se.sowl.devlyapi.common.ServletFilterExceptionHandler;
+import se.sowl.devlyapi.oauth.OAuth2AuthenticationFailureHandler;
 import se.sowl.devlyapi.oauth.OAuth2AuthenticationSuccessHandler;
 import se.sowl.devlyapi.oauth.service.OAuthService;
 
@@ -30,7 +29,7 @@ public class SecurityConfig {
 
     private final OAuthService oAuthService;
     private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
-    private final ServletFilterExceptionHandler servletFilterExceptionHandler;
+    private final OAuth2AuthenticationFailureHandler oauth2AuthenticationFailureHandler;
 
     @Value("${spring.front.url}")
     private String frontendUrl;
@@ -38,7 +37,6 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .addFilterBefore(servletFilterExceptionHandler, SecurityContextHolderFilter.class)
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers("/h2-console/**").permitAll()
@@ -54,6 +52,7 @@ public class SecurityConfig {
             )
             .oauth2Login(oauth2Login -> oauth2Login
                 .successHandler(oAuth2AuthenticationSuccessHandler)
+                .failureHandler(oauth2AuthenticationFailureHandler)
                 .userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint.userService(oAuthService))
             )
             .sessionManagement(session -> session
