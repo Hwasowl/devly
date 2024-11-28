@@ -1,4 +1,4 @@
-package se.sowl.devlyapi.oauth;
+package se.sowl.devlyapi.oauth.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;

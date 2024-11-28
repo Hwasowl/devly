@@ -14,8 +14,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import se.sowl.devlyapi.oauth.OAuth2AuthenticationFailureHandler;
-import se.sowl.devlyapi.oauth.OAuth2AuthenticationSuccessHandler;
+import se.sowl.devlyapi.oauth.handler.OAuth2AuthenticationFailureHandler;
+import se.sowl.devlyapi.oauth.handler.OAuth2AuthenticationSuccessHandler;
 import se.sowl.devlyapi.oauth.service.OAuthService;
 
 import java.util.Arrays;

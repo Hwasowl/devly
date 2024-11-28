@@ -35,21 +35,18 @@ class OAuth2AuthenticationTest {
     @MockBean
     private OAuthService oAuthService;
 
-    @Value("${spring.front.url}")
-    private String frontUrl;
-
     @Test
     @DisplayName("OAuth2 로그인 요청시 인증 제공자의 로그인 페이지로 리다이렉트된다")
-    void whenRequestOAuth2Login_thenRedirectToProvider() throws Exception {
+    void whenRequestOAuth2Login() throws Exception {
         // given
         ClientRegistration clientRegistration = ClientRegistration.withRegistrationId("google")
             .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
             .clientId("client-id")
             .clientSecret("client-secret")
             .redirectUri("{baseUrl}/login/oauth2/code/{registrationId}")
-            .authorizationUri("https://accounts.google.com/o/oauth2/v2/auth")
-            .tokenUri("https://www.googleapis.com/oauth2/v4/token")
-            .userInfoUri("https://www.googleapis.com/oauth2/v3/userinfo")
+            .authorizationUri("https://googleapis/authorization")
+            .tokenUri("https://googleapis/token")
+            .userInfoUri("https://www.googleapi/user/info")
             .userNameAttributeName("sub")
             .clientName("Google")
             .build();
@@ -61,12 +58,12 @@ class OAuth2AuthenticationTest {
         mockMvc.perform(get("/oauth2/authorization/google"))
             .andDo(print())
             .andExpect(status().is3xxRedirection())
-            .andExpect(header().string("Location", containsString("https://accounts.google.com/o/oauth2/v2/auth")));
+            .andExpect(header().string("Location", containsString("https://googleapis/authorization?response_type=code&client_id=client-id&state=")));
     }
 
     @Test
     @DisplayName("지원하지 않는 OAuth2 제공자로 요청시 500 에러를 반환한다")
-    void whenRequestUnsupportedProvider_thenReturn500() throws Exception {
+    void whenRequestUnsupportedProvider() throws Exception {
         // given
         when(clientRegistrationRepository.findByRegistrationId("unsupported"))
             .thenReturn(null);
@@ -82,7 +79,7 @@ class OAuth2AuthenticationTest {
 
     @Test
     @DisplayName("OAuth2 인증 실패시 401 에러를 반환한다")
-    void whenOAuth2AuthenticationFails_thenReturn401() throws Exception {
+    void whenOAuth2AuthenticationFails() throws Exception {
         // given
         OAuth2Error oauth2Error = new OAuth2Error("authentication_error");
         OAuth2AuthenticationException authException = new OAuth2AuthenticationException(oauth2Error);
