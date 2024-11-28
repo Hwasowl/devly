@@ -1,4 +1,4 @@
-package se.sowl.devlyapi.common.config;
+package se.sowl.devlyapi.oauth;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

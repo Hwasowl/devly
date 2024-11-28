@@ -19,7 +19,7 @@ public enum OAuth2Extractor {
         return Arrays.stream(values())
             .filter(extractor -> extractor.provider == provider)
             .findFirst()
-            .orElseThrow(() -> new IllegalArgumentException("Invalid provider: " + provider))
+            .orElseThrow(() -> new IllegalArgumentException("올바르지 않은 제공자: " + provider))
             .extractor.apply(attributes);
     }
 

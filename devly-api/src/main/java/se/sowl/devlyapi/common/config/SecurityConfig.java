@@ -11,9 +11,12 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import se.sowl.devlyapi.common.ServletFilterExceptionHandler;
+import se.sowl.devlyapi.oauth.OAuth2AuthenticationSuccessHandler;
 import se.sowl.devlyapi.oauth.service.OAuthService;
 
 import java.util.Arrays;
@@ -27,12 +30,15 @@ public class SecurityConfig {
 
     private final OAuthService oAuthService;
     private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
+    private final ServletFilterExceptionHandler servletFilterExceptionHandler;
+
     @Value("${spring.front.url}")
     private String frontendUrl;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+            .addFilterBefore(servletFilterExceptionHandler, SecurityContextHolderFilter.class)
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers("/h2-console/**").permitAll()
