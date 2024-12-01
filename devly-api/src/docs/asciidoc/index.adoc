@@ -1,0 +1,13 @@
+= RESTful API 문서
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 2
+:sectlinks:
+
+== OAuth2 인증
+=== 로그인 요청 (redirection)
+operation::oauth2-login[snippets='path-parameters']
+operation::oauth2-login[snippets='http-request']
+operation::oauth2-login[snippets='http-response']
