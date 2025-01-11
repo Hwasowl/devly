@@ -5,12 +5,13 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import se.sowl.devlydomain.common.BaseTimeEntity;
 
 @Entity
 @Table(name = "levels")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Level {
+public class Level extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
