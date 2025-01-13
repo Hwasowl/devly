@@ -27,10 +27,10 @@ public class Word {
     @Column(nullable = false)
     private String meaning;
 
-    @Column(nullable = false, columnDefinition = "jsonb")
+    @Column(nullable = false, columnDefinition = "TEXT", length = 65535)
     private String example;
 
-    @Column(nullable = false, columnDefinition = "jsonb")
+    @Column(nullable = false, columnDefinition = "TEXT", length = 65535)
     private String quiz;
 
     @Builder
