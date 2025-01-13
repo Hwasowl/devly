@@ -1,35 +1,24 @@
 package se.sowl.devlyapi.oauth.service;
 
 import org.junit.jupiter.api.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
-import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.transaction.annotation.Transactional;
+import se.sowl.devlyapi.MediumTest;
 import se.sowl.devlydomain.oauth.domain.OAuth2Provider;
 import se.sowl.devlydomain.user.domain.User;
-import se.sowl.devlydomain.user.repository.UserRepository;
+
 import java.util.Map;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
-public class OAuthServiceTest {
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private OAuthService oAuthService;
-
-    @MockBean
-    private DefaultOAuth2UserService defaultOAuth2UserService;
+public class OAuthServiceTest extends MediumTest {
 
     @AfterEach
     void tearDown() {
@@ -45,7 +34,7 @@ public class OAuthServiceTest {
         String provider = OAuth2Provider.GOOGLE.getRegistrationId();
         String email = "hwasowl598@gmail.com";
         String name = "박정수";
-        User user = createUser(1L, name, "화솔", email, provider);
+        User user = createUser(1L, 1L, name, "화솔", email, provider);
         userRepository.save(user);
 
         OAuth2AccessToken accessToken = new OAuth2AccessToken(OAuth2AccessToken.TokenType.BEARER, "dummy-access-token", null, null);
@@ -76,7 +65,7 @@ public class OAuthServiceTest {
         String provider = OAuth2Provider.KAKAO.getRegistrationId();
         String email = "hwasowl598@kakao.com";
         String name = "박정수";
-        User user = createUser(2L, name, "화솔", email, provider);
+        User user = createUser(2L, 1L, "박정수", "화솔", "hwasowl598@kakao.com", provider);
         userRepository.save(user);
 
         OAuth2AccessToken accessToken = new OAuth2AccessToken(OAuth2AccessToken.TokenType.BEARER, "dummy-access-token", null, null);
@@ -107,7 +96,7 @@ public class OAuthServiceTest {
         String provider = OAuth2Provider.NAVER.getRegistrationId();
         String email = "hwasowl598@naver.com";
         String name = "박정수";
-        User user = createUser(2L, name, "화솔", email, provider);
+        User user = createUser(2L, 1L, name, "화솔", email, provider);
         userRepository.save(user);
 
         OAuth2AccessToken accessToken = new OAuth2AccessToken(OAuth2AccessToken.TokenType.BEARER, "dummy-access-token", null, null);
@@ -212,16 +201,6 @@ public class OAuthServiceTest {
         assertThat(resultAttributes.get("name")).isEqualTo(name);
         assertThat(resultAttributes.get("email")).isEqualTo(email);
         assertThat(resultAttributes.get("provider")).isEqualTo(provider);
-    }
-
-    private User createUser(Long id, String name, String nickname, String email, String provider) {
-        return User.builder()
-            .id(id)
-            .name(name)
-            .nickname(nickname)
-            .email(email)
-            .provider(provider)
-            .build();
     }
 
     private ClientRegistration createClientRegistration(String provider) {
