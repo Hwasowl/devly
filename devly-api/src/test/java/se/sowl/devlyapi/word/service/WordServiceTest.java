@@ -5,6 +5,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import se.sowl.devlyapi.MediumTest;
+import se.sowl.devlyapi.word.dto.WordListOfStudyResponse;
+import se.sowl.devlyapi.word.dto.WordResponse;
 import se.sowl.devlydomain.study.domain.Study;
 import se.sowl.devlydomain.user.domain.User;
 import se.sowl.devlydomain.word.domain.Word;
@@ -35,16 +37,17 @@ class WordServiceTest extends MediumTest {
         wordRepository.saveAll(wordList);
 
         // when
-        List<Word> list = wordService.getList(1L);
+        WordListOfStudyResponse list = wordService.getList(1L);
+        List<WordResponse> words = list.getWords();
 
         // then
-        assertThat(list).hasSize(3);
-        assertThat(list.get(0).getWord()).isEqualTo("implementation");
-        assertThat(list.get(0).getMeaning()).isEqualTo("구현, 실행");
-        assertThat(list.get(1).getWord()).isEqualTo("polymorphism");
-        assertThat(list.get(1).getMeaning()).isEqualTo("다형성");
-        assertThat(list.get(2).getWord()).isEqualTo("middleware");
-        assertThat(list.get(2).getMeaning()).isEqualTo("미들웨어");
+        assertThat(words).hasSize(3);
+        assertThat(words.get(0).getWord()).isEqualTo("implementation");
+        assertThat(words.get(0).getMeaning()).isEqualTo("구현, 실행");
+        assertThat(words.get(1).getWord()).isEqualTo("polymorphism");
+        assertThat(words.get(1).getMeaning()).isEqualTo("다형성");
+        assertThat(words.get(2).getWord()).isEqualTo("middleware");
+        assertThat(words.get(2).getMeaning()).isEqualTo("미들웨어");
     }
 
     private static List<Word> getWordList(Long studyId) {
