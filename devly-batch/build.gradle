@@ -1,0 +1,15 @@
+dependencies {
+    implementation project(':devly-domain')
+    implementation 'org.springframework.boot:spring-boot-starter-batch'
+    implementation 'org.springframework.boot:spring-boot-starter-quartz'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    runtimeOnly 'com.h2database:h2'
+}
+
+bootJar {
+    enabled = false
+}
+
+jar {
+    enabled = true
+}
