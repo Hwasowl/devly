@@ -12,9 +12,10 @@ public class WordResponse {
     private String word;
     private String meaning;
     private String example;
+    private String quiz;
     private String pronunciation;
 
     public static WordResponse from(Word word) {
-        return new WordResponse(word.getId(), word.getWord(), word.getMeaning(), word.getExample(), word.getPronunciation());
+        return new WordResponse(word.getId(), word.getWord(), word.getMeaning(), word.getExample(), word.getQuiz(), word.getPronunciation());
     }
 }

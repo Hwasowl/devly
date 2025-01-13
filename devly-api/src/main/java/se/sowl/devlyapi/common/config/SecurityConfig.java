@@ -43,6 +43,7 @@ public class SecurityConfig {
                 .requestMatchers("/docs/**").permitAll()
                 .requestMatchers("/api/auth/**").authenticated()
                 .requestMatchers("/api/users/**").authenticated()
+                .requestMatchers("/api/words/**").authenticated()
                 .anyRequest().authenticated()
             )
             .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
