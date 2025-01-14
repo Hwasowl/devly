@@ -39,7 +39,8 @@ public class StudyCreationJobConfig {
     public Step createStudiesStep(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
         return new StepBuilder("createStudiesStep", jobRepository)
             .tasklet((contribution, chunkContext) -> {
-                List<Study> studies = getStudies();
+                List<DeveloperType> devTypes = developerTypeRepository.findAll();
+                List<Study> studies = generateStudiesOf(devTypes);
                 studyRepository.saveAll(studies);
                 log.info("Created {} studies", studies.size());
                 return RepeatStatus.FINISHED;
@@ -47,9 +48,9 @@ public class StudyCreationJobConfig {
             .build();
     }
 
-    private List<Study> getStudies() {
-        List<DeveloperType> types = developerTypeRepository.findAll();
-        return types.stream()
+    private List<Study> generateStudiesOf(List<DeveloperType> devTypes) {
+        // TODO : ADD MORE TYPE. NOW JUST HARD CODED 1L(WORD) TOPIC
+        return devTypes.stream()
             .map(type -> Study.builder().typeId(1L).developerTypeId(type.getId()).build())
             .collect(Collectors.toList());
     }

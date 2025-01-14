@@ -1,16 +1,10 @@
 package se.sowl.devlyexternal.client.gpt.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import java.util.List;
-
 @Getter
+@AllArgsConstructor
 public class GPTResponse {
-    private List<Choice> choices;
-
-    @Getter
-    public static class Choice {
-        private GPTRequest.Message message;
-        private String content;
-    }
+    private final String content;  // GPT 응답 내용만 필요
 }

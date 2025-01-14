@@ -14,7 +14,7 @@ public class WordService {
     private final WordRepository wordRepository;
 
     public WordListOfStudyResponse getList(Long studyId) {
-        List<Word> allByStudy = wordRepository.getAllByStudyId(studyId);
+        List<Word> allByStudy = wordRepository.findAllByStudyId(studyId);
         return WordListOfStudyResponse.from(allByStudy);
     }
 }
