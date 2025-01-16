@@ -8,4 +8,6 @@ import java.util.List;
 
 public interface StudyRepository extends JpaRepository<Study, Long> {
     List<Study> findByCreatedAtAfter(LocalDateTime localDateTime);
+
+    Study findByDeveloperTypeId(Long developerTypeId);
 }

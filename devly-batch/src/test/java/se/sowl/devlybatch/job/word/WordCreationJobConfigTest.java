@@ -1,6 +1,7 @@
 package se.sowl.devlybatch.job.word;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.batch.core.*;
@@ -10,8 +11,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.jdbc.Sql;
 import se.sowl.devlybatch.config.TestBatchConfig;
+import se.sowl.devlybatch.job.MediumBatchTest;
 import se.sowl.devlydomain.study.domain.Study;
 import se.sowl.devlydomain.study.repository.StudyRepository;
 import se.sowl.devlydomain.word.domain.Word;
@@ -27,13 +28,7 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 @ActiveProfiles("test")
 @Import({TestBatchConfig.class, WordCreationJobConfig.class})
-@Sql(scripts = {
-    "/org/springframework/batch/core/schema-drop-h2.sql",
-    "/org/springframework/batch/core/schema-h2.sql"
-}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-class WordCreationJobConfigTest {
-    @Autowired
-    private JobLauncherTestUtils jobLauncherTestUtils;
+class WordCreationJobConfigTest extends MediumBatchTest {
 
     @Autowired
     private StudyRepository studyRepository;
@@ -44,6 +39,14 @@ class WordCreationJobConfigTest {
     @MockBean
     private GPTClient gptClient;
 
+    @BeforeEach
+    void setUp() {
+        jobLauncherTestUtils = new JobLauncherTestUtils();
+        jobLauncherTestUtils.setJobLauncher(jobLauncher);
+        jobLauncherTestUtils.setJob(wordCreationJob);
+        jobLauncherTestUtils.setJobRepository(jobRepository);
+    }
+
     @AfterEach
     void tearDown() {
         wordRepository.deleteAll();
@@ -51,7 +54,7 @@ class WordCreationJobConfigTest {
     }
 
     @Test
-    @DisplayName("스텝 실행시 오늘 생성된 스터디에 대해 GPT 응답을 파싱하여 단어를 저장한다")
+    @DisplayName("오늘 생성된 스터디에 대해 GPT 응답을 파싱하여 단어를 저장한다")
     void createWordsStepTest() throws Exception {
         // given
         Study backendStudy = Study.builder()
