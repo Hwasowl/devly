@@ -3,6 +3,7 @@ package se.sowl.devlybatch.job.word;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import se.sowl.devlydomain.word.domain.Word;
 import se.sowl.devlyexternal.client.gpt.dto.GPTResponse;
 
@@ -11,6 +12,7 @@ import java.util.List;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 @SpringBootTest
+@ActiveProfiles("test")
 class WordParserTest {
 
     @Test

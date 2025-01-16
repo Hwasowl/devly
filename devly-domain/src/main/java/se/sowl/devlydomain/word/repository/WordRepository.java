@@ -9,6 +9,8 @@ import java.util.List;
 public interface WordRepository extends JpaRepository<Word, Long> {
     List<Word> findAllByStudyId(Long studyId);
 
+    Word findByStudyId(Long studyId);
+
     List<Word> findWordsByCreatedAtAfter(LocalDateTime localDateTime);
 
 
