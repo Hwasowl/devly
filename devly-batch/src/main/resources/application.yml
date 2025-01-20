@@ -8,6 +8,16 @@ spring:
   config:
     activate:
       on-profile: test
+  sql:
+    init:
+      mode: always
+      schema-locations:
+        - classpath:/org/springframework/batch/core/schema-drop-h2.sql
+        - classpath:/org/springframework/batch/core/schema-h2.sql
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+      - org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
   h2:
     console:
       enabled: true
@@ -19,7 +29,7 @@ spring:
   jpa:
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQL8Dialect
+        dialect: org.hibernate.dialect.H2Dialect
         show_sql: true
     hibernate:
       ddl-auto: create
@@ -27,11 +37,20 @@ logging:
   level:
     org.hibernate.SQL: DEBUG
     org.springframework.jdbc.core: TRACE
+openai:
+  api-url: https://api.openai.com
+  api-key: d
+
+server:
+  port: 8090
 ---
 spring:
   config:
     activate:
       on-profile: prod
+  batch:
+    jdbc:
+      initialize-schema: always
   h2:
     console:
       enabled: true
