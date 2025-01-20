@@ -1,19 +1,19 @@
 name: Code Review
 
-on:
-  pull_request:
-    types: [opened, synchronize]
-
 permissions:
   contents: read
   pull-requests: write
 
+on:
+  pull_request:
+    types: [opened, synchronize]
+
 jobs:
-  review:
+  test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
       - uses: anc95/ChatGPT-CodeReview@main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          LANGUAGE: Korean
