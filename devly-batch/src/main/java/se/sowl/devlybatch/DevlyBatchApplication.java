@@ -6,14 +6,18 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @EntityScan(basePackages = {"se.sowl.devlydomain"})
-@EnableFeignClients(basePackages = {"se.sowl.devlyexternal"})
 @EnableJpaRepositories(basePackages = {"se.sowl.devlydomain"})
+@ConfigurationPropertiesScan(basePackages = {"se.sowl.devlydomain"})
+@EnableFeignClients(basePackages = {"se.sowl.devlyexternal"})
 @EnableBatchProcessing
-@ConfigurationPropertiesScan(basePackages = {"se.sowl.devlydomain"})  // 설정 스캔 추가
+@EnableScheduling
+@EnableJpaAuditing
 public class DevlyBatchApplication {
 
     public static void main(String[] args) {

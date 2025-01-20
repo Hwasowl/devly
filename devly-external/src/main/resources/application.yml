@@ -2,5 +2,5 @@ spring:
   application:
     name: devly-external
 openai:
-  api-url: d
+  api-url: https://api.openai.com
   api-key: d

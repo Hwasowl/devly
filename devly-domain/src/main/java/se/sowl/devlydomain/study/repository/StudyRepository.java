@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface StudyRepository extends JpaRepository<Study, Long> {
-    List<Study> findByCreatedAtAfter(LocalDateTime localDateTime);
+    List<Study> findByCreatedAtBetween(LocalDateTime startOfDay, LocalDateTime endOfDay);
 
     Study findByDeveloperTypeId(Long developerTypeId);
 }

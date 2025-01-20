@@ -20,7 +20,6 @@ import org.springframework.batch.core.Job;
 import org.springframework.batch.core.job.builder.JobBuilder;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -44,9 +43,7 @@ public class WordCreationJobConfig {
     public Step createWordsStep(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
         return new StepBuilder("createWordsStep", jobRepository)
             .tasklet((contribution, chunkContext) -> {
-                List<Study> todayStudies = studyRepository.findByCreatedAtAfter(
-                    LocalDateTime.now().truncatedTo(ChronoUnit.DAYS)
-                );
+                List<Study> todayStudies = getTodayStudies();
                 for (Study study : todayStudies) {
                     List<String> recentWords = wordRepository.findWordsByCreatedAtAfter(LocalDateTime.now().minusDays(7))
                         .stream().map(Word::getWord).collect(Collectors.toList());
@@ -57,6 +54,12 @@ public class WordCreationJobConfig {
                 return RepeatStatus.FINISHED;
             }, transactionManager)
             .build();
+    }
+
+    private List<Study> getTodayStudies() {
+        LocalDateTime startOfDay = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0).withNano(0);
+        LocalDateTime endOfDay = startOfDay.plusDays(1);
+        return studyRepository.findByCreatedAtBetween(startOfDay, endOfDay);
     }
 
     private void saveWordsOf(Study study, GPTResponse response) {

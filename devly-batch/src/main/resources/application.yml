@@ -8,11 +8,21 @@ spring:
   config:
     activate:
       on-profile: test
+  sql:
+    init:
+      mode: always
+      schema-locations:
+        - classpath:/org/springframework/batch/core/schema-drop-h2.sql
+        - classpath:/org/springframework/batch/core/schema-h2.sql
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+      - org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
   h2:
     console:
       enabled: true
   datasource:
-    url: jdbc:h2:mem:devly-batch-local;MODE=MySQL
+    url: jdbc:h2:mem:devly-local;MODE=MySQL
     username: user
     password:
     driver-class-name: org.h2.Driver
@@ -28,9 +38,11 @@ logging:
     org.hibernate.SQL: DEBUG
     org.springframework.jdbc.core: TRACE
 openai:
-  api-url: http://localhost:8080
-  api-key: test-key
+  api-url: https://api.openai.com
+  api-key: d
 
+server:
+  port: 8090
 ---
 spring:
   config:
