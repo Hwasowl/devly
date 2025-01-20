@@ -86,8 +86,20 @@ class WordCreationJobConfigTest extends MediumBatchTest {
         """;
 
         when(gptClient.generate(any()))
-            .thenReturn(new GPTResponse(backendResponse))
-            .thenReturn(new GPTResponse(frontendResponse));
+            .thenReturn(new GPTResponse(
+                List.of(new GPTResponse.Choice(
+                    new GPTResponse.Message("assistant", backendResponse),
+                    "stop",
+                    0
+                )))
+            )
+            .thenReturn(new GPTResponse(
+                List.of(new GPTResponse.Choice(
+                    new GPTResponse.Message("assistant", frontendResponse),
+                    "stop",
+                    0
+                )))
+            );
 
         // when
         JobExecution jobExecution = jobLauncherTestUtils.launchStep("createWordsStep");

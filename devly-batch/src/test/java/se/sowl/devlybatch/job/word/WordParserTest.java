@@ -20,7 +20,7 @@ class WordParserTest {
     void parseGPTResponseTest() {
         // given
         Long studyId = 1L;
-        GPTResponse response = new GPTResponse("""
+        String responseContent = """
            단어: implementation
            발음: /ˌɪmplɪmenˈteɪʃən/
            의미: 구현, 실행
@@ -33,10 +33,17 @@ class WordParserTest {
            예문: {"source": "Java Documentation", "text": "Polymorphism allows multiple implementations.", "translation": "다형성은 여러 구현을 허용합니다."}
            퀴즈: {"text": "", "distractors": ["Inheritance", "Encapsulation", "Abstraction", "Interface"]}
            ---
-           """);
+           """;
+        GPTResponse gptResponse = new GPTResponse(
+            List.of(new GPTResponse.Choice(
+                new GPTResponse.Message("assistant", responseContent),
+                "stop",
+                0
+            ))
+        );
 
         // when
-        List<Word> words = WordParser.parseGPTResponse(response, studyId);
+        List<Word> words = WordParser.parseGPTResponse(gptResponse, studyId);
 
         // then
         assertThat(words).hasSize(2);
