@@ -46,6 +46,7 @@ subprojects {
 
     ext {
         set('springCloudVersion', "2023.0.0")
+        set('queryDslVersion', "5.0.0")
     }
 
     dependencyManagement {

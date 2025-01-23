@@ -16,35 +16,38 @@ import org.springframework.scheduling.annotation.Scheduled;
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
-public class DailyStudyWordJobConfig {
+public class DailyStudyJobConfig {
 
     private final JobRepository jobRepository;
     private final JobLauncher jobLauncher;
     private final Step createStudiesStep;
     private final Step createWordsStep;
+    private final Step assignStudiesStep;
 
     @Bean
-    public Job dailyStudyWordJob() {
-        return new JobBuilder("dailyStudyWordJob", jobRepository)
+    public Job dailyStudyJob() {
+        return new JobBuilder("dailyStudyJob", jobRepository)
             .start(createStudiesStep)
             .on("COMPLETED").to(createWordsStep)
             .from(createWordsStep).on("COMPLETED").end()
-            .from(createWordsStep).on("*").fail()
+            .from(assignStudiesStep).on("*").fail()
+            .from(assignStudiesStep).on("COMPLETED").end()
+            .from(assignStudiesStep).on("*").fail()
             .end()
             .build();
     }
 
-    @Scheduled(cron = "0 0 1 * * *")
+    @Scheduled(cron = "0 0 0 * * *")
     public void runJob() {
         try {
             JobParameters jobParameters = new JobParametersBuilder()
                 .addLong("time", System.currentTimeMillis())
                 .toJobParameters();
 
-            jobLauncher.run(dailyStudyWordJob(), jobParameters);
-            log.info("Daily study and word creation job completed successfully");
+            jobLauncher.run(dailyStudyJob(), jobParameters);
+            log.info("Daily study job completed successfully");
         } catch (Exception e) {
-            log.error("Failed to run daily study and word creation job", e);
+            log.error("Failed to run daily study job", e);
         }
     }
 }

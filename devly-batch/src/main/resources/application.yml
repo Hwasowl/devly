@@ -40,7 +40,6 @@ logging:
 openai:
   api-url: https://api.openai.com
   api-key: d
-
 server:
   port: 8090
 ---

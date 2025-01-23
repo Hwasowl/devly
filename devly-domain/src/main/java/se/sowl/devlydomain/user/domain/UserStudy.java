@@ -7,7 +7,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import se.sowl.devlydomain.common.BaseTimeEntity;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -31,10 +30,10 @@ public class UserStudy extends BaseTimeEntity {
     private LocalDateTime completedAt;
 
     @Column(name = "scheduled_at")
-    private LocalDate scheduledAt;
+    private LocalDateTime scheduledAt;
 
     @Builder
-    public UserStudy(Long userId, Long studyId, LocalDate scheduledAt) {
+    public UserStudy(Long userId, Long studyId, LocalDateTime scheduledAt) {
         this.userId = userId;
         this.studyId = studyId;
         this.scheduledAt = scheduledAt;
