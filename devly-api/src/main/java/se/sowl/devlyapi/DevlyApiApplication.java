@@ -8,7 +8,7 @@ import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
 @EntityScan(basePackages = {"se.sowl.devlydomain"})
-@ComponentScan(basePackages = {"se.sowl.devlyapi", "se.sowl.devlydomain"})
+@ComponentScan(basePackages = {"se.sowl.devlydomain", "se.sowl.devlyapi"})
 @EnableCaching
 public class DevlyApiApplication {
 

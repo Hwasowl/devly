@@ -20,7 +20,6 @@ import se.sowl.devlydomain.study.repository.StudyRepository;
 import se.sowl.devlydomain.user.domain.UserStudy;
 import se.sowl.devlydomain.user.repository.UserStudyRepository;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -171,7 +170,7 @@ class StudyAssignmentJobConfigTest extends MediumBatchTest {
         UserStudy userStudy = UserStudy.builder()
             .userId(userId)
             .studyId(studyId)
-            .scheduledAt(LocalDate.now().minusDays(1))  // 어제 날짜로 설정
+            .scheduledAt(LocalDateTime.now().minusDays(1))  // 어제 날짜로 설정
             .build();
 
         if (completed) {

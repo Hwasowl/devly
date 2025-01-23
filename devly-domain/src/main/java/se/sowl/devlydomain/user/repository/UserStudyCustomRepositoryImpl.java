@@ -2,6 +2,7 @@ package se.sowl.devlydomain.user.repository;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cglib.core.Local;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -23,22 +24,20 @@ public class UserStudyCustomRepositoryImpl implements UserStudyCustomRepository 
     }
 
     @Override
-    public Page<UserStudy> findCompletedStudiesWithoutNext(LocalDateTime yesterday, LocalDateTime todayStart, LocalDate today, Pageable pageable) {
+    public Page<UserStudy> findCompletedStudiesWithoutNext(
+        LocalDateTime yesterday,
+        LocalDateTime todayStart,
+        LocalDateTime today,
+        Pageable pageable
+    ) {
         QUserStudy userStudy = QUserStudy.userStudy;
         QUserStudy nextStudy = new QUserStudy("nextStudy");
 
         List<UserStudy> content = queryFactory
             .selectFrom(userStudy)
             .leftJoin(nextStudy)
-            .on(
-                nextStudy.userId.eq(userStudy.userId),
-                nextStudy.scheduledAt.eq(today)
-            )
-            .where(
-                userStudy.completedAt.between(yesterday, todayStart),
-                userStudy.isCompleted.isTrue(),
-                nextStudy.id.isNull()
-            )
+            .on(nextStudy.userId.eq(userStudy.userId), nextStudy.scheduledAt.eq(today))
+            .where(userStudy.completedAt.between(yesterday, todayStart), userStudy.isCompleted.isTrue(), nextStudy.id.isNull())
             .orderBy(userStudy.id.asc())
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
@@ -47,15 +46,8 @@ public class UserStudyCustomRepositoryImpl implements UserStudyCustomRepository 
         long total = queryFactory
             .selectFrom(userStudy)
             .leftJoin(nextStudy)
-            .on(
-                nextStudy.userId.eq(userStudy.userId),
-                nextStudy.scheduledAt.eq(today)
-            )
-            .where(
-                userStudy.completedAt.between(yesterday, todayStart),
-                userStudy.isCompleted.isTrue(),
-                nextStudy.id.isNull()
-            )
+            .on(nextStudy.userId.eq(userStudy.userId), nextStudy.scheduledAt.eq(today))
+            .where(userStudy.completedAt.between(yesterday, todayStart), userStudy.isCompleted.isTrue(), nextStudy.id.isNull())
             .fetch().size();
 
         return new PageImpl<>(content, pageable, total);

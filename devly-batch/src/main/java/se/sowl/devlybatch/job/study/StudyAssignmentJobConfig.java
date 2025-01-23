@@ -80,9 +80,8 @@ public class StudyAssignmentJobConfig {
     public ItemReader<UserStudy> completedStudiesReader() {
         LocalDateTime yesterday = LocalDate.now().minusDays(1).atStartOfDay();
         LocalDateTime todayStart = LocalDate.now().atStartOfDay();
-        LocalDate today = LocalDate.now();
         return new QuerydslPagingItemReader<>(
-            pageable -> userStudyRepository.findCompletedStudiesWithoutNext(yesterday, todayStart, today, pageable),
+            pageable -> userStudyRepository.findCompletedStudiesWithoutNext(yesterday, todayStart, todayStart, pageable),
             properties.getChunkSize()
         );
     }
@@ -100,7 +99,7 @@ public class StudyAssignmentJobConfig {
             return UserStudy.builder()
                 .userId(completed.getUserId())
                 .studyId(nextStudy.getId())
-                .scheduledAt(LocalDate.now())
+                .scheduledAt(LocalDateTime.now())
                 .build();
         };
     }

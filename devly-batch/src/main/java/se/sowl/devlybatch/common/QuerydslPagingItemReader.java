@@ -59,12 +59,4 @@ public class QuerydslPagingItemReader<T> implements ItemStreamReader<T> {
         this.noMoreData = false;
         this.currentPage = null;
     }
-
-    @Override
-    public void update(ExecutionContext executionContext) {
-    }
-
-    @Override
-    public void close() {
-    }
 }

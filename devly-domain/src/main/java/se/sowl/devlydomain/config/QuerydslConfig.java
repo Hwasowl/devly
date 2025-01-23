@@ -1,20 +1,23 @@
-package se.sowl.devlydomain.common;
+package se.sowl.devlydomain.config;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@RequiredArgsConstructor
 public class QuerydslConfig {
-    @PersistenceContext
-    private EntityManager entityManager;
+    private final EntityManager entityManager;
+
+    public QuerydslConfig(EntityManager entityManager) {
+        this.entityManager = entityManager;
+    }
 
     @Bean
     public JPAQueryFactory jpaQueryFactory() {
+        if (entityManager == null) {
+            throw new IllegalArgumentException("EntityManager must not be null");
+        }
         return new JPAQueryFactory(entityManager);
     }
 }
