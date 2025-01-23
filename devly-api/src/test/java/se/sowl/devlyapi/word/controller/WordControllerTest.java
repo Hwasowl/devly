@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -26,16 +26,17 @@ import static org.springframework.restdocs.request.RequestDocumentation.paramete
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(WordController.class)
+
+@SpringBootTest
+@AutoConfigureMockMvc
 @AutoConfigureRestDocs
 @WithMockUser
 class WordControllerTest {
+    @MockBean
+    private WordService wordService;
 
     @Autowired
     private MockMvc mockMvc;
-
-    @MockBean
-    private WordService wordService;
 
     @Test
     @DisplayName("학습 ID로 해당 학습의 단어 목록을 조회한다")

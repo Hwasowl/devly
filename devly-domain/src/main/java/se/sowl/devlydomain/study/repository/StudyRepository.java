@@ -8,6 +8,6 @@ import java.util.List;
 
 public interface StudyRepository extends JpaRepository<Study, Long> {
     List<Study> findByCreatedAtBetween(LocalDateTime startOfDay, LocalDateTime endOfDay);
-
     Study findByDeveloperTypeId(Long developerTypeId);
+    List<Study> findAllByOrderById();
 }
