@@ -13,5 +13,5 @@ public interface WordRepository extends JpaRepository<Word, Long> {
 
     List<Word> findWordsByCreatedAtAfter(LocalDateTime localDateTime);
 
-
+    long countByStudyId(Long studyId);
 }

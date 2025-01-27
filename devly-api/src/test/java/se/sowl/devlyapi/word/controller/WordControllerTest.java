@@ -1,5 +1,6 @@
 package se.sowl.devlyapi.word.controller;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,15 +9,21 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import se.sowl.devlyapi.word.dto.WordListOfStudyResponse;
 import se.sowl.devlyapi.word.dto.WordResponse;
 import se.sowl.devlyapi.word.service.WordService;
+import se.sowl.devlydomain.user.domain.CustomOAuth2User;
+import se.sowl.devlydomain.user.domain.User;
 
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
@@ -37,6 +44,20 @@ class WordControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @BeforeEach
+    void setUp() {
+        CustomOAuth2User customOAuth2User = new CustomOAuth2User(
+            mock(User.class),
+            mock(OAuth2User.class)
+        );
+        OAuth2AuthenticationToken authentication = new OAuth2AuthenticationToken(
+            customOAuth2User,
+            customOAuth2User.getAuthorities(),
+            "google"
+        );
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+    }
 
     @Test
     @DisplayName("학습 ID로 해당 학습의 단어 목록을 조회한다")

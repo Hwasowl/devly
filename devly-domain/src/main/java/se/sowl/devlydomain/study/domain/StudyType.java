@@ -19,10 +19,10 @@ public class StudyType {
     private String name;
 
     @Column(name = "base_exp")
-    private Integer baseExp;
+    private Long baseExp;
 
     @Builder
-    public StudyType(String name, Integer baseExp) {
+    public StudyType(String name, Long baseExp) {
         this.name = name;
         this.baseExp = baseExp;
     }

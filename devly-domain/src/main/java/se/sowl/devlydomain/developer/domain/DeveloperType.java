@@ -2,7 +2,6 @@ package se.sowl.devlydomain.developer.domain;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import se.sowl.devlydomain.common.BaseTimeEntity;
@@ -19,9 +18,7 @@ public class DeveloperType extends BaseTimeEntity {
     @Column(nullable = false)
     private String name;
 
-    @Builder
-    public DeveloperType(Long id, String name) {
-        this.id = id;
+    public DeveloperType(String name) {
         this.name = name;
     }
 }

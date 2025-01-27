@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import se.sowl.devlydomain.common.BaseTimeEntity;
+import se.sowl.devlydomain.study.domain.Study;
 
 import java.time.LocalDateTime;
 
@@ -21,8 +22,9 @@ public class UserStudy extends BaseTimeEntity {
     @Column(name = "user_id")
     private Long userId;
 
-    @Column(name = "study_id")
-    private Long studyId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "study_id")
+    private Study study;
 
     private boolean isCompleted;
 
@@ -33,9 +35,9 @@ public class UserStudy extends BaseTimeEntity {
     private LocalDateTime scheduledAt;
 
     @Builder
-    public UserStudy(Long userId, Long studyId, LocalDateTime scheduledAt) {
+    public UserStudy(Long userId, Study study, LocalDateTime scheduledAt) {
         this.userId = userId;
-        this.studyId = studyId;
+        this.study = study;
         this.scheduledAt = scheduledAt;
         this.isCompleted = false;
     }
