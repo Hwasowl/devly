@@ -10,6 +10,7 @@ import se.sowl.devlyapi.word.service.WordService;
 import se.sowl.devlydomain.study.repository.StudyRepository;
 import se.sowl.devlydomain.user.domain.User;
 import se.sowl.devlydomain.user.repository.UserRepository;
+import se.sowl.devlydomain.user.repository.UserStudyRepository;
 import se.sowl.devlydomain.word.repository.WordRepository;
 
 @SpringBootTest
@@ -30,6 +31,9 @@ public abstract class MediumTest {
 
     @Autowired
     protected StudyRepository studyRepository;
+
+    @Autowired
+    protected UserStudyRepository userStudyRepository;
 
     @MockBean
     protected DefaultOAuth2UserService defaultOAuth2UserService;

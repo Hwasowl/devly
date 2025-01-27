@@ -53,7 +53,7 @@ class WordControllerTest {
                 "/ˌpɒlɪˈmɔːfɪzəm/")
         );
         WordListOfStudyResponse response = new WordListOfStudyResponse(words);
-        when(wordService.getList(anyLong())).thenReturn(response);
+        when(wordService.getList(anyLong(), anyLong())).thenReturn(response);
 
         // when & then
         mockMvc.perform(get("/api/words/{studyId}", 1L)
