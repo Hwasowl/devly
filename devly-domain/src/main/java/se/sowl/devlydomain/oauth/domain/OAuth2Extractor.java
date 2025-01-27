@@ -8,9 +8,7 @@ import java.util.function.Function;
 
 @RequiredArgsConstructor
 public enum OAuth2Extractor {
-    GOOGLE(OAuth2Provider.GOOGLE, OAuth2Extractor::extractGoogleProfile),
-    NAVER(OAuth2Provider.NAVER, OAuth2Extractor::extractNaverProfile),
-    KAKAO(OAuth2Provider.KAKAO, OAuth2Extractor::extractKakaoProfile);
+    GOOGLE(OAuth2Provider.GOOGLE, OAuth2Extractor::extractGoogleProfile);
 
     private final OAuth2Provider provider;
     private final Function<Map<String, Object>, OAuth2Profile> extractor;
@@ -28,25 +26,6 @@ public enum OAuth2Extractor {
             .name((String) attributes.get("name"))
             .email((String) attributes.get("email"))
             .provider(OAuth2Provider.GOOGLE.getRegistrationId())
-            .build();
-    }
-
-    private static OAuth2Profile extractNaverProfile(Map<String, Object> attributes) {
-        Map<String, Object> response = (Map<String, Object>) attributes.get("response");
-        return OAuth2Profile.builder()
-            .name((String) response.get("name"))
-            .email((String) response.get("email"))
-            .provider(OAuth2Provider.NAVER.getRegistrationId())
-            .build();
-    }
-
-    private static OAuth2Profile extractKakaoProfile(Map<String, Object> attributes) {
-        Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
-        Map<String, Object> kakaoProfile = (Map<String, Object>) kakaoAccount.get("profile");
-        return OAuth2Profile.builder()
-            .name((String) kakaoProfile.get("nickname"))
-            .email((String) kakaoAccount.get("email"))
-            .provider(OAuth2Provider.KAKAO.getRegistrationId())
             .build();
     }
 }

@@ -6,9 +6,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum OAuth2Provider {
-    GOOGLE("google"),
-    NAVER("naver"),
-    KAKAO("kakao");
+    GOOGLE("google");
 
     private final String registrationId;
 }

@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: devly-api
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: d
+            client-secret: d
+            scope: profile, email
+            redirect-uri: http://localhost:8080/login/oauth2/code/google
+front:
+  url: http://localhost:3000/callback
+jwt:
+  secret-key: d
+  access-token-validity-in-seconds: 3600
+  refresh-token-validity-in-seconds: 604800
