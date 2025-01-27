@@ -7,6 +7,9 @@ import org.springframework.batch.test.JobLauncherTestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
+import se.sowl.devlydomain.developer.domain.DeveloperType;
+
+import java.util.List;
 
 @Sql(scripts = {
     "/org/springframework/batch/core/schema-drop-h2.sql",
@@ -25,4 +28,9 @@ public abstract class MediumBatchTest {
     @Autowired
     protected JobRepository jobRepository;
 
+    protected List<DeveloperType> getDeveloperTypes() {
+        DeveloperType frontEnd = new DeveloperType("Backend Developer");
+        DeveloperType backEnd = new DeveloperType("Frontend Developer");
+        return List.of(frontEnd, backEnd);
+    }
 }

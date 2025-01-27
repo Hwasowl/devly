@@ -98,16 +98,16 @@ public class StudyAssignmentJobConfig {
             if (nextStudy == null) return null;
             return UserStudy.builder()
                 .userId(completed.getUserId())
-                .studyId(nextStudy.getId())
+                .study(nextStudy)
                 .scheduledAt(LocalDateTime.now())
                 .build();
         };
     }
 
     private static Study getCompletedStudy(UserStudy completed, Map<Long, Study> studyMap) {
-        Study completedStudy = studyMap.get(completed.getStudyId());
+        Study completedStudy = studyMap.get(completed.getStudy().getId());
         if (completedStudy == null) {
-            log.warn("Completed study not found: {}", completed.getStudyId());
+            log.warn("Completed study not found: {}", completed.getId());
             return null;
         }
         return completedStudy;

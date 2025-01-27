@@ -76,23 +76,17 @@ class StudyAssignmentJobConfigTest extends MediumBatchTest {
     void assignmentLargeScaleStudies() throws Exception {
         // given
         List<Study> allStudies = new ArrayList<>();
-        LocalDateTime yesterday = LocalDateTime.now()
-            .minusDays(1)
-            .withHour(12)
-            .withMinute(0)
-            .withSecond(0)
-            .withNano(0);
+        LocalDateTime yesterday = LocalDateTime.now().minusDays(1).withHour(12).withMinute(0).withSecond(0).withNano(0);
 
         for (int typeId = 0; typeId < 4; typeId++) {
             allStudies.addAll(createOrderedStudies((long) typeId, 1L, STUDIES_PER_TYPE));
         }
 
+        studyRepository.saveAll(allStudies);
+
         for (Long userId : USER_IDS) {
-            UserStudy completed1 = createUserStudy(userId, findFirstStudyByType(allStudies, 0L).getId(), true, yesterday);
-            UserStudy completed2 = createUserStudy(userId, findFirstStudyByType(allStudies, 1L).getId(), true, yesterday);
-            UserStudy incomplete1 = createUserStudy(userId, findFirstStudyByType(allStudies, 2L).getId(), false, null);
-            UserStudy incomplete2 = createUserStudy(userId, findFirstStudyByType(allStudies, 3L).getId(), false, null);
-            userStudyRepository.saveAll(Arrays.asList(completed1, completed2, incomplete1, incomplete2));
+            saveCompletedStudies(userId, allStudies, yesterday);
+            saveInCompletedStudies(userId, allStudies);
         }
 
         // when
@@ -102,41 +96,76 @@ class StudyAssignmentJobConfigTest extends MediumBatchTest {
         assertThat(execution.getStatus()).isEqualTo(BatchStatus.COMPLETED);
 
         for (Long userId : USER_IDS) {
-            List<UserStudy> userStudies = userStudyRepository.findAllByUserId(userId);
-
-            Map<Long, List<UserStudy>> studiesByType = userStudies.stream()
-                .collect(Collectors.groupingBy(
-                    us -> studyRepository.findById(us.getStudyId()).orElseThrow().getTypeId()
-                ));
-
-            for (long typeId : Arrays.asList(0L, 1L)) {
-                List<UserStudy> typeStudies = studiesByType.get(typeId);
-                assertThat(typeStudies).hasSize(2);
-
-                UserStudy completedStudy = typeStudies.stream()
-                    .filter(UserStudy::isCompleted)
-                    .findFirst()
-                    .orElseThrow(AssertionError::new);
-
-                UserStudy newStudy = typeStudies.stream()
-                    .filter(us -> !us.isCompleted())
-                    .findFirst()
-                    .orElseThrow(AssertionError::new);
-
-                // 새로운 스터디의 ID가 완료된 스터디의 ID보다 커야 함 (도메인 규칙)
-                assertThat(newStudy.getStudyId()).isGreaterThan(completedStudy.getStudyId());
-
-                Study completedStudyEntity = studyRepository.findById(completedStudy.getStudyId()).orElseThrow();
-                Study newStudyEntity = studyRepository.findById(newStudy.getStudyId()).orElseThrow();
-                assertThat(newStudyEntity.getTypeId()).isEqualTo(completedStudyEntity.getTypeId());
-            }
-
-            for (long typeId : Arrays.asList(2L, 3L)) {
-                List<UserStudy> typeStudies = studiesByType.get(typeId);
-                assertThat(typeStudies).hasSize(1);
-                assertThat(typeStudies.get(0).isCompleted()).isFalse();
-            }
+            List<UserStudy> userStudies = userStudyRepository.findAllWithStudyByUserId(userId);
+            assertStudyAssignments(userStudies);
         }
+    }
+
+    private void saveInCompletedStudies(Long userId, List<Study> allStudies) {
+        Study study3 = findFirstStudyByType(allStudies, 2L);
+        Study study4 = findFirstStudyByType(allStudies, 3L);
+        UserStudy incomplete1 = createUserStudy(userId, study3, false, null);
+        UserStudy incomplete2 = createUserStudy(userId, study4, false, null);
+        userStudyRepository.saveAll(Arrays.asList(incomplete1, incomplete2));
+    }
+
+    private void saveCompletedStudies(Long userId, List<Study> allStudies, LocalDateTime yesterday) {
+        Study study1 = findFirstStudyByType(allStudies, 0L);
+        Study study2 = findFirstStudyByType(allStudies, 1L);
+        UserStudy completed1 = createUserStudy(userId, study1, true, yesterday);
+        UserStudy completed2 = createUserStudy(userId, study2, true, yesterday);
+        userStudyRepository.saveAll(Arrays.asList(completed1, completed2));
+    }
+
+    protected void assertStudyAssignments(List<UserStudy> userStudies) {
+        Map<Long, List<UserStudy>> studiesByType = groupStudiesByType(userStudies);
+        // 완료된 타입에 대한 검증
+        Arrays.asList(0L, 1L).forEach(typeId -> assertCompletedTypeStudies(studiesByType.get(typeId)));
+        // 미완료된 타입에 대한 검증
+        Arrays.asList(2L, 3L).forEach(typeId -> assertIncompleteTypeStudies(studiesByType.get(typeId)));
+    }
+
+    private Map<Long, List<UserStudy>> groupStudiesByType(List<UserStudy> userStudies) {
+        return userStudies.stream().collect(Collectors.groupingBy(us -> us.getStudy().getTypeId()));
+    }
+
+    private void assertCompletedTypeStudies(List<UserStudy> typeStudies) {
+        assertThat(typeStudies).hasSize(2);
+
+        UserStudy completedStudy = findCompletedStudy(typeStudies);
+        UserStudy newStudy = findIncompleteStudy(typeStudies);
+
+        assertNewStudyIsValid(completedStudy, newStudy);
+    }
+
+    private void assertIncompleteTypeStudies(List<UserStudy> typeStudies) {
+        assertThat(typeStudies).hasSize(1);
+        assertThat(typeStudies.get(0).isCompleted()).isFalse();
+    }
+
+    private UserStudy findCompletedStudy(List<UserStudy> studies) {
+        return studies.stream()
+            .filter(UserStudy::isCompleted)
+            .findFirst()
+            .orElseThrow(AssertionError::new);
+    }
+
+    private UserStudy findIncompleteStudy(List<UserStudy> studies) {
+        return studies.stream()
+            .filter(us -> !us.isCompleted())
+            .findFirst()
+            .orElseThrow(AssertionError::new);
+    }
+
+    private void assertNewStudyIsValid(UserStudy completedStudy, UserStudy newStudy) {
+        // 새로운 스터디의 ID가 완료된 스터디의 ID보다 커야 함 (도메인 규칙)
+        assertThat(newStudy.getStudy().getId())
+            .isGreaterThan(completedStudy.getStudy().getId());
+
+        Study completedStudyEntity = completedStudy.getStudy();
+        Study newStudyEntity = newStudy.getStudy();
+        assertThat(newStudyEntity.getTypeId())
+            .isEqualTo(completedStudyEntity.getTypeId());
     }
 
     private List<Study> createOrderedStudies(Long typeId, Long devTypeId, int count) {
@@ -150,7 +179,7 @@ class StudyAssignmentJobConfigTest extends MediumBatchTest {
         return studyRepository.saveAll(studies);
     }
 
-    private List<Study> createStudies(Long typeId, Long devTypeId, int count) {
+    private void createStudies(Long typeId, Long devTypeId, int count) {
         List<Study> studies = new ArrayList<>();
         for (int i = 0; i < count; i++) {
             studies.add(Study.builder()
@@ -159,17 +188,17 @@ class StudyAssignmentJobConfigTest extends MediumBatchTest {
                 .build()
             );
         }
-        return studyRepository.saveAll(studies);
+        studyRepository.saveAll(studies);
     }
 
     private void createStudies() {
         createStudies(1L, 1L, 2);
     }
 
-    private UserStudy createUserStudy(Long userId, Long studyId, boolean completed, LocalDateTime completedAt) {
+    private UserStudy createUserStudy(Long userId, Study study, boolean completed, LocalDateTime completedAt) {
         UserStudy userStudy = UserStudy.builder()
             .userId(userId)
-            .studyId(studyId)
+            .study(study)
             .scheduledAt(LocalDateTime.now().minusDays(1))  // 어제 날짜로 설정
             .build();
 
