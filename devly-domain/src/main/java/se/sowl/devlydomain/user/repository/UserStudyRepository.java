@@ -30,4 +30,8 @@ public interface UserStudyRepository extends JpaRepository<UserStudy, Long>, Use
     )
     """)
     List<UserStudy> findLatestByUserIdWithStudyType(@Param("userId") Long userId);
+
+    List<UserStudy> findAllByUserId(Long userId);
+
+    boolean existsByUserId(Long userId);
 }

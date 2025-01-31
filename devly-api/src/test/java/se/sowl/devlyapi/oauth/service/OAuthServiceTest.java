@@ -17,8 +17,14 @@ import se.sowl.devlyapi.MediumTest;
 import se.sowl.devlyapi.common.jwt.JwtTokenProvider;
 import se.sowl.devlyapi.oauth.dto.TokenResponse;
 import se.sowl.devlydomain.oauth.domain.OAuth2Provider;
+import se.sowl.devlydomain.study.domain.StudyType;
+import se.sowl.devlydomain.study.domain.StudyTypeEnum;
+import se.sowl.devlydomain.user.domain.CustomOAuth2User;
 import se.sowl.devlydomain.user.domain.User;
+import se.sowl.devlydomain.user.domain.UserStudy;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -33,6 +39,7 @@ public class OAuthServiceTest extends MediumTest {
     @AfterEach
     void tearDown() {
         userRepository.deleteAllInBatch();
+        userStudyRepository.deleteAllInBatch();
     }
 
     @Test
@@ -44,12 +51,17 @@ public class OAuthServiceTest extends MediumTest {
         String provider = OAuth2Provider.GOOGLE.getRegistrationId();
         String email = "hwasowl598@gmail.com";
         String name = "박정수";
-        User user = createUser(1L, 1L, name, "화솔", email, provider);
+        Long developerType = 1L;
+
+        User user = createUser(1L, developerType, name, "화솔", email, provider);
         userRepository.save(user);
 
-        OAuth2AccessToken accessToken = new OAuth2AccessToken(OAuth2AccessToken.TokenType.BEARER, "dummy-access-token", null, null);
+        OAuth2AccessToken accessToken = new OAuth2AccessToken(OAuth2AccessToken.TokenType.BEARER, "accessToken", null, null);
         ClientRegistration clientRegistration = createClientRegistration(provider);
-        OAuth2UserRequest userRequest = new OAuth2UserRequest(clientRegistration, accessToken);
+
+        Map<String, Object> additionalParameters = new HashMap<>();
+        additionalParameters.put("developerType", developerType);
+        OAuth2UserRequest userRequest = new OAuth2UserRequest(clientRegistration, accessToken, additionalParameters);
 
         Map<String, Object> attributes = getGoogleAttribute(name, email);
         when(oAuth2User.getAttributes()).thenReturn(attributes);
@@ -78,6 +90,46 @@ public class OAuthServiceTest extends MediumTest {
         assertThat(authenticatedUser.getEmail()).isEqualTo(email);
         assertThat(authenticatedUser.getName()).isEqualTo(name);
         assertThat(authenticatedUser.getProvider()).isEqualTo(provider);
+    }
+
+
+    @Test
+    @DisplayName("신규 구글 유저 가입시 유저 학습이 타입에 맞게 모두 생성되어야 한다.")
+    @Transactional
+    public void createNewGoogleUserWithStudies() {
+        // given
+        OAuth2User oAuth2User = mock(OAuth2User.class);
+        String provider = OAuth2Provider.GOOGLE.getRegistrationId();
+        String email = "hwasowl598@gmail.com";
+        String name = "박정수";
+        Long developerType = 1L;
+        // 기존 유저를 미리 생성하지 않음 X
+
+        List<StudyType> studyTypes = studyTypeRepository.saveAll(getStudyTypes());
+        studyRepository.saveAll(generateStudiesOfStudyTypes(studyTypes, developerType));
+
+        OAuth2AccessToken accessToken = new OAuth2AccessToken(OAuth2AccessToken.TokenType.BEARER, "accessToken", null, null);
+        ClientRegistration clientRegistration = createClientRegistration(provider);
+
+        Map<String, Object> additionalParameters = new HashMap<>();
+        additionalParameters.put("developerType", developerType);
+        OAuth2UserRequest userRequest = new OAuth2UserRequest(clientRegistration, accessToken, additionalParameters);
+
+        Map<String, Object> attributes = getGoogleAttribute(name, email);
+        when(oAuth2User.getAttributes()).thenReturn(attributes);
+        when(defaultOAuth2UserService.loadUser(userRequest)).thenReturn(oAuth2User);
+
+        // when
+        CustomOAuth2User loadedUser = (CustomOAuth2User) oAuthService.loadUser(userRequest);
+
+        // then
+        List<UserStudy> userStudies = userStudyRepository.findAllByUserId(loadedUser.getUserId());
+        assertThat(userStudies.size()).isEqualTo(StudyTypeEnum.values().length);
+
+        for (UserStudy userStudy : userStudies) {
+            assertThat(userStudy.getUserId()).isEqualTo(loadedUser.getUserId());
+            assertThat(userStudy.getStudy()).isNotNull();
+        }
     }
 
     private ClientRegistration createClientRegistration(String provider) {

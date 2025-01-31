@@ -5,11 +5,14 @@ import se.sowl.devlydomain.study.domain.Study;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface StudyRepository extends JpaRepository<Study, Long> {
     List<Study> findByCreatedAtBetween(LocalDateTime startOfDay, LocalDateTime endOfDay);
 
     Study findByDeveloperTypeId(Long developerTypeId);
+
+    Optional<Study> findFirstByTypeId(Long typeId);
 
     // TODO: Consider Pageable
     List<Study> findAllByOrderById();

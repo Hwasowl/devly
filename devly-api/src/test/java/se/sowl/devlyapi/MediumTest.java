@@ -9,6 +9,7 @@ import se.sowl.devlyapi.oauth.service.OAuthService;
 import se.sowl.devlyapi.study.service.StudyService;
 import se.sowl.devlyapi.word.service.WordService;
 import se.sowl.devlydomain.developer.domain.DeveloperType;
+import se.sowl.devlydomain.developer.repository.DeveloperTypeRepository;
 import se.sowl.devlydomain.study.domain.Study;
 import se.sowl.devlydomain.study.domain.StudyType;
 import se.sowl.devlydomain.study.repository.StudyRepository;
@@ -49,6 +50,9 @@ public abstract class MediumTest {
     @Autowired
     protected UserStudyRepository userStudyRepository;
 
+    @Autowired
+    protected DeveloperTypeRepository developerTypeRepository;
+
     @MockBean
     protected DefaultOAuth2UserService defaultOAuth2UserService;
 
@@ -61,6 +65,12 @@ public abstract class MediumTest {
             .email(email)
             .provider(provider)
             .build();
+    }
+
+    protected List<Study> generateStudiesOfStudyTypes(List<StudyType> studyTypes, Long developerTypeId) {
+        return studyTypes.stream()
+            .map(studyType -> buildStudy(studyType.getId(), developerTypeId))
+            .toList();
     }
 
     protected List<StudyType> getStudyTypes() {

@@ -11,18 +11,19 @@ import org.springframework.transaction.annotation.Transactional;
 import se.sowl.devlyapi.oauth.exception.OAuth2AuthenticationProcessingException;
 import se.sowl.devlyapi.oauth.exception.OAuth2ProviderNotSupportedException;
 import se.sowl.devlyapi.oauth.factory.OAuth2UserFactory;
-import se.sowl.devlydomain.oauth.domain.*;
+import se.sowl.devlyapi.user.service.UserService;
+import se.sowl.devlydomain.oauth.domain.OAuth2Extractor;
+import se.sowl.devlydomain.oauth.domain.OAuth2Profile;
+import se.sowl.devlydomain.oauth.domain.OAuth2Provider;
 import se.sowl.devlydomain.user.domain.User;
-import se.sowl.devlydomain.user.repository.UserRepository;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class OAuthService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
-
-    private final UserRepository userRepository;
     private final DefaultOAuth2UserService defaultOAuth2UserService;
     private final OAuth2UserFactory oAuth2UserFactory;
+    private final UserService userService;
 
     @Override
     @Transactional
@@ -30,7 +31,9 @@ public class OAuthService implements OAuth2UserService<OAuth2UserRequest, OAuth2
         try {
             OAuth2User loadedUser = defaultOAuth2UserService.loadUser(userRequest);
             OAuth2Profile profile = extractOAuth2Profile(userRequest, loadedUser);
-            User user = getOrCreateUser(profile);
+            Long developerType = extractDeveloperType(userRequest);
+
+            User user = userService.getOrCreateUser(profile, developerType);
             OAuth2User oAuth2User = oAuth2UserFactory.createOAuth2User(userRequest, loadedUser, profile);
             return oAuth2UserFactory.createCustomOAuth2User(user, oAuth2User);
         } catch (Exception e) {
@@ -38,6 +41,13 @@ public class OAuthService implements OAuth2UserService<OAuth2UserRequest, OAuth2
         }
     }
 
+    private Long extractDeveloperType(OAuth2UserRequest userRequest) {
+        String developerTypeStr = userRequest.getAdditionalParameters().get("developerType").toString();
+        if (developerTypeStr == null) {
+            throw new IllegalArgumentException("Developer type is required");
+        }
+        return Long.parseLong(developerTypeStr);
+    }
 
     private OAuth2Profile extractOAuth2Profile(OAuth2UserRequest userRequest, OAuth2User oAuth2User) {
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
@@ -47,10 +57,5 @@ public class OAuthService implements OAuth2UserService<OAuth2UserRequest, OAuth2
         } catch (Exception e) {
             throw new OAuth2ProviderNotSupportedException(registrationId);
         }
-    }
-
-    private User getOrCreateUser(OAuth2Profile oAuth2Profile) {
-        return userRepository.findByEmailAndProvider(oAuth2Profile.getEmail(), oAuth2Profile.getProvider())
-            .orElseGet(() -> userRepository.save(oAuth2Profile.toUser()));
     }
 }
