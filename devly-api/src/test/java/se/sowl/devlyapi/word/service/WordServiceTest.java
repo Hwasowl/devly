@@ -48,7 +48,7 @@ class WordServiceTest extends MediumTest {
             List<WordResponse> words = list.getWords();
 
             // then
-            assertThat(words).hasSize(3);
+            assertThat(words).hasSize(5);
             AssertionsForClassTypes.assertThat(words.get(0).getWord()).isEqualTo("implementation");
             AssertionsForClassTypes.assertThat(words.get(0).getMeaning()).isEqualTo("구현, 실행");
             AssertionsForClassTypes.assertThat(words.get(1).getWord()).isEqualTo("polymorphism");

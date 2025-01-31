@@ -39,24 +39,15 @@ class StudyServiceTest extends MediumTest {
         Long wordTypeId = studyTypes.stream().filter(studyType -> studyType.getName().equals("word")).findFirst().orElseThrow().getId();
         Study study = studyRepository.save(buildStudy(wordTypeId, backendDeveloperType.getId()));
         wordRepository.saveAll(getBackendWordList(study.getId()));
-
         userStudyRepository.save(UserStudy.builder().userId(user.getId()).study(study).scheduledAt(LocalDateTime.now()).build());
 
+        // else type studies
         for (int i = 1; i <= 3; i++) {
             StudyType studyType = studyTypes.get(i);
             Study study2 = studyRepository.save(buildStudy(studyType.getId(), backendDeveloperType.getId()));
-            wordRepository.saveAll(getBackendWordList(study2.getId()));
             UserStudy build = UserStudy.builder().userId(user.getId()).study(study2).scheduledAt(LocalDateTime.now()).build();
             build.complete();
             userStudyRepository.save(build);
-        }
-
-        System.out.println(userStudyRepository.findAll().size());
-        for (UserStudy userStudy : userStudyRepository.findAll()) {
-            System.out.println("userStudy = " + userStudy.getId());
-            System.out.println("userStudy = " + userStudy.getUserId());
-            System.out.println("userStudy = " + userStudy.getStudy().getTypeId());
-            System.out.println("userStudy = " + userStudy.isCompleted());
         }
 
         // when
@@ -64,7 +55,7 @@ class StudyServiceTest extends MediumTest {
 
         // then
         assertThat(tasks.getWord()).isNotNull();
-        assertThat(tasks.getWord().getTotal()).isEqualTo(3);
+        assertThat(tasks.getWord().getTotal()).isEqualTo(5);
         assertThat(tasks.getWord().isCompleted()).isFalse();
         assertThat(tasks.getKnowledge()).isNotNull();
         assertThat(tasks.getKnowledge().isCompleted()).isTrue();

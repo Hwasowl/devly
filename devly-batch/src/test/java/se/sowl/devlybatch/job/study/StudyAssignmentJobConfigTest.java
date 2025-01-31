@@ -117,7 +117,7 @@ class StudyAssignmentJobConfigTest extends MediumBatchTest {
         userStudyRepository.saveAll(Arrays.asList(completed1, completed2));
     }
 
-    protected void assertStudyAssignments(List<UserStudy> userStudies) {
+    private void assertStudyAssignments(List<UserStudy> userStudies) {
         Map<Long, List<UserStudy>> studiesByType = groupStudiesByType(userStudies);
         // 완료된 타입에 대한 검증
         Arrays.asList(0L, 1L).forEach(typeId -> assertCompletedTypeStudies(studiesByType.get(typeId)));
