@@ -73,4 +73,29 @@ class WordServiceTest extends MediumTest {
             assertEquals("아직 학습할 수 없습니다.", exception.getMessage());
         }
     }
+
+    @Nested
+    class Review {
+        @Test
+        @DisplayName("단어를 정답과 오답으로 구분하여 리뷰할 수 있다.")
+        void review() {
+            // given
+            User user = userRepository.save(createUser(1L, 1L, "박정수", "솔", "test@naver.com", "google"));
+            Study study = studyRepository.save(buildStudy(2L, 1L));
+            wordRepository.saveAll(getBackendWordList(study.getId()));
+            userStudyRepository.save(UserStudy.builder().userId(user.getId()).study(study).scheduledAt(LocalDateTime.now()).build());
+
+            // when
+            wordService.review(study.getId(), user.getId(), List.of(1L, 2L), List.of(3L, 4L, 5L));
+
+            // then
+            wordReviewRepository.findAll().forEach(review -> {
+                if (review.getWordId() == 1L || review.getWordId() == 2L) {
+                    assertThat(review.isCorrect()).isTrue();
+                } else {
+                    assertThat(review.isCorrect()).isFalse();
+                }
+            });
+        }
+    }
 }

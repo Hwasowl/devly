@@ -26,8 +26,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
+import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -95,6 +98,29 @@ class StudyControllerTest {
                     fieldWithPath("result.discussion.studyId").description("토론 학습 ID"),
                     fieldWithPath("result.discussion.total").description("총 토론 수"),
                     fieldWithPath("result.discussion.completed").description("완료 여부")
+                )
+            ));
+    }
+
+    @Test
+    @DisplayName("단어 학습에 대한 오답 정보를 제출한다")
+    void reviewTest() throws Exception {
+        // given
+        String request = "{\"correctIds\":[1,2],\"incorrectIds\":[3,4,5]}";
+
+        // when & then
+        mockMvc.perform(post("/api/studies/{studyId}/words/review", 1L)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(request))
+            .andExpect(status().isOk())
+            .andDo(document("word-review",
+                pathParameters(
+                    parameterWithName("studyId").description("학습 ID")
+                ),
+                responseFields(
+                    fieldWithPath("code").description("응답 코드"),
+                    fieldWithPath("message").description("응답 메시지"),
+                    fieldWithPath("result").description("결과")
                 )
             ));
     }

@@ -22,6 +22,7 @@ import se.sowl.devlydomain.user.repository.UserRepository;
 import se.sowl.devlydomain.user.repository.UserStudyRepository;
 import se.sowl.devlydomain.word.domain.Word;
 import se.sowl.devlydomain.word.repository.WordRepository;
+import se.sowl.devlydomain.word.repository.WordReviewRepository;
 
 import java.util.List;
 
@@ -41,6 +42,9 @@ public abstract class MediumTest {
 
     @Autowired
     protected WordRepository wordRepository;
+
+    @Autowired
+    protected WordReviewRepository wordReviewRepository;
 
     @Autowired
     protected StudyRepository studyRepository;
