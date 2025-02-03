@@ -1,4 +1,4 @@
-package se.sowl.devlyapi.oauth.handler;
+package se.sowl.devlyapi.common.oauth.handler;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

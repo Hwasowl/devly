@@ -8,8 +8,9 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -17,8 +18,9 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import se.sowl.devlyapi.common.jwt.JwtAuthenticationFilter;
 import se.sowl.devlyapi.common.jwt.JwtTokenProvider;
-import se.sowl.devlyapi.oauth.handler.OAuth2AuthenticationFailureHandler;
-import se.sowl.devlyapi.oauth.handler.OAuth2AuthenticationSuccessHandler;
+import se.sowl.devlyapi.common.oauth.CustomOAuth2AuthorizationRequestResolver;
+import se.sowl.devlyapi.common.oauth.handler.OAuth2AuthenticationFailureHandler;
+import se.sowl.devlyapi.common.oauth.handler.OAuth2AuthenticationSuccessHandler;
 import se.sowl.devlyapi.oauth.service.OAuthService;
 
 import java.util.Arrays;
@@ -41,31 +43,30 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(AbstractHttpConfigurer::disable)
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .addFilterBefore(new JwtAuthenticationFilter(tokenProvider), UsernamePasswordAuthenticationFilter.class)
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/docs/**").permitAll()
+                .requestMatchers("/oauth2/**").permitAll()
+                .requestMatchers("/login/oauth2/code/**").permitAll()
                 .requestMatchers("/api/auth/**").authenticated()
                 .requestMatchers("/api/users/**").authenticated()
                 .requestMatchers("/api/words/**").authenticated()
+                .requestMatchers("/api/studies/**").authenticated()
                 .anyRequest().authenticated()
             )
-            .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
-            .logout(logout -> logout
-                .logoutSuccessUrl(frontendUrl)
-                .invalidateHttpSession(true)
-                .clearAuthentication(true)
-            )
             .oauth2Login(oauth2Login -> oauth2Login
+                .authorizationEndpoint(endpoint -> endpoint
+                    .baseUri("/login/oauth2/code")
+                    .authorizationRequestResolver(
+                        authorizationRequestResolver(http.getSharedObject(ClientRegistrationRepository.class))
+                    )
+                )
                 .successHandler(oAuth2AuthenticationSuccessHandler)
                 .failureHandler(oauth2AuthenticationFailureHandler)
                 .userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint.userService(oAuthService))
-            )
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()));
+            );
         return http.build();
     }
 
@@ -79,5 +80,10 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
+    }
+
+    @Bean
+    public OAuth2AuthorizationRequestResolver authorizationRequestResolver(ClientRegistrationRepository repository) {
+        return new CustomOAuth2AuthorizationRequestResolver(repository);
     }
 }

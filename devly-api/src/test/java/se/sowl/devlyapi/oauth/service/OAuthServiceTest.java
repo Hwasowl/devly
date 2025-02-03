@@ -1,10 +1,12 @@
 package se.sowl.devlyapi.oauth.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
@@ -13,6 +15,8 @@ import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import se.sowl.devlyapi.MediumTest;
 import se.sowl.devlyapi.common.jwt.JwtTokenProvider;
 import se.sowl.devlyapi.oauth.dto.TokenResponse;
@@ -23,11 +27,13 @@ import se.sowl.devlydomain.user.domain.CustomOAuth2User;
 import se.sowl.devlydomain.user.domain.User;
 import se.sowl.devlydomain.user.domain.UserStudy;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -38,15 +44,14 @@ public class OAuthServiceTest extends MediumTest {
 
     @AfterEach
     void tearDown() {
-        userRepository.deleteAllInBatch();
         userStudyRepository.deleteAllInBatch();
+        userRepository.deleteAllInBatch();
     }
 
     @Test
     @DisplayName("이미 가입된 구글 유저인 경우 유저 정보와 JWT 토큰을 응답해야 한다.")
     @Transactional
-    public void loadExistGoogleUser() {
-        // given
+    public void loadExistGoogleUser() throws JsonProcessingException {
         OAuth2User oAuth2User = mock(OAuth2User.class);
         String provider = OAuth2Provider.GOOGLE.getRegistrationId();
         String email = "hwasowl598@gmail.com";
@@ -59,9 +64,20 @@ public class OAuthServiceTest extends MediumTest {
         OAuth2AccessToken accessToken = new OAuth2AccessToken(OAuth2AccessToken.TokenType.BEARER, "accessToken", null, null);
         ClientRegistration clientRegistration = createClientRegistration(provider);
 
-        Map<String, Object> additionalParameters = new HashMap<>();
-        additionalParameters.put("developerType", developerType);
-        OAuth2UserRequest userRequest = new OAuth2UserRequest(clientRegistration, accessToken, additionalParameters);
+        // state 생성
+        Map<String, String> stateData = new HashMap<>();
+        stateData.put("developerType", String.valueOf(developerType));
+        stateData.put("originalState", "random-state");
+        String encodedState = Base64.getUrlEncoder().encodeToString(
+            objectMapper.writeValueAsString(stateData).getBytes(StandardCharsets.UTF_8)
+        );
+
+        // MockHttpServletRequest 설정
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setParameter("state", encodedState);
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
+
+        OAuth2UserRequest userRequest = new OAuth2UserRequest(clientRegistration, accessToken);
 
         Map<String, Object> attributes = getGoogleAttribute(name, email);
         when(oAuth2User.getAttributes()).thenReturn(attributes);
@@ -86,17 +102,23 @@ public class OAuthServiceTest extends MediumTest {
         assertThat(jwtTokenProvider.validateToken(tokenResponse.getAccessToken())).isTrue();
 
         Authentication jwtAuthentication = jwtTokenProvider.getAuthentication(tokenResponse.getAccessToken());
-        User authenticatedUser = (User) jwtAuthentication.getPrincipal();
-        assertThat(authenticatedUser.getEmail()).isEqualTo(email);
-        assertThat(authenticatedUser.getName()).isEqualTo(name);
-        assertThat(authenticatedUser.getProvider()).isEqualTo(provider);
-    }
+        CustomOAuth2User authenticatedUser = (CustomOAuth2User) jwtAuthentication.getPrincipal();
 
+        User userInfo = authenticatedUser.getUser();
+        assertThat(userInfo.getEmail()).isEqualTo(email);
+        assertThat(userInfo.getName()).isEqualTo(name);
+        assertThat(userInfo.getProvider()).isEqualTo(provider);
+
+        assertThat(authenticatedUser.getAttributes())
+            .containsEntry("email", email)
+            .containsEntry("name", name)
+            .containsEntry("provider", provider);
+    }
 
     @Test
     @DisplayName("신규 구글 유저 가입시 유저 학습이 타입에 맞게 모두 생성되어야 한다.")
     @Transactional
-    public void createNewGoogleUserWithStudies() {
+    public void createNewGoogleUserWithStudies() throws JsonProcessingException {
         // given
         OAuth2User oAuth2User = mock(OAuth2User.class);
         String provider = OAuth2Provider.GOOGLE.getRegistrationId();
@@ -111,9 +133,20 @@ public class OAuthServiceTest extends MediumTest {
         OAuth2AccessToken accessToken = new OAuth2AccessToken(OAuth2AccessToken.TokenType.BEARER, "accessToken", null, null);
         ClientRegistration clientRegistration = createClientRegistration(provider);
 
-        Map<String, Object> additionalParameters = new HashMap<>();
-        additionalParameters.put("developerType", developerType);
-        OAuth2UserRequest userRequest = new OAuth2UserRequest(clientRegistration, accessToken, additionalParameters);
+        // state 생성
+        Map<String, String> stateData = new HashMap<>();
+        stateData.put("developerType", String.valueOf(developerType));
+        stateData.put("originalState", "random-state");
+        String encodedState = Base64.getUrlEncoder().encodeToString(
+            objectMapper.writeValueAsString(stateData).getBytes(StandardCharsets.UTF_8)
+        );
+
+        // MockHttpServletRequest 설정
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setParameter("state", encodedState);
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
+
+        OAuth2UserRequest userRequest = new OAuth2UserRequest(clientRegistration, accessToken);
 
         Map<String, Object> attributes = getGoogleAttribute(name, email);
         when(oAuth2User.getAttributes()).thenReturn(attributes);
@@ -121,7 +154,6 @@ public class OAuthServiceTest extends MediumTest {
 
         // when
         CustomOAuth2User loadedUser = (CustomOAuth2User) oAuthService.loadUser(userRequest);
-
         // then
         List<UserStudy> userStudies = userStudyRepository.findAllByUserId(loadedUser.getUserId());
         assertThat(userStudies.size()).isEqualTo(StudyTypeEnum.values().length);
@@ -130,6 +162,7 @@ public class OAuthServiceTest extends MediumTest {
             assertThat(userStudy.getUserId()).isEqualTo(loadedUser.getUserId());
             assertThat(userStudy.getStudy()).isNotNull();
         }
+        RequestContextHolder.resetRequestAttributes();
     }
 
     private ClientRegistration createClientRegistration(String provider) {
