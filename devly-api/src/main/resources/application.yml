@@ -1,6 +1,28 @@
 spring:
-  application:
-    name: devly-api
+  profiles:
+    group:
+      test: test
+      prod: prod
+---
+spring:
+  config:
+    activate:
+      on-profile: test
+  h2:
+    console:
+      enabled: true
+  datasource:
+    url: jdbc:h2:mem:devly-local;MODE=MySQL
+    username: user
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        show_sql: true
+    hibernate:
+      ddl-auto: create
   security:
     oauth2:
       client:
@@ -11,8 +33,49 @@ spring:
             scope: profile, email
             redirect-uri: http://localhost:8080/login/oauth2/code/google
 front:
-  url: http://localhost:3000/callback
+  url: http://localhost:3000
 jwt:
   secret-key: d
   access-token-validity-in-seconds: 3600
   refresh-token-validity-in-seconds: 604800
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.springframework.jdbc.core: TRACE
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+  h2:
+    console:
+      enabled: false
+  datasource:
+    url: jdbc:mysql://localhost:3306/devly?useUnicode=yes&characterEncoding=UTF-8&allowMultiQueries=true&serverTimezone=Asia/Seoul
+    username: root
+    password: d
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        show_sql: true
+    hibernate:
+      ddl-auto: none
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: d
+            client-secret: d
+            scope: profile, email
+            redirect-uri: http://localhost:8080/login/oauth2/code/google
+front:
+  url: http://localhost:3000/home
+jwt:
+  secret-key: d
+  access-token-validity-in-seconds: 3600
+  refresh-token-validity-in-seconds: 604800
+
+---

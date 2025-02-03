@@ -34,11 +34,11 @@ spring:
       on-profile: prod
   h2:
     console:
-      enabled: true
+      enabled: false
   datasource:
     url: jdbc:mysql://localhost:3306/devly?useUnicode=yes&characterEncoding=UTF-8&allowMultiQueries=true&serverTimezone=Asia/Seoul
-    username:
-    password:
+    username: root
+    password: d
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     properties:
