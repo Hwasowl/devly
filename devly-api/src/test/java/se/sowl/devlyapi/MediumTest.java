@@ -1,10 +1,13 @@
 package se.sowl.devlyapi;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
+import se.sowl.devlyapi.common.jwt.JwtTokenProvider;
 import se.sowl.devlyapi.oauth.service.OAuthService;
 import se.sowl.devlyapi.study.service.StudyService;
 import se.sowl.devlyapi.word.service.WordService;
@@ -23,6 +26,7 @@ import se.sowl.devlydomain.word.repository.WordRepository;
 import java.util.List;
 
 @SpringBootTest
+@ActiveProfiles("test")
 @Transactional
 public abstract class MediumTest {
 
@@ -52,6 +56,12 @@ public abstract class MediumTest {
 
     @Autowired
     protected DeveloperTypeRepository developerTypeRepository;
+
+    @Autowired
+    protected ObjectMapper objectMapper;
+
+    @Autowired
+    protected JwtTokenProvider jwtTokenProvider;
 
     @MockBean
     protected DefaultOAuth2UserService defaultOAuth2UserService;

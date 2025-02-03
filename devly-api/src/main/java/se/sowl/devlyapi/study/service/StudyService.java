@@ -40,13 +40,18 @@ public class StudyService {
     @Transactional
     public void initialUserStudies(User user) {
         isStudyInitialed(user);
-        List<StudyType> studyTypes = studyTypeRepository.findAll();
-        for (StudyTypeEnum typeEnum : StudyTypeEnum.values()) {
-            StudyType studyType = validateStudyType(typeEnum, studyTypes);
-            Study study = studyRepository.findFirstByTypeId(studyType.getId())
-                .orElseThrow(() -> new IllegalStateException("No study found for type: " + typeEnum.getValue()));
-            UserStudy userStudy = UserStudy.builder().userId(user.getId()).study(study).build();
-            userStudyRepository.save(userStudy);
+        try {
+            List<StudyType> studyTypes = studyTypeRepository.findAll();
+            System.out.println("studyTypes = " + studyTypes.size());
+            for (StudyTypeEnum typeEnum : StudyTypeEnum.values()) {
+                StudyType studyType = validateStudyType(typeEnum, studyTypes);
+                Study study = studyRepository.findFirstByTypeId(studyType.getId())
+                    .orElseThrow(() -> new IllegalStateException("No study found for type: " + typeEnum.getValue()));
+                UserStudy userStudy = UserStudy.builder().userId(user.getId()).study(study).build();
+                userStudyRepository.save(userStudy);
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to initialize user studies", e);
         }
     }
 

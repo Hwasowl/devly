@@ -1,7 +1,6 @@
 package se.sowl.devlydomain.study.domain;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,7 +8,8 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "study_types")
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+//@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
 public class StudyType {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
