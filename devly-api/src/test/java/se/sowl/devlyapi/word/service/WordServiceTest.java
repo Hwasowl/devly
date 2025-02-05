@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import se.sowl.devlyapi.MediumTest;
+import se.sowl.devlyapi.study.dto.WordReviewResponse;
 import se.sowl.devlyapi.word.dto.WordListOfStudyResponse;
 import se.sowl.devlyapi.word.dto.WordResponse;
 import se.sowl.devlyapi.word.exception.NotAssignmentWordStudyException;
@@ -33,7 +34,7 @@ class WordServiceTest extends MediumTest {
     }
 
     @Nested
-    class GetList {
+    class GetTasks {
         @Test
         @DisplayName("학습 ID로 소속 단어 목록을 조회할 수 있다.")
         void get() {
@@ -75,7 +76,27 @@ class WordServiceTest extends MediumTest {
     }
 
     @Nested
-    class Review {
+    class GetWordReviews {
+        @Test
+        @DisplayName("단어 학습 결과를 조회할 수 있다.")
+        void getWordReviews() {
+            User user = userRepository.save(createUser(1L, 1L, "박정수", "솔", "test@naver.com", "google"));
+            Study study = studyRepository.save(buildStudy(2L, 1L));
+            wordRepository.saveAll(getBackendWordList(study.getId()));
+            userStudyRepository.save(UserStudy.builder().userId(user.getId()).study(study).scheduledAt(LocalDateTime.now()).build());
+            wordService.review(study.getId(), user.getId(), List.of(1L, 2L), List.of(3L, 4L, 5L));
+
+            // when
+            WordReviewResponse wordReviews = wordService.getWordReviews(study.getId(), user.getId());
+
+            // then
+            assertThat(wordReviews.getCorrectIds()).containsExactly(1L, 2L);
+            assertThat(wordReviews.getIncorrectIds()).containsExactly(3L, 4L, 5L);
+        }
+    }
+
+    @Nested
+    class WordReviews {
         @Test
         @DisplayName("단어 학습에 대한 결과를 저장할 수 있다.")
         void review() {

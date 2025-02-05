@@ -3,6 +3,7 @@ package se.sowl.devlyapi.word.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import se.sowl.devlyapi.study.dto.WordReviewResponse;
 import se.sowl.devlyapi.word.dto.WordListOfStudyResponse;
 import se.sowl.devlyapi.word.exception.NotAssignmentWordStudyException;
 import se.sowl.devlydomain.user.domain.UserStudy;
@@ -30,6 +31,13 @@ public class WordService {
         }
         List<Word> allByStudy = wordRepository.findAllByStudyId(studyId);
         return WordListOfStudyResponse.from(allByStudy);
+    }
+
+    public WordReviewResponse getWordReviews(Long studyId, Long userId) {
+        List<WordReview> wordReviews = wordReviewRepository.findAllByStudyIdAndUserId(studyId, userId);
+        List<Long> correctIds = wordReviews.stream().filter(WordReview::isCorrect).map(WordReview::getWordId).toList();
+        List<Long> incorrectIds = wordReviews.stream().filter(review -> !review.isCorrect()).map(WordReview::getWordId).toList();
+        return new WordReviewResponse(correctIds, incorrectIds);
     }
 
     @Transactional

@@ -18,3 +18,6 @@ operation::study-tasks[snippets='http-response']
 === [단어] 학습 결과 제출
 operation::word-review[snippets='http-request']
 operation::word-review[snippets='http-response']
+=== [단어] 학습 결과 조회
+operation::get-word-reviews[snippets='http-request']
+operation::get-word-reviews[snippets='http-response']
