@@ -77,7 +77,7 @@ public class StudyAssignmentJobConfig {
 
     @Bean
     @StepScope
-    public ItemReader<UserStudy> completedStudiesReader() {
+    protected ItemReader<UserStudy> completedStudiesReader() {
         LocalDateTime yesterday = LocalDate.now().minusDays(1).atStartOfDay();
         LocalDateTime todayStart = LocalDate.now().atStartOfDay();
         return new QuerydslPagingItemReader<>(
@@ -88,7 +88,7 @@ public class StudyAssignmentJobConfig {
 
     @Bean
     @StepScope
-    public ItemProcessor<UserStudy, UserStudy> nextStudyProcessor() {
+    protected ItemProcessor<UserStudy, UserStudy> nextStudyProcessor() {
         List<Study> orderedStudies = studyRepository.findAllByOrderById();
         Map<Long, Study> studyMap = orderedStudies.stream().collect(Collectors.toMap(Study::getId, s -> s));
         return completed -> {
