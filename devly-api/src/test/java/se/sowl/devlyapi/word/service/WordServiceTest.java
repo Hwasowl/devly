@@ -77,7 +77,7 @@ class WordServiceTest extends MediumTest {
     @Nested
     class Review {
         @Test
-        @DisplayName("단어를 정답과 오답으로 구분하여 리뷰할 수 있다.")
+        @DisplayName("단어 학습에 대한 결과를 저장할 수 있다.")
         void review() {
             // given
             User user = userRepository.save(createUser(1L, 1L, "박정수", "솔", "test@naver.com", "google"));
@@ -91,6 +91,35 @@ class WordServiceTest extends MediumTest {
             // then
             wordReviewRepository.findAll().forEach(review -> {
                 if (review.getWordId() == 1L || review.getWordId() == 2L) {
+                    assertThat(review.isCorrect()).isTrue();
+                } else {
+                    assertThat(review.isCorrect()).isFalse();
+                }
+            });
+        }
+
+        @Test
+        @DisplayName("이미 학습한 단어 학습에 대한 결과를 업데이트 할 수 있다.")
+        void updateReview() {
+            // given
+            User user = userRepository.save(createUser(1L, 1L, "박정수", "솔", "test@naver.com", "google"));
+            Study study = studyRepository.save(buildStudy(2L, 1L));
+            wordRepository.saveAll(getBackendWordList(study.getId()));
+            userStudyRepository.save(UserStudy.builder().userId(user.getId()).study(study).scheduledAt(LocalDateTime.now()).build());
+
+            List<Long> correctIds = List.of(1L, 2L);
+            List<Long> incorrectIds = List.of(3L, 4L, 5L);
+            wordService.review(study.getId(), user.getId(), correctIds, incorrectIds);
+
+            List<Long> newCorrectIds = List.of(1L, 2L, 3L, 4L);
+            List<Long> newIncorrectIds = List.of(5L);
+
+            // when
+            wordService.review(study.getId(), user.getId(), newCorrectIds, newIncorrectIds);
+
+            // then
+            wordReviewRepository.findAll().forEach(review -> {
+                if (review.getWordId() == 1L || review.getWordId() == 2L || review.getWordId() == 3L || review.getWordId() == 4L) {
                     assertThat(review.isCorrect()).isTrue();
                 } else {
                     assertThat(review.isCorrect()).isFalse();

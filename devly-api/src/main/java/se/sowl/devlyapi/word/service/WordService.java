@@ -2,6 +2,7 @@ package se.sowl.devlyapi.word.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import se.sowl.devlyapi.word.dto.WordListOfStudyResponse;
 import se.sowl.devlyapi.word.exception.NotAssignmentWordStudyException;
 import se.sowl.devlydomain.user.domain.UserStudy;
@@ -31,12 +32,26 @@ public class WordService {
         return WordListOfStudyResponse.from(allByStudy);
     }
 
+    @Transactional
     public void review (Long studyId, Long userId, List<Long> correctIds, List<Long> incorrectIds) {
+        boolean exists = wordReviewRepository.existsByStudyIdAndUserId(studyId, userId);
+        if (!exists) {
+            initialWordReviews(studyId, userId, correctIds, incorrectIds);
+        } else {
+            updateWordReviews(studyId, userId, incorrectIds);
+        }
+    }
+
+    private void updateWordReviews(Long studyId, Long userId, List<Long> incorrectIds) {
+        wordReviewRepository.findAllByStudyIdAndUserId(studyId, userId).stream()
+            .filter(review -> !incorrectIds.contains(review.getWordId()))
+            .forEach(WordReview::markAsCorrect);
+    }
+
+    private void initialWordReviews(Long studyId, Long userId, List<Long> correctIds, List<Long> incorrectIds) {
         List<WordReview> reviews = new ArrayList<>();
-        reviews.addAll(correctIds.stream()
-            .map(id -> WordReview.builder().userId(userId).studyId(studyId).wordId(id).correct(true).build()).toList());
-        reviews.addAll(incorrectIds.stream()
-            .map(id -> WordReview.builder().userId(userId).studyId(studyId).wordId(id).correct(false).build()).toList());
+        reviews.addAll(correctIds.stream().map(id -> WordReview.of(userId, id, studyId, true)).toList());
+        reviews.addAll(incorrectIds.stream().map(id -> WordReview.of(userId, id, studyId, false)).toList());
         wordReviewRepository.saveAll(reviews);
     }
 }

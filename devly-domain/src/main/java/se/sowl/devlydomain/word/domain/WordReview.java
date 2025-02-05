@@ -34,4 +34,19 @@ public class WordReview extends BaseTimeEntity {
         this.studyId = studyId;
         this.correct = correct;
     }
+
+    public static WordReview of(Long userId, Long wordId, Long studyId, boolean correct) {
+        return WordReview.builder()
+            .userId(userId)
+            .wordId(wordId)
+            .studyId(studyId)
+            .correct(correct)
+            .build();
+    }
+
+    public void markAsCorrect() {
+        if (!this.correct) {
+            this.correct = true;
+        }
+    }
 }
