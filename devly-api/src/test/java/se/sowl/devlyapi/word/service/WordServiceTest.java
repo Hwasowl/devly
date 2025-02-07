@@ -110,6 +110,13 @@ class WordServiceTest extends MediumTest {
             wordService.review(study.getId(), user.getId(), List.of(1L, 2L), List.of(3L, 4L, 5L));
 
             // then
+            userStudyRepository.findByUserIdAndStudyId(user.getId(), study.getId())
+                .ifPresentOrElse(
+                    UserStudy::complete,
+                    () -> {
+                        throw new NotAssignmentWordStudyException();
+                    }
+                );
             wordReviewRepository.findAll().forEach(review -> {
                 if (review.getWordId() == 1L || review.getWordId() == 2L) {
                     assertThat(review.isCorrect()).isTrue();
