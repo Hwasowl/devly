@@ -33,6 +33,6 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         ResponseCookie cookie = ResponseCookie.from("accessToken", tokenResponse.getAccessToken())
             .httpOnly(true).secure(true).sameSite("Lax").path("/").maxAge(Duration.ofHours(6)).build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-        getRedirectStrategy().sendRedirect(request, response, frontUrl);
+        getRedirectStrategy().sendRedirect(request, response, frontUrl + "/auth/callback?accessToken=" + cookie.getValue());
     }
 }

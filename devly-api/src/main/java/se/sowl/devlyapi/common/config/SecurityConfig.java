@@ -17,7 +17,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import se.sowl.devlyapi.common.jwt.JwtAuthenticationFilter;
-import se.sowl.devlyapi.common.jwt.JwtTokenProvider;
 import se.sowl.devlyapi.common.oauth.CustomOAuth2AuthorizationRequestResolver;
 import se.sowl.devlyapi.common.oauth.handler.OAuth2AuthenticationFailureHandler;
 import se.sowl.devlyapi.common.oauth.handler.OAuth2AuthenticationSuccessHandler;
@@ -34,7 +33,7 @@ public class SecurityConfig {
     private final OAuthService oAuthService;
     private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
     private final OAuth2AuthenticationFailureHandler oauth2AuthenticationFailureHandler;
-    private final JwtTokenProvider tokenProvider;
+    private final JwtAuthenticationFilter authenticationFilter;
 
     @Value("${front.url}")
     private String frontendUrl;
@@ -43,14 +42,13 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(AbstractHttpConfigurer::disable)
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .addFilterBefore(new JwtAuthenticationFilter(tokenProvider), UsernamePasswordAuthenticationFilter.class)
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/docs/**").permitAll()
                 .requestMatchers("/oauth2/**").permitAll()
                 .requestMatchers("/login/oauth2/code/**").permitAll()
-                .requestMatchers("/api/auth/**").authenticated()
                 .requestMatchers("/api/users/**").authenticated()
                 .requestMatchers("/api/words/**").authenticated()
                 .requestMatchers("/api/studies/**").authenticated()
@@ -66,7 +64,8 @@ public class SecurityConfig {
                 .successHandler(oAuth2AuthenticationSuccessHandler)
                 .failureHandler(oauth2AuthenticationFailureHandler)
                 .userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint.userService(oAuthService))
-            );
+            )
+            .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);  // 필터 위치 변경
         return http.build();
     }
 
