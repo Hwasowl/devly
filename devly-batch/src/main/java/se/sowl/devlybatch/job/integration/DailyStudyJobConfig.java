@@ -37,7 +37,7 @@ public class DailyStudyJobConfig {
             .build();
     }
 
-    @Scheduled(cron = "0 * * * * *")
+    @Scheduled(cron = "0 0 1 * * *")
     public void runJob() {
         try {
             JobParameters jobParameters = new JobParametersBuilder()
