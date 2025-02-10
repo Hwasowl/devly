@@ -63,7 +63,7 @@ public class WordService {
     private void updateUserStudyComplete(Long studyId, Long userId) {
         long count = wordReviewRepository.countByCorrectAndStudyIdAndUserId(true, studyId, userId);
         if (count == StudyTypeEnum.WORD.getRequiredCount()) {
-            userStudyRepository.findByUserIdAndStudyId(studyId, userId)
+            userStudyRepository.findByUserIdAndStudyId(userId, studyId)
                 .ifPresentOrElse(UserStudy::complete, () -> {
                     throw new NotAssignmentWordStudyException();
                 }
