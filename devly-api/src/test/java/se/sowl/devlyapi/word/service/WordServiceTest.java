@@ -154,5 +154,60 @@ class WordServiceTest extends MediumTest {
                 }
             });
         }
+
+        @Test
+        @DisplayName("만약 처음 제출한 답이 모두 정답이라면 단어 학습을 완료 처리한다.")
+        void complete() {
+            // given
+            User user = userRepository.save(createUser(1L, 1L, "박정수", "솔", "test@naver.com", "google"));
+            Study study = studyRepository.save(buildStudy(2L, 1L));
+            wordRepository.saveAll(getBackendWordList(study.getId()));
+            userStudyRepository.save(UserStudy.builder().userId(user.getId()).study(study).scheduledAt(LocalDateTime.now()).build());
+
+            List<Long> correctIds = List.of(1L, 2L, 3L, 4L, 5L);
+            List<Long> incorrectIds = List.of();
+            wordService.review(study.getId(), user.getId(), correctIds, incorrectIds);
+
+            // when
+            wordService.review(study.getId(), user.getId(), correctIds, incorrectIds);
+
+            // then
+            userStudyRepository.findByUserIdAndStudyId(user.getId(), study.getId())
+                .ifPresentOrElse(
+                    UserStudy::complete,
+                    () -> {
+                        throw new NotAssignmentWordStudyException();
+                    }
+                );
+        }
+
+        @Test
+        @DisplayName("이미 학습한 단어 학습에 대한 결과를 업데이트 할 수 있다.")
+        void completeAfterInitial() {
+            // given
+            User user = userRepository.save(createUser(1L, 1L, "박정수", "솔", "test@naver.com", "google"));
+            Study study = studyRepository.save(buildStudy(2L, 1L));
+            wordRepository.saveAll(getBackendWordList(study.getId()));
+            userStudyRepository.save(UserStudy.builder().userId(user.getId()).study(study).scheduledAt(LocalDateTime.now()).build());
+
+            List<Long> correctIds = List.of(1L, 2L);
+            List<Long> incorrectIds = List.of(3L, 4L, 5L);
+            wordService.review(study.getId(), user.getId(), correctIds, incorrectIds);
+
+            List<Long> newCorrectIds = List.of(1L, 2L, 3L, 4L, 5L);
+            List<Long> newIncorrectIds = List.of();
+
+            // when
+            wordService.review(study.getId(), user.getId(), newCorrectIds, newIncorrectIds);
+
+            // then
+            userStudyRepository.findByUserIdAndStudyId(user.getId(), study.getId())
+                .ifPresentOrElse(
+                    UserStudy::complete,
+                    () -> {
+                        throw new NotAssignmentWordStudyException();
+                    }
+                );
+        }
     }
 }

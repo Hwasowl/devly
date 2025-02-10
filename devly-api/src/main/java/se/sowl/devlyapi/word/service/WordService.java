@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import se.sowl.devlyapi.study.dto.WordReviewResponse;
 import se.sowl.devlyapi.word.dto.WordListOfStudyResponse;
 import se.sowl.devlyapi.word.exception.NotAssignmentWordStudyException;
+import se.sowl.devlydomain.study.domain.StudyTypeEnum;
 import se.sowl.devlydomain.study.repository.StudyRepository;
 import se.sowl.devlydomain.user.domain.UserStudy;
 import se.sowl.devlydomain.user.repository.UserStudyRepository;
@@ -46,19 +47,28 @@ public class WordService {
     public void review (Long studyId, Long userId, List<Long> correctIds, List<Long> incorrectIds) {
         boolean exists = wordReviewRepository.existsByStudyIdAndUserId(studyId, userId);
         if (!exists) {
-            UserStudy userStudy = userStudyRepository.findByUserIdAndStudyId(userId, studyId)
-                .orElseThrow(NotAssignmentWordStudyException::new);
-            userStudy.complete();
             initialWordReviews(studyId, userId, correctIds, incorrectIds);
         } else {
             updateWordReviews(studyId, userId, incorrectIds);
         }
+        updateUserStudyComplete(studyId, userId);
     }
 
     private void updateWordReviews(Long studyId, Long userId, List<Long> incorrectIds) {
         wordReviewRepository.findAllByStudyIdAndUserId(studyId, userId).stream()
             .filter(review -> !incorrectIds.contains(review.getWordId()))
             .forEach(WordReview::markAsCorrect);
+    }
+
+    private void updateUserStudyComplete(Long studyId, Long userId) {
+        long count = wordReviewRepository.countByCorrectAndStudyIdAndUserId(true, studyId, userId);
+        if (count == StudyTypeEnum.WORD.getRequiredCount()) {
+            userStudyRepository.findByUserIdAndStudyId(studyId, userId)
+                .ifPresentOrElse(UserStudy::complete, () -> {
+                    throw new NotAssignmentWordStudyException();
+                }
+            );
+        }
     }
 
     private void initialWordReviews(Long studyId, Long userId, List<Long> correctIds, List<Long> incorrectIds) {

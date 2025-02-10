@@ -7,5 +7,8 @@ import java.util.List;
 
 public interface WordReviewRepository extends JpaRepository<WordReview, Long> {
     boolean existsByStudyIdAndUserId(Long studyId, Long userId);
+
     List<WordReview> findAllByStudyIdAndUserId(Long studyId, Long userId);
+
+    long countByCorrectAndStudyIdAndUserId(boolean correct, Long studyId, Long userId);
 }
