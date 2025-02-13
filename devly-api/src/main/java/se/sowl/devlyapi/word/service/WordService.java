@@ -5,7 +5,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import se.sowl.devlyapi.study.dto.WordReviewResponse;
 import se.sowl.devlyapi.word.dto.WordListOfStudyResponse;
+import se.sowl.devlyapi.word.exception.AlreadyExistsReviewException;
 import se.sowl.devlyapi.word.exception.NotAssignmentWordStudyException;
+import se.sowl.devlyapi.word.exception.ReviewNotFoundException;
 import se.sowl.devlydomain.study.domain.StudyTypeEnum;
 import se.sowl.devlydomain.user.domain.UserStudy;
 import se.sowl.devlydomain.user.repository.UserStudyRepository;
@@ -42,22 +44,29 @@ public class WordService {
     }
 
     @Transactional
-    public void review (Long studyId, Long userId, List<Long> correctIds, List<Long> incorrectIds) {
-        boolean exists = wordReviewRepository.existsByStudyIdAndUserId(studyId, userId);
-        if (!exists) {
-            initialWordReviews(studyId, userId, correctIds, incorrectIds);
-        } else {
-            updateWordReviews(studyId, userId, incorrectIds);
+    public void createReview(Long studyId, Long userId, List<Long> correctIds, List<Long> incorrectIds) {
+        if (wordReviewRepository.existsByStudyIdAndUserId(studyId, userId)) {
+            throw new AlreadyExistsReviewException();
         }
+        initialWordReviews(studyId, userId, correctIds, incorrectIds);
         updateUserStudyComplete(studyId, userId);
     }
 
-    private void updateWordReviews(Long studyId, Long userId, List<Long> incorrectIds) {
-        if (incorrectIds.isEmpty()) {
+    @Transactional
+    public void updateReview(Long studyId, Long userId, List<Long> correctIds) {
+        if (!wordReviewRepository.existsByStudyIdAndUserId(studyId, userId)) {
+            throw new ReviewNotFoundException();
+        }
+        updateWordReviews(studyId, userId, correctIds);
+        updateUserStudyComplete(studyId, userId);
+    }
+
+    private void updateWordReviews(Long studyId, Long userId, List<Long> correctIds) {
+        if (correctIds.isEmpty()) {
             return;
         }
         wordReviewRepository.findAllByStudyIdAndUserId(studyId, userId).stream()
-            .filter(review -> !incorrectIds.contains(review.getWordId()))
+            .filter(review -> correctIds.contains(review.getWordId()))
             .forEach(WordReview::markAsCorrect);
     }
 

@@ -5,10 +5,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import se.sowl.devlyapi.common.CommonResponse;
+import se.sowl.devlyapi.study.dto.UpdateWordReviewRequest;
 import se.sowl.devlyapi.study.dto.UserStudyTasksResponse;
 import se.sowl.devlyapi.study.dto.WordReviewResponse;
 import se.sowl.devlyapi.study.service.StudyService;
-import se.sowl.devlyapi.study.dto.WordReviewRequest;
+import se.sowl.devlyapi.study.dto.CreateWordReviewRequest;
 import se.sowl.devlyapi.word.service.WordService;
 import se.sowl.devlydomain.user.domain.CustomOAuth2User;
 
@@ -35,8 +36,15 @@ public class StudyController {
 
     @PostMapping("/{studyId}/words/review")
     @PreAuthorize("isAuthenticated()")
-    public CommonResponse<Void> review(@AuthenticationPrincipal CustomOAuth2User customOAuth2User, @PathVariable Long studyId, @RequestBody WordReviewRequest request) {
-        wordService.review(studyId, customOAuth2User.getUserId(), request.getCorrectIds(), request.getIncorrectIds());
+    public CommonResponse<Void> createReview(@AuthenticationPrincipal CustomOAuth2User customOAuth2User, @PathVariable Long studyId, @RequestBody CreateWordReviewRequest request) {
+        wordService.createReview(studyId, customOAuth2User.getUserId(), request.getCorrectIds(), request.getIncorrectIds());
+        return CommonResponse.ok();
+    }
+
+    @PutMapping("/{studyId}/words/review")
+    @PreAuthorize("isAuthenticated()")
+    public CommonResponse<Void> updateReview(@AuthenticationPrincipal CustomOAuth2User customOAuth2User, @PathVariable Long studyId, @RequestBody UpdateWordReviewRequest request) {
+        wordService.updateReview(studyId, customOAuth2User.getUserId(), request.getCorrectIds());
         return CommonResponse.ok();
     }
 }

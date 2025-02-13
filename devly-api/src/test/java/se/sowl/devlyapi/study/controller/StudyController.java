@@ -31,6 +31,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.put;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
@@ -110,8 +111,8 @@ class StudyControllerTest {
     }
 
     @Test
-    @DisplayName("단어 학습에 대한 오답 정보를 제출한다")
-    void reviewTest() throws Exception {
+    @DisplayName("단어 학습에 대한 오답 노트를 제출한다")
+    void createReviewTest() throws Exception {
         // given
         String request = "{\"correctIds\":[1,2],\"incorrectIds\":[3,4,5]}";
 
@@ -120,7 +121,30 @@ class StudyControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(request))
             .andExpect(status().isOk())
-            .andDo(document("word-review",
+            .andDo(document("create-word-review",
+                pathParameters(
+                    parameterWithName("studyId").description("학습 ID")
+                ),
+                responseFields(
+                    fieldWithPath("code").description("응답 코드"),
+                    fieldWithPath("message").description("응답 메시지"),
+                    fieldWithPath("result").description("결과")
+                )
+            ));
+    }
+
+    @Test
+    @DisplayName("단어 학습에 대한 오답 노트를 갱신한다.")
+    void updateReviewTest() throws Exception {
+        // given
+        String request = "{\"correctIds\":[1,2]}";
+
+        // when & then
+        mockMvc.perform(put("/api/studies/{studyId}/words/review", 1L)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(request))
+            .andExpect(status().isOk())
+            .andDo(document("update-word-review",
                 pathParameters(
                     parameterWithName("studyId").description("학습 ID")
                 ),

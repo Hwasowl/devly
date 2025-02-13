@@ -15,9 +15,12 @@ operation::word-list[snippets='http-response']
 === 학습 상태 조회
 operation::study-tasks[snippets='http-request']
 operation::study-tasks[snippets='http-response']
-=== [단어] 학습 결과 제출
-operation::word-review[snippets='http-request']
-operation::word-review[snippets='http-response']
+=== [단어] 학습 결과 생성
+operation::create-word-review[snippets='http-request']
+operation::create-word-review[snippets='http-response']
+=== [단어] 학습 결과 업데이트
+operation::update-word-review[snippets='http-request']
+operation::update-word-review[snippets='http-response']
 === [단어] 학습 결과 조회
 operation::get-word-reviews[snippets='http-request']
 operation::get-word-reviews[snippets='http-response']
