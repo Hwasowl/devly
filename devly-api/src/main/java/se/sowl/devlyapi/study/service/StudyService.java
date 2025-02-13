@@ -3,7 +3,6 @@ package se.sowl.devlyapi.study.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import se.sowl.devlyapi.study.dto.UserStudyTaskGroup;
 import se.sowl.devlyapi.study.dto.UserStudyTasksResponse;
 import se.sowl.devlyapi.study.exception.DuplicateInitialUserStudiesException;
 import se.sowl.devlydomain.study.domain.Study;
@@ -27,13 +26,16 @@ public class StudyService {
     private final UserStudyRepository userStudyRepository;
     private final StudyTypeRepository studyTypeRepository;
     private final StudyRepository studyRepository;
+    private final StudyReviewService studyReviewService;
+
 
     public UserStudyTasksResponse getUserStudyTasks(Long userId) {
         List<UserStudy> userStudies = userStudyRepository.findLatestByUserIdWithStudyType(userId);
         Map<Long, StudyType> studyTypeMap = studyTypeRepository.findAll()
             .stream()
             .collect(Collectors.toMap(StudyType::getId, Function.identity()));
-        UserStudyTaskGroup taskGroup = UserStudyTaskGroup.from(userStudies, studyTypeMap);
+        Map<StudyTypeEnum, Long> reviewCounts = studyReviewService.calculateReviewCounts(userStudies, studyTypeMap);
+        UserStudyTaskGroup taskGroup = UserStudyTaskGroup.from(userStudies, studyTypeMap, reviewCounts);
         return taskGroup.toUserStudyTasksResponse();
     }
 
@@ -42,7 +44,6 @@ public class StudyService {
         isStudyInitialed(user);
         try {
             List<StudyType> studyTypes = studyTypeRepository.findAll();
-            System.out.println("studyTypes = " + studyTypes.size());
             for (StudyTypeEnum typeEnum : StudyTypeEnum.values()) {
                 StudyType studyType = validateStudyType(typeEnum, studyTypes);
                 Study study = studyRepository.findFirstByTypeId(studyType.getId())
