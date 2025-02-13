@@ -53,6 +53,9 @@ public class WordService {
     }
 
     private void updateWordReviews(Long studyId, Long userId, List<Long> incorrectIds) {
+        if (incorrectIds.isEmpty()) {
+            return;
+        }
         wordReviewRepository.findAllByStudyIdAndUserId(studyId, userId).stream()
             .filter(review -> !incorrectIds.contains(review.getWordId()))
             .forEach(WordReview::markAsCorrect);

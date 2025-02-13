@@ -182,6 +182,34 @@ class WordServiceTest extends MediumTest {
         }
 
         @Test
+        @DisplayName("리뷰 후 맞춘게 없는 경우 현 상태를 유지해야 한다.")
+        void noAnswerAfterReview() {
+            // given
+            User user = userRepository.save(createUser(1L, 1L, "박정수", "솔", "test@naver.com", "google"));
+            Study study = studyRepository.save(buildStudy(2L, 1L));
+            wordRepository.saveAll(getBackendWordList(study.getId()));
+            userStudyRepository.save(UserStudy.builder().userId(user.getId()).study(study).scheduledAt(LocalDateTime.now()).build());
+
+            List<Long> correctIds = List.of(1L, 2L);
+            List<Long> incorrectIds = List.of(3L, 4L, 5L);
+            wordService.review(study.getId(), user.getId(), correctIds, incorrectIds);
+
+            // when
+            List<Long> newCorrectIds = List.of();
+            List<Long> newIncorrectIds = List.of();
+            wordService.review(study.getId(), user.getId(), newCorrectIds, newIncorrectIds);
+
+            // then
+            wordReviewRepository.findAll().forEach(review -> {
+                if (review.getWordId() == 1L || review.getWordId() == 2L) {
+                    assertThat(review.isCorrect()).isTrue();
+                } else {
+                    assertThat(review.isCorrect()).isFalse();
+                }
+            });
+        }
+
+        @Test
         @DisplayName("이미 학습한 단어 학습에 대한 결과를 업데이트 할 수 있다.")
         void completeAfterInitial() {
             // given
