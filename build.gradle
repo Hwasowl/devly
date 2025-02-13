@@ -30,8 +30,13 @@ subprojects {
         testImplementation 'org.springframework.boot:spring-boot-starter-test'
     }
 
-    tasks.named('bootJar') {
-        enabled = false
+    if (project.name != 'devly-batch') {
+        tasks.named('bootJar') {
+            enabled = false
+        }
+        tasks.named('jar') {
+            enabled = true
+        }
     }
 
     tasks.named('jar') {

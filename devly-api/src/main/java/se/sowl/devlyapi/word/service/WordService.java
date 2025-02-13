@@ -7,7 +7,6 @@ import se.sowl.devlyapi.study.dto.WordReviewResponse;
 import se.sowl.devlyapi.word.dto.WordListOfStudyResponse;
 import se.sowl.devlyapi.word.exception.NotAssignmentWordStudyException;
 import se.sowl.devlydomain.study.domain.StudyTypeEnum;
-import se.sowl.devlydomain.study.repository.StudyRepository;
 import se.sowl.devlydomain.user.domain.UserStudy;
 import se.sowl.devlydomain.user.repository.UserStudyRepository;
 import se.sowl.devlydomain.word.domain.Word;
@@ -25,7 +24,6 @@ public class WordService {
     private final WordRepository wordRepository;
     private final WordReviewRepository wordReviewRepository;
     private final UserStudyRepository userStudyRepository;
-    private final StudyRepository studyRepository;
 
     public WordListOfStudyResponse getList(Long userId, Long studyId) {
         Optional<UserStudy> optionalUserStudy = userStudyRepository.findByUserIdAndStudyId(userId, studyId);
