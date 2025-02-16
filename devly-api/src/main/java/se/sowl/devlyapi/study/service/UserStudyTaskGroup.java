@@ -37,36 +37,24 @@ public class UserStudyTaskGroup {
                     findUserStudyByType(userStudies, studyTypeMap, type),
                     reviewCounts.getOrDefault(type, type.getRequiredCount())
                 ),
-                (existing, replacement) -> existing,
-                () -> new EnumMap<>(StudyTypeEnum.class)
+                (existing, replacement) -> existing, () -> new EnumMap<>(StudyTypeEnum.class)
             ));
     }
 
-    private UserStudy findUserStudyByType(
-        List<UserStudy> userStudies,
-        Map<Long, StudyType> studyTypeMap,
-        StudyTypeEnum type
-    ) {
+    private UserStudy findUserStudyByType(List<UserStudy> userStudies, Map<Long, StudyType> studyTypeMap, StudyTypeEnum type) {
         return userStudies.stream()
-            .filter(us -> type == StudyTypeEnum.fromValue(
-                studyTypeMap.get(us.getStudy().getTypeId()).getName()
-            ))
+            .filter(us -> type == StudyTypeEnum.fromValue(studyTypeMap.get(us.getStudy().getTypeId()).getName()))
             .findFirst()
             .orElse(null);
     }
 
-    private UserStudyTask createTaskForType(
-        UserStudy userStudy,
-        Long requiredCount
-    ) {
+    private UserStudyTask createTaskForType(UserStudy userStudy, Long requiredCount) {
         if (userStudy == null) {
             return new UserStudyTask(null, 0L, false);
         }
-
         if (userStudy.isCompleted()) {
             return new UserStudyTask(userStudy.getStudy().getId(), 0L, true);
         }
-
         return new UserStudyTask(userStudy.getStudy().getId(), requiredCount, false);
     }
 
