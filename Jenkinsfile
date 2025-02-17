@@ -127,10 +127,16 @@ EOL
                     // domain 모듈은 항상 빌드
                     sh './gradlew :devly-domain:clean :devly-domain:build -x test'
                     if (params.BUILD_API) {
-                        sh './gradlew :devly-api:clean :devly-api:build -x test -Pspring.profiles.active=prod'
+                        sh '''
+                            mkdir -p devly-api/build/generated-snippets
+                            ./gradlew :devly-api:clean :devly-api:build -x test -x asciidoctor -Pspring.profiles.active=prod
+                        '''
                     }
                     if (params.BUILD_BATCH) {
-                        sh './gradlew :devly-batch:clean :devly-batch:build -x test -Pspring.profiles.active=prod'
+                        sh '''
+                            mkdir -p devly-batch/build/generated-snippets
+                            ./gradlew :devly-batch:clean :devly-batch:build -x test -x asciidoctor -Pspring.profiles.active=prod
+                        '''
                     }
                 }
             }
