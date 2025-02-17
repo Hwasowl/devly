@@ -26,6 +26,26 @@ pipeline {
 
         stage('Prepare Configuration') {
             parallel {
+                stage('Domain Config') {
+                    steps {
+                        sh '''
+                            mkdir -p devly-domain/src/main/resources
+                            cat > devly-domain/src/main/resources/application.yml << EOL
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/devly?useUnicode=yes&characterEncoding=UTF-8&allowMultiQueries=true&serverTimezone=Asia/Seoul
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+    hibernate:
+      ddl-auto: none
+EOL
+                        '''
+                    }
+                },
                 stage('API Config') {
                     when { expression { params.BUILD_API } }
                     steps {
@@ -83,6 +103,8 @@ EOL
             steps {
                 script {
                     sh 'chmod +x ./gradlew'
+                    // domain 모듈은 항상 빌드
+                    sh './gradlew :devly-domain:clean :devly-domain:build -x test'
                     if (params.BUILD_API) {
                         sh './gradlew :devly-api:clean :devly-api:build -x test'
                     }
