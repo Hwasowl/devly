@@ -15,12 +15,32 @@ pipeline {
     parameters {
         booleanParam(name: 'BUILD_API', defaultValue: true, description: 'Build and deploy API server?')
         booleanParam(name: 'BUILD_BATCH', defaultValue: true, description: 'Build and deploy Batch server?')
+        string(name: 'BRANCH', defaultValue: 'main', description: 'Branch to build')
+        string(name: 'COMMIT_HASH', defaultValue: '', description: 'Specific commit hash to build (leave empty for latest)')
     }
 
     stages {
         stage('Checkout') {
             steps {
-                checkout scm
+                script {
+                    if (params.COMMIT_HASH) {
+                        checkout([$class: 'GitSCM',
+                            branches: [[name: params.COMMIT_HASH]],
+                            userRemoteConfigs: [[
+                                url: 'https://github.com/your-repo/devly.git',
+                                credentialsId: 'github-token'
+                            ]]
+                        ])
+                    } else {
+                        checkout([$class: 'GitSCM',
+                            branches: [[name: "refs/heads/${params.BRANCH}"]],
+                            userRemoteConfigs: [[
+                                url: 'https://github.com/your-repo/devly.git',
+                                credentialsId: 'github-token'
+                            ]]
+                        ])
+                    }
+                }
             }
         }
 
@@ -45,7 +65,7 @@ spring:
 EOL
                         '''
                     }
-                },
+                }
                 stage('API Config') {
                     when { expression { params.BUILD_API } }
                     steps {
@@ -85,7 +105,7 @@ spring:
     active: prod
   datasource:
     url: jdbc:mysql://localhost:3306/devly?useUnicode=yes&characterEncoding=UTF-8&allowMultiQueries=true&serverTimezone=Asia/Seoul
-    username: springuser
+    username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
 openai:
   api-url: https://api.openai.com
@@ -106,10 +126,10 @@ EOL
                     // domain 모듈은 항상 빌드
                     sh './gradlew :devly-domain:clean :devly-domain:build -x test'
                     if (params.BUILD_API) {
-                        sh './gradlew :devly-api:clean :devly-api:build -x test'
+                        sh './gradlew :devly-api:clean :devly-api:build -x test -Pspring.profiles.active=prod'
                     }
                     if (params.BUILD_BATCH) {
-                        sh './gradlew :devly-batch:clean :devly-batch:build -x test'
+                        sh './gradlew :devly-batch:clean :devly-batch:build -x test -Pspring.profiles.active=prod'
                     }
                 }
             }
@@ -119,37 +139,16 @@ EOL
             steps {
                 script {
                     if (params.BUILD_API) {
-                        sh './gradlew :devly-api:test'
+                        sh './gradlew :devly-api:test -Pspring.profiles.active=prod'
                     }
                     if (params.BUILD_BATCH) {
-                        sh './gradlew :devly-batch:test'
+                        sh './gradlew :devly-batch:test -Pspring.profiles.active=prod'
                     }
                 }
             }
             post {
                 always {
                     junit '**/build/test-results/test/*.xml'
-                }
-            }
-        }
-
-        stage('Docker Build') {
-            parallel {
-                stage('API Server Docker Build') {
-                    when { expression { params.BUILD_API } }
-                    steps {
-                        script {
-                            docker.build("${DOCKER_IMAGE_API}:${VERSION}", "-f devly-api/Dockerfile .")
-                        }
-                    }
-                }
-                stage('Batch Server Docker Build') {
-                    when { expression { params.BUILD_BATCH } }
-                    steps {
-                        script {
-                            docker.build("${DOCKER_IMAGE_BATCH}:${VERSION}", "-f devly-batch/Dockerfile .")
-                        }
-                    }
                 }
             }
         }
@@ -169,6 +168,7 @@ EOL
                                     -e SPRING_PROFILES_ACTIVE=prod \
                                     --restart unless-stopped \
                                     ${DOCKER_IMAGE_API}:${VERSION}
+                                docker logs -f ${DOCKER_IMAGE_API} > api.log 2>&1 &
                             """
                         }
                     }
@@ -186,6 +186,7 @@ EOL
                                     -e SPRING_PROFILES_ACTIVE=prod \
                                     --restart unless-stopped \
                                     ${DOCKER_IMAGE_BATCH}:${VERSION}
+                                docker logs -f ${DOCKER_IMAGE_BATCH} > batch.log 2>&1 &
                             """
                         }
                     }
