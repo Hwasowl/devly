@@ -39,7 +39,7 @@ logging:
     org.springframework.jdbc.core: TRACE
 openai:
   api-url: https://api.openai.com
-  api-key: d
+  api-key:
 server:
   port: 8090
 ---
@@ -49,7 +49,7 @@ spring:
       on-profile: prod
   batch:
     jdbc:
-      initialize-schema: always
+      initialize-schema: never
   h2:
     console:
       enabled: true
@@ -65,4 +65,9 @@ spring:
         show_sql: true
     hibernate:
       ddl-auto: none
+openai:
+  api-url: https://api.openai.com
+  api-key:
+server:
+  port: 8090
 ---
