@@ -1,5 +1,10 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'docker:dind'
+            args '-u root:root --privileged'
+        }
+    }
 
     environment {
         DOCKER_IMAGE_API = "devly-api"
@@ -11,6 +16,8 @@ pipeline {
         DB_PASSWORD = credentials('DB_PASSWORD')
         JWT_SECRET = credentials('JWT_SECRET_KEY')
         OPENAI_API_KEY = credentials('OPENAI_API_KEY')
+        JAVA_HOME = '/usr/lib/jvm/java-21-openjdk'
+        PATH = "$JAVA_HOME/bin:${env.PATH}"
     }
 
     parameters {
@@ -21,6 +28,17 @@ pipeline {
     }
 
     stages {
+        stage('Setup Java') {
+            steps {
+                sh '''
+                    apk add --no-cache openjdk21
+                    export JAVA_HOME=/usr/lib/jvm/java-21-openjdk
+                    export PATH=$JAVA_HOME/bin:$PATH
+                    java -version
+                '''
+            }
+        }
+
         stage('Checkout') {
             steps {
                 script {
@@ -121,6 +139,7 @@ EOL
                 script {
                     sh 'chmod +x ./gradlew'
                     sh './gradlew :devly-domain:clean :devly-domain:build -x test'
+                    sh './gradlew :devly-external:clean :devly-external:build -x test'
                     if (params.BUILD_API) {
                         sh '''
                             mkdir -p devly-api/build/generated-snippets
@@ -132,6 +151,25 @@ EOL
                             mkdir -p devly-batch/build/generated-snippets
                             ./gradlew :devly-batch:clean :devly-batch:build -x test -x asciidoctor -Pspring.profiles.active=prod
                         '''
+                    }
+                }
+            }
+        }
+
+        stage('Build Docker Images') {
+            steps {
+                script {
+                    if (params.BUILD_API) {
+                        sh """
+                            docker build -t ${DOCKER_IMAGE_API}:${VERSION} \
+                            -f devly-api/Dockerfile .
+                        """
+                    }
+                    if (params.BUILD_BATCH) {
+                        sh """
+                            docker build -t ${DOCKER_IMAGE_BATCH}:${VERSION} \
+                            -f devly-batch/Dockerfile .
+                        """
                     }
                 }
             }
