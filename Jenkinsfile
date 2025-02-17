@@ -6,6 +6,7 @@ pipeline {
         DOCKER_IMAGE_BATCH = "devly-batch"
         VERSION = "${BUILD_NUMBER}"
         GOOGLE_CREDS = credentials('GOOGLE_CLIENT')
+        DB_USERNAME = credentials('DB_USERNAME')
         DB_PASSWORD = credentials('DB_PASSWORD')
         JWT_SECRET = credentials('JWT_SECRET_KEY')
         OPENAI_API_KEY = credentials('OPENAI_API_KEY')
@@ -36,7 +37,7 @@ spring:
     active: prod
   datasource:
     url: jdbc:mysql://localhost:3306/devly?useUnicode=yes&characterEncoding=UTF-8&allowMultiQueries=true&serverTimezone=Asia/Seoul
-    username: springuser
+    username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
   security:
     oauth2:
