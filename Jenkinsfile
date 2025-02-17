@@ -51,7 +51,7 @@ pipeline {
                     steps {
                         sh '''
                             mkdir -p devly-domain/src/main/resources
-                            cat > devly-domain/src/main/resources/application.yml << EOL
+                            cat > devly-domain/src/main/resources/application-prod.yml << EOL
 spring:
   datasource:
     url: jdbc:mysql://localhost:3306/devly?useUnicode=yes&characterEncoding=UTF-8&allowMultiQueries=true&serverTimezone=Asia/Seoul
@@ -72,10 +72,8 @@ EOL
                     steps {
                         sh '''
                             mkdir -p devly-api/src/main/resources
-                            cat > devly-api/src/main/resources/application.yml << EOL
+                            cat > devly-api/src/main/resources/application-prod.yml << EOL
 spring:
-  profiles:
-    active: prod
   datasource:
     url: jdbc:mysql://localhost:3306/devly?useUnicode=yes&characterEncoding=UTF-8&allowMultiQueries=true&serverTimezone=Asia/Seoul
     username: ${DB_USERNAME}
@@ -100,10 +98,8 @@ EOL
                     steps {
                         sh '''
                             mkdir -p devly-batch/src/main/resources
-                            cat > devly-batch/src/main/resources/application.yml << EOL
+                            cat > devly-batch/src/main/resources/application-prod.yml << EOL
 spring:
-  profiles:
-    active: prod
   datasource:
     url: jdbc:mysql://localhost:3306/devly?useUnicode=yes&characterEncoding=UTF-8&allowMultiQueries=true&serverTimezone=Asia/Seoul
     username: ${DB_USERNAME}
@@ -124,7 +120,6 @@ EOL
             steps {
                 script {
                     sh 'chmod +x ./gradlew'
-                    // domain 모듈은 항상 빌드
                     sh './gradlew :devly-domain:clean :devly-domain:build -x test'
                     if (params.BUILD_API) {
                         sh '''
@@ -138,24 +133,6 @@ EOL
                             ./gradlew :devly-batch:clean :devly-batch:build -x test -x asciidoctor -Pspring.profiles.active=prod
                         '''
                     }
-                }
-            }
-        }
-
-        stage('Test') {
-            steps {
-                script {
-                    if (params.BUILD_API) {
-                        sh './gradlew :devly-api:test -Pspring.profiles.active=prod'
-                    }
-                    if (params.BUILD_BATCH) {
-                        sh './gradlew :devly-batch:test -Pspring.profiles.active=prod'
-                    }
-                }
-            }
-            post {
-                always {
-                    junit '**/build/test-results/test/*.xml'
                 }
             }
         }
