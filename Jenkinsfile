@@ -5,7 +5,8 @@ pipeline {
         DOCKER_IMAGE_API = "devly-api"
         DOCKER_IMAGE_BATCH = "devly-batch"
         VERSION = "${BUILD_NUMBER}"
-        GOOGLE_CREDS = credentials('GOOGLE_CLIENT')
+        GOOGLE_CLIENT_ID = credentials('GOOGLE_CLIENT_ID')
+        GOOGLE_CLIENT_SECRET = credentials('GOOGLE_CLIENT_SECRET')
         DB_USERNAME = credentials('DB_USERNAME')
         DB_PASSWORD = credentials('DB_PASSWORD')
         JWT_SECRET = credentials('JWT_SECRET_KEY')
@@ -84,8 +85,8 @@ spring:
       client:
         registration:
           google:
-            client-id: ${GOOGLE_CREDS_USR}
-            client-secret: ${GOOGLE_CREDS_PSW}
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
 jwt:
   secret-key: ${JWT_SECRET}
 front:
