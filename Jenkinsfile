@@ -28,7 +28,7 @@ pipeline {
                         checkout([$class: 'GitSCM',
                             branches: [[name: params.COMMIT_HASH]],
                             userRemoteConfigs: [[
-                                url: 'https://github.com/your-repo/devly.git',
+                                url: 'https://github.com/Hwasowl/devly.git',
                                 credentialsId: 'github-token'
                             ]]
                         ])
@@ -36,7 +36,7 @@ pipeline {
                         checkout([$class: 'GitSCM',
                             branches: [[name: "refs/heads/${params.BRANCH}"]],
                             userRemoteConfigs: [[
-                                url: 'https://github.com/your-repo/devly.git',
+                                url: 'https://github.com/Hwasowl/devly.git',
                                 credentialsId: 'github-token'
                             ]]
                         ])
