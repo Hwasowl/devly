@@ -12,6 +12,7 @@ pipeline {
         VERSION = "${BUILD_NUMBER}"
         GOOGLE_CLIENT_ID = credentials('GOOGLE_CLIENT_ID')
         GOOGLE_CLIENT_SECRET = credentials('GOOGLE_CLIENT_SECRET')
+        DB_URL = credentials('DB_URL')
         DB_USERNAME = credentials('DB_USERNAME')
         DB_PASSWORD = credentials('DB_PASSWORD')
         JWT_SECRET = credentials('JWT_SECRET_KEY')
@@ -72,7 +73,7 @@ pipeline {
                             cat > devly-domain/src/main/resources/application-prod.yml << EOL
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/devly?useUnicode=yes&characterEncoding=UTF-8&allowMultiQueries=true&serverTimezone=Asia/Seoul
+    url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
   jpa:
@@ -93,7 +94,7 @@ EOL
                             cat > devly-api/src/main/resources/application-prod.yml << EOL
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/devly?useUnicode=yes&characterEncoding=UTF-8&allowMultiQueries=true&serverTimezone=Asia/Seoul
+    url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
   security:
@@ -119,7 +120,7 @@ EOL
                             cat > devly-batch/src/main/resources/application-prod.yml << EOL
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/devly?useUnicode=yes&characterEncoding=UTF-8&allowMultiQueries=true&serverTimezone=Asia/Seoul
+    url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
 openai:
