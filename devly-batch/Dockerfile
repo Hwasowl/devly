@@ -1,7 +1,7 @@
-FROM eclipse-temurin:17-jre-alpine
+FROM openjdk:21-jdk
 WORKDIR /app
 COPY devly-batch/build/libs/*.jar app.jar
 COPY devly-domain/build/libs/*.jar domain.jar
 COPY devly-external/build/libs/*.jar external.jar
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT exec java -jar -Dspring.profiles.active=prod app.jar
 EXPOSE 8090
