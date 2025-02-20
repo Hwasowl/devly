@@ -106,8 +106,6 @@ spring:
             client-secret: ${GOOGLE_CLIENT_SECRET}
 jwt:
   secret-key: ${JWT_SECRET}
-front:
-  url: https://devly.kro.kr
 EOL
                         '''
                     }
