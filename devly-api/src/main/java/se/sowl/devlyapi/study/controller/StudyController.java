@@ -5,11 +5,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import se.sowl.devlyapi.common.CommonResponse;
-import se.sowl.devlyapi.study.dto.UpdateWordReviewRequest;
+import se.sowl.devlyapi.word.dto.UpdateWordReviewRequest;
 import se.sowl.devlyapi.study.dto.UserStudyTasksResponse;
-import se.sowl.devlyapi.study.dto.WordReviewResponse;
+import se.sowl.devlyapi.word.dto.WordReviewResponse;
 import se.sowl.devlyapi.study.service.StudyService;
-import se.sowl.devlyapi.study.dto.CreateWordReviewRequest;
+import se.sowl.devlyapi.word.dto.CreateWordReviewRequest;
 import se.sowl.devlyapi.word.service.WordService;
 import se.sowl.devlydomain.user.domain.CustomOAuth2User;
 

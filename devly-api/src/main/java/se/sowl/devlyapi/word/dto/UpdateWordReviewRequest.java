@@ -1,4 +1,4 @@
-package se.sowl.devlyapi.study.dto;
+package se.sowl.devlyapi.word.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

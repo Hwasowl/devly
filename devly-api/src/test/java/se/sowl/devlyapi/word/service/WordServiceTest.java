@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import se.sowl.devlyapi.MediumTest;
-import se.sowl.devlyapi.study.dto.WordReviewResponse;
+import se.sowl.devlyapi.word.dto.WordReviewResponse;
 import se.sowl.devlyapi.word.dto.WordListOfStudyResponse;
 import se.sowl.devlyapi.word.dto.WordResponse;
 import se.sowl.devlyapi.word.exception.NotAssignmentWordStudyException;
