@@ -10,6 +10,7 @@ import se.sowl.devlyapi.study.dto.UserStudyTasksResponse;
 import se.sowl.devlyapi.word.dto.WordReviewResponse;
 import se.sowl.devlyapi.study.service.StudyService;
 import se.sowl.devlyapi.word.dto.CreateWordReviewRequest;
+import se.sowl.devlyapi.word.service.WordReviewService;
 import se.sowl.devlyapi.word.service.WordService;
 import se.sowl.devlydomain.user.domain.CustomOAuth2User;
 
@@ -19,6 +20,7 @@ import se.sowl.devlydomain.user.domain.CustomOAuth2User;
 public class StudyController {
     private final StudyService studyService;
     private final WordService wordService;
+    private final WordReviewService wordReviewService;
 
     @GetMapping("/tasks")
     @PreAuthorize("isAuthenticated()")
@@ -37,14 +39,14 @@ public class StudyController {
     @PostMapping("/{studyId}/words/review")
     @PreAuthorize("isAuthenticated()")
     public CommonResponse<Void> createReview(@AuthenticationPrincipal CustomOAuth2User customOAuth2User, @PathVariable Long studyId, @RequestBody CreateWordReviewRequest request) {
-        wordService.createReview(studyId, customOAuth2User.getUserId(), request.getCorrectIds(), request.getIncorrectIds());
+        wordReviewService.createReview(studyId, customOAuth2User.getUserId(), request.getCorrectIds(), request.getIncorrectIds());
         return CommonResponse.ok();
     }
 
     @PutMapping("/{studyId}/words/review")
     @PreAuthorize("isAuthenticated()")
     public CommonResponse<Void> updateReview(@AuthenticationPrincipal CustomOAuth2User customOAuth2User, @PathVariable Long studyId, @RequestBody UpdateWordReviewRequest request) {
-        wordService.updateReview(studyId, customOAuth2User.getUserId(), request.getCorrectIds());
+        wordReviewService.updateReview(studyId, customOAuth2User.getUserId(), request.getCorrectIds());
         return CommonResponse.ok();
     }
 }

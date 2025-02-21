@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import se.sowl.devlyapi.common.jwt.JwtTokenProvider;
 import se.sowl.devlyapi.oauth.service.OAuthService;
 import se.sowl.devlyapi.study.service.StudyService;
+import se.sowl.devlyapi.word.service.WordReviewService;
 import se.sowl.devlyapi.word.service.WordService;
 import se.sowl.devlydomain.developer.domain.DeveloperType;
 import se.sowl.devlydomain.developer.repository.DeveloperTypeRepository;
@@ -39,6 +40,9 @@ public abstract class MediumTest {
 
     @Autowired
     protected WordService wordService;
+
+    @Autowired
+    protected WordReviewService wordReviewService;
 
     @Autowired
     protected WordRepository wordRepository;
