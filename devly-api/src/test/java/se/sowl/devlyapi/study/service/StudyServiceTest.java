@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 @SpringBootTest
-class StudyServiceTest extends MediumTest {
+class UserStudyServiceTest extends MediumTest {
 
     @Autowired
     private DeveloperTypeRepository developerTypeRepository;
@@ -52,7 +52,7 @@ class StudyServiceTest extends MediumTest {
         }
 
         // when
-        UserStudyTasksResponse tasks = studyService.getUserStudyTasks(user.getId());
+        UserStudyTasksResponse tasks = userStudyService.getUserStudyTasks(user.getId());
 
         // then
         assertThat(tasks.getWord()).isNotNull();

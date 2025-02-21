@@ -53,7 +53,7 @@ public class WordReviewService {
         if (count == StudyTypeEnum.WORD.getRequiredCount()) {
             userStudyRepository.findByUserIdAndStudyId(userId, studyId)
                 .ifPresentOrElse(UserStudy::complete, () -> {
-                        throw new NotAssignmentWordStudyException();
+                        throw new NotAssignmentWordStudyException(); // TODO: should make validate manager class? cannot assign exception in domain entity
                     }
                 );
         }

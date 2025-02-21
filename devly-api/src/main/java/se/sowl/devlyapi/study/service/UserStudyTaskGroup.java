@@ -7,11 +7,9 @@ import se.sowl.devlydomain.study.domain.StudyType;
 import se.sowl.devlydomain.study.domain.StudyTypeEnum;
 import se.sowl.devlydomain.user.domain.UserStudy;
 
-import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Getter
 public class UserStudyTaskGroup {
@@ -22,40 +20,15 @@ public class UserStudyTaskGroup {
         Map<Long, StudyType> studyTypeMap,
         Map<StudyTypeEnum, Long> reviewCounts
     ) {
-        return new UserStudyTaskGroup(userStudies, studyTypeMap, reviewCounts);
-    }
+        Map<StudyTypeEnum, UserStudyTask> taskMap = new EnumMap<>(StudyTypeEnum.class);
 
-    private UserStudyTaskGroup(
-        List<UserStudy> userStudies,
-        Map<Long, StudyType> studyTypeMap,
-        Map<StudyTypeEnum, Long> reviewCounts
-    ) {
-        this.tasks = Arrays.stream(StudyTypeEnum.values())
-            .collect(Collectors.toMap(
-                type -> type,
-                type -> createTaskForType(
-                    findUserStudyByType(userStudies, studyTypeMap, type),
-                    reviewCounts.getOrDefault(type, type.getRequiredCount())
-                ),
-                (existing, replacement) -> existing, () -> new EnumMap<>(StudyTypeEnum.class)
-            ));
-    }
-
-    private UserStudy findUserStudyByType(List<UserStudy> userStudies, Map<Long, StudyType> studyTypeMap, StudyTypeEnum type) {
-        return userStudies.stream()
-            .filter(us -> type == StudyTypeEnum.fromValue(studyTypeMap.get(us.getStudy().getTypeId()).getName()))
-            .findFirst()
-            .orElse(null);
-    }
-
-    private UserStudyTask createTaskForType(UserStudy userStudy, Long requiredCount) {
-        if (userStudy == null) {
-            return new UserStudyTask(null, 0L, false);
+        for (StudyTypeEnum type : StudyTypeEnum.values()) {
+            UserStudy userStudy = findUserStudyByType(userStudies, studyTypeMap, type);
+            Long requiredCount = reviewCounts.getOrDefault(type, type.getRequiredCount());
+            taskMap.put(type, createTaskForType(userStudy, requiredCount));
         }
-        if (userStudy.isCompleted()) {
-            return new UserStudyTask(userStudy.getStudy().getId(), 0L, true);
-        }
-        return new UserStudyTask(userStudy.getStudy().getId(), requiredCount, false);
+
+        return new UserStudyTaskGroup(taskMap);
     }
 
     public UserStudyTasksResponse toUserStudyTasksResponse() {
@@ -65,5 +38,26 @@ public class UserStudyTaskGroup {
             tasks.get(StudyTypeEnum.PULL_REQUEST),
             tasks.get(StudyTypeEnum.DISCUSSION)
         );
+    }
+
+    private UserStudyTaskGroup(Map<StudyTypeEnum, UserStudyTask> tasks) {
+        this.tasks = tasks;
+    }
+
+    private static UserStudy findUserStudyByType(List<UserStudy> userStudies, Map<Long, StudyType> studyTypeMap, StudyTypeEnum type) {
+        return userStudies.stream()
+            .filter(us -> type == StudyTypeEnum.fromValue(studyTypeMap.get(us.getStudy().getTypeId()).getName()))
+            .findFirst()
+            .orElse(null);
+    }
+
+    private static UserStudyTask createTaskForType(UserStudy userStudy, Long requiredCount) {
+        if (userStudy == null) {
+            return new UserStudyTask(null, 0L, false);
+        }
+        if (userStudy.isCompleted()) {
+            return new UserStudyTask(userStudy.getStudy().getId(), 0L, true);
+        }
+        return new UserStudyTask(userStudy.getStudy().getId(), requiredCount, false);
     }
 }

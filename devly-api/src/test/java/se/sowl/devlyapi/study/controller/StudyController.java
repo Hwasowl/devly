@@ -17,7 +17,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import se.sowl.devlyapi.study.dto.UserStudyTask;
 import se.sowl.devlyapi.study.dto.UserStudyTasksResponse;
-import se.sowl.devlyapi.study.service.StudyService;
+import se.sowl.devlyapi.study.service.UserStudyService;
 import se.sowl.devlyapi.word.dto.WordReviewResponse;
 import se.sowl.devlyapi.word.service.WordService;
 import se.sowl.devlydomain.user.domain.CustomOAuth2User;
@@ -43,7 +43,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 class StudyControllerTest {
     @MockBean
-    private StudyService studyService;
+    private UserStudyService userStudyService;
 
     @MockBean
     private WordService wordService;
@@ -78,7 +78,7 @@ class StudyControllerTest {
             wordTask, knowledgeTask, prTask, discussionTask
         );
 
-        when(studyService.getUserStudyTasks(anyLong())).thenReturn(response);
+        when(userStudyService.getUserStudyTasks(anyLong())).thenReturn(response);
 
         // when & then
         mockMvc.perform(get("/api/studies/tasks")

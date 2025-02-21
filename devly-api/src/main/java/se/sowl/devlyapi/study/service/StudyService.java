@@ -3,8 +3,8 @@ package se.sowl.devlyapi.study.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import se.sowl.devlyapi.study.dto.UserStudyTasksResponse;
 import se.sowl.devlyapi.study.exception.DuplicateInitialUserStudiesException;
+import se.sowl.devlyapi.study.exception.StudyNotFoundException;
 import se.sowl.devlydomain.study.domain.Study;
 import se.sowl.devlydomain.study.domain.StudyType;
 import se.sowl.devlydomain.study.domain.StudyTypeEnum;
@@ -15,9 +15,6 @@ import se.sowl.devlydomain.user.domain.UserStudy;
 import se.sowl.devlydomain.user.repository.UserStudyRepository;
 
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -26,18 +23,6 @@ public class StudyService {
     private final UserStudyRepository userStudyRepository;
     private final StudyTypeRepository studyTypeRepository;
     private final StudyRepository studyRepository;
-    private final StudyReviewService studyReviewService;
-
-
-    public UserStudyTasksResponse getUserStudyTasks(Long userId) {
-        List<UserStudy> userStudies = userStudyRepository.findLatestByUserIdWithStudyType(userId);
-        Map<Long, StudyType> studyTypeMap = studyTypeRepository.findAll()
-            .stream()
-            .collect(Collectors.toMap(StudyType::getId, Function.identity()));
-        Map<StudyTypeEnum, Long> reviewCounts = studyReviewService.calculateReviewCounts(userStudies, studyTypeMap);
-        UserStudyTaskGroup taskGroup = UserStudyTaskGroup.from(userStudies, studyTypeMap, reviewCounts);
-        return taskGroup.toUserStudyTasksResponse();
-    }
 
     @Transactional
     public void initialUserStudies(User user) {
@@ -66,7 +51,7 @@ public class StudyService {
         return studyTypes.stream()
             .filter(st -> st.getName().equals(typeEnum.getValue()))
             .findFirst()
-            .orElseThrow(() -> new IllegalStateException("Study type not found: " + typeEnum.getValue()));
+            .orElseThrow(() -> new StudyNotFoundException("Study type not found: " + typeEnum.getValue()));
     }
 }
 

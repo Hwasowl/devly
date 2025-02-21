@@ -5,6 +5,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import se.sowl.devlyapi.common.CommonResponse;
+import se.sowl.devlyapi.study.service.UserStudyService;
 import se.sowl.devlyapi.word.dto.UpdateWordReviewRequest;
 import se.sowl.devlyapi.study.dto.UserStudyTasksResponse;
 import se.sowl.devlyapi.word.dto.WordReviewResponse;
@@ -21,11 +22,12 @@ public class StudyController {
     private final StudyService studyService;
     private final WordService wordService;
     private final WordReviewService wordReviewService;
+    private final UserStudyService userStudyService;
 
     @GetMapping("/tasks")
     @PreAuthorize("isAuthenticated()")
     public CommonResponse<UserStudyTasksResponse> getUserStudyTasks(@AuthenticationPrincipal CustomOAuth2User user) {
-        UserStudyTasksResponse response = studyService.getUserStudyTasks(user.getUserId());
+        UserStudyTasksResponse response = userStudyService.getUserStudyTasks(user.getUserId());
         return CommonResponse.ok(response);
     }
 
