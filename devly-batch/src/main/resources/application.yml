@@ -47,6 +47,10 @@ spring:
   config:
     activate:
       on-profile: prod
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+      - org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
   batch:
     jdbc:
       initialize-schema: never
