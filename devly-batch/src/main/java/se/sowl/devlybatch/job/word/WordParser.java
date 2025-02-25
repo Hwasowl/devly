@@ -1,25 +1,16 @@
 package se.sowl.devlybatch.job.word;
 
+import org.springframework.stereotype.Component;
+import se.sowl.devlybatch.common.gpt.GptParser;
 import se.sowl.devlydomain.word.domain.Word;
-import se.sowl.devlyexternal.client.gpt.dto.GPTResponse;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class WordParser {
+@Component
+public class WordParser extends GptParser<Word> {
 
-    public static List<Word> parseGPTResponse(GPTResponse response, Long studyId) {
-        List<Word> words = new ArrayList<>();
-        String content = response.getContent();
-        String[] entries = content.split("---");
-        for (String entry : entries) {
-            if (entry.trim().isEmpty()) continue;
-            add(studyId, entry, words);
-        }
-        return words;
-    }
-
-    private static void add(Long studyId, String entry, List<Word> words) {
+    @Override
+    protected void parseEntity(Long studyId, String entry, List<Word> words) {
         String[] lines = entry.trim().split("\n");
         words.add(Word.builder()
             .studyId(studyId).word(lines[0].replace("단어: ", "").trim())
