@@ -31,6 +31,8 @@ public class WordCreationJobConfig {
     private final StudyRepository studyRepository;
     private final WordRepository wordRepository;
     private final GPTClient gptClient;
+    private final WordParser wordParser;
+    private final WordPromptManager wordPromptManager;
 
     @Bean
     public Job wordCreationJob(JobRepository jobRepository, Step createWordsStep) {
@@ -63,7 +65,7 @@ public class WordCreationJobConfig {
     }
 
     private void saveWordsOf(Study study, GPTResponse response) {
-        List<Word> words = WordParser.parseGPTResponse(response, study.getId());
+        List<Word> words = wordParser.parseGPTResponse(response, study.getId());
         wordRepository.saveAll(words);
     }
 
@@ -78,8 +80,8 @@ public class WordCreationJobConfig {
 
     private String generatePrompt(Long developerTypeId, List<String> excludeWords) {
         StringBuilder prompt = new StringBuilder();
-        WordPromptManager.addDefaultPrompt(developerTypeId, prompt);
-        WordPromptManager.addExcludePrompt(excludeWords, prompt);
+        wordPromptManager.addPrompt(developerTypeId, prompt);
+        wordPromptManager.addExcludePrompt(excludeWords, prompt);
         return prompt.toString();
     }
 }

@@ -1,4 +1,4 @@
-package se.sowl.devlybatch.job.study;
+package se.sowl.devlybatch.job.userStudy;
 
 
 import jakarta.persistence.EntityManagerFactory;

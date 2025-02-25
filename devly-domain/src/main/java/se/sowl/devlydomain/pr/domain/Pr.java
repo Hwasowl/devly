@@ -16,4 +16,6 @@ public class Pr extends BaseTimeEntity {
     private Long id;
 
     private String title;
+
+    private String labels;
 }

@@ -43,7 +43,8 @@ class WordParserTest {
         );
 
         // when
-        List<Word> words = WordParser.parseGPTResponse(gptResponse, studyId);
+        WordParser wordParser = new WordParser();
+        List<Word> words = wordParser.parseGPTResponse(gptResponse, studyId);
 
         // then
         assertThat(words).hasSize(2);
