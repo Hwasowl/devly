@@ -1,13 +1,13 @@
 package se.sowl.devlybatch.job.word;
 
 import org.springframework.stereotype.Component;
-import se.sowl.devlybatch.common.gpt.GptParser;
+import se.sowl.devlybatch.common.gpt.GptContentProcessor;
 import se.sowl.devlydomain.word.domain.Word;
 
 import java.util.List;
 
 @Component
-public class WordParser extends GptParser<Word> {
+public class WordContentProcessor extends GptContentProcessor<Word> {
 
     @Override
     protected void parseEntity(Long studyId, String entry, List<Word> words) {

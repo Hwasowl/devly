@@ -14,7 +14,6 @@ import se.sowl.devlydomain.study.repository.StudyRepository;
 import se.sowl.devlydomain.word.domain.Word;
 import se.sowl.devlydomain.word.repository.WordRepository;
 import se.sowl.devlyexternal.client.gpt.GPTClient;
-import se.sowl.devlyexternal.client.gpt.dto.GPTRequest;
 import se.sowl.devlyexternal.client.gpt.dto.GPTResponse;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.job.builder.JobBuilder;
@@ -31,7 +30,7 @@ public class WordCreationJobConfig {
     private final StudyRepository studyRepository;
     private final WordRepository wordRepository;
     private final GPTClient gptClient;
-    private final WordParser wordParser;
+    private final WordContentProcessor wordContentProcessor;
     private final WordPromptManager wordPromptManager;
 
     @Bean
@@ -47,9 +46,8 @@ public class WordCreationJobConfig {
             .tasklet((contribution, chunkContext) -> {
                 List<Study> todayStudies = getTodayStudies();
                 for (Study study : todayStudies) {
-                    List<String> recentWords = wordRepository.findWordsByCreatedAtAfter(LocalDateTime.now().minusDays(7))
-                        .stream().map(Word::getWord).collect(Collectors.toList());
-                    GPTResponse response = gptClient.generate(createGPTRequest(study.getDeveloperTypeId(), recentWords));
+                    String wordGeneratePrompt = createWordGeneratePrompt(study);
+                    GPTResponse response = gptClient.generate(wordContentProcessor.createGPTRequest(wordGeneratePrompt));
                     saveWordsOf(study, response);
                     log.info("Created words for study {}", study.getId());
                 }
@@ -64,18 +62,15 @@ public class WordCreationJobConfig {
         return studyRepository.findByCreatedAtBetween(startOfDay, endOfDay);
     }
 
-    private void saveWordsOf(Study study, GPTResponse response) {
-        List<Word> words = wordParser.parseGPTResponse(response, study.getId());
-        wordRepository.saveAll(words);
+    private String createWordGeneratePrompt(Study study) {
+        List<String> recentWords = wordRepository.findWordsByCreatedAtAfter(LocalDateTime.now().minusDays(7))
+            .stream().map(Word::getWord).collect(Collectors.toList());
+        return generatePrompt(study.getDeveloperTypeId(), recentWords);
     }
 
-    private GPTRequest createGPTRequest(Long developerTypeId, List<String> excludeWords) {
-        String prompt = generatePrompt(developerTypeId, excludeWords);
-        return GPTRequest.builder()
-            .model("gpt-4")
-            .messages(List.of(GPTRequest.Message.builder().role("user").content(prompt).build()))
-            .temperature(0.7)
-            .build();
+    private void saveWordsOf(Study study, GPTResponse response) {
+        List<Word> words = wordContentProcessor.parseGPTResponse(response, study.getId());
+        wordRepository.saveAll(words);
     }
 
     private String generatePrompt(Long developerTypeId, List<String> excludeWords) {
