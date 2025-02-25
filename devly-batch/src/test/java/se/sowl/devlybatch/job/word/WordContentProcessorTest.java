@@ -13,7 +13,7 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 @SpringBootTest
 @ActiveProfiles("test")
-class WordParserTest {
+class WordContentProcessorTest {
 
     @Test
     @DisplayName("단어 GPT 응답을 파싱 처리 해 Word 엔티티로 변환한다")
@@ -43,7 +43,7 @@ class WordParserTest {
         );
 
         // when
-        WordParser wordParser = new WordParser();
+        WordContentProcessor wordParser = new WordContentProcessor();
         List<Word> words = wordParser.parseGPTResponse(gptResponse, studyId);
 
         // then
