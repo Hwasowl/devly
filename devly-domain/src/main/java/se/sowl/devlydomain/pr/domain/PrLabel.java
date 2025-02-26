@@ -2,27 +2,22 @@ package se.sowl.devlydomain.pr.domain;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import se.sowl.devlydomain.common.BaseTimeEntity;
 
 @Entity
-@Table(name = "pr")
+@Table(name = "pr_labels")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Pr extends BaseTimeEntity {
+public class PrLabel extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String title;
+    private Long prId;
 
-    private String description;
-
-    @Builder
-    public Pr(String title, String description) {
-        this.title = title;
-        this.description = description;
+    public PrLabel(Long prId) {
+        this.prId = prId;
     }
 }
