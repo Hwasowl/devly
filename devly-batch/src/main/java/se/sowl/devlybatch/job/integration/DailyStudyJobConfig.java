@@ -22,15 +22,17 @@ public class DailyStudyJobConfig {
     private final JobLauncher jobLauncher;
     private final Step createStudiesStep;
     private final Step createWordsStep;
+    private final Step createPrStep;
     private final Step assignStudiesStep;
+
 
     @Bean
     public Job dailyStudyJob() {
         return new JobBuilder("dailyStudyJob", jobRepository)
             .start(createStudiesStep)
             .on("COMPLETED").to(createWordsStep)
-            .from(createWordsStep).on("COMPLETED").end()
-            .from(assignStudiesStep).on("*").fail()
+            .from(createWordsStep).on("COMPLETED").to(createPrStep)
+            .from(createPrStep).on("COMPLETED").to(assignStudiesStep)
             .from(assignStudiesStep).on("COMPLETED").end()
             .from(assignStudiesStep).on("*").fail()
             .end()
