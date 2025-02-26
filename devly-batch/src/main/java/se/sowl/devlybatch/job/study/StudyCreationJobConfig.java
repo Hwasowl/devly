@@ -15,10 +15,12 @@ import org.springframework.transaction.PlatformTransactionManager;
 import se.sowl.devlydomain.developer.domain.DeveloperType;
 import se.sowl.devlydomain.developer.repository.DeveloperTypeRepository;
 import se.sowl.devlydomain.study.domain.Study;
+import se.sowl.devlydomain.study.domain.StudyType;
 import se.sowl.devlydomain.study.repository.StudyRepository;
+import se.sowl.devlydomain.study.repository.StudyTypeRepository;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Configuration
@@ -26,6 +28,7 @@ import java.util.stream.Collectors;
 public class StudyCreationJobConfig {
 
     private final StudyRepository studyRepository;
+    private final StudyTypeRepository studyTypeRepository;
     private final DeveloperTypeRepository developerTypeRepository;
 
     @Bean
@@ -49,9 +52,17 @@ public class StudyCreationJobConfig {
     }
 
     private List<Study> generateStudiesOf(List<DeveloperType> devTypes) {
-        // TODO : ADD MORE TYPE. NOW JUST HARD CODED 1L(WORD) TOPIC
-        return devTypes.stream()
-            .map(type -> Study.builder().typeId(1L).developerTypeId(type.getId()).build())
-            .collect(Collectors.toList());
+        // TODO: 스터디 배치 잡이 모두 구현 완료된다면 수정해야 한다. 현재 일부만 구현되었으므로 하드코딩으로 구현
+        List<StudyType> studyTypes = studyTypeRepository.findAll();
+        StudyType wordType = studyTypes.stream().filter(studyType -> studyType.getName().equals("word")).findFirst().get();
+        StudyType prType = studyTypes.stream().filter(studyType -> studyType.getName().equals("pr")).findFirst().get();
+        List<Study> types = new ArrayList<>(List.of());
+        for(DeveloperType devType : devTypes) {
+            Study study = Study.builder().typeId(wordType.getId()).developerTypeId(devType.getId()).build();
+            Study prStudy = Study.builder().typeId(prType.getId()).developerTypeId(devType.getId()).build();
+            types.add(study);
+            types.add(prStudy);
+        }
+        return types;
     }
 }
