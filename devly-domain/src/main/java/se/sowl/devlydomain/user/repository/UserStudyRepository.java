@@ -18,15 +18,13 @@ public interface UserStudyRepository extends JpaRepository<UserStudy, Long>, Use
     @Query("""
     SELECT us FROM UserStudy us
     JOIN FETCH us.study s
-    JOIN StudyType st ON s.typeId = st.id
     WHERE us.userId = :userId
     AND us.id IN (
         SELECT MAX(us2.id)
         FROM UserStudy us2
-        JOIN Study s2 ON us2.study.id = s2.id
-        JOIN StudyType st2 ON s2.typeId = st2.id
+        JOIN us2.study s2
         WHERE us2.userId = :userId
-        GROUP BY st2.id
+        GROUP BY s2.typeId
     )
     """)
     List<UserStudy> findLatestByUserIdWithStudyType(@Param("userId") Long userId);
