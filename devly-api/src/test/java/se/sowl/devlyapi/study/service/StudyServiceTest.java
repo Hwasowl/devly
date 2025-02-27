@@ -56,7 +56,7 @@ class UserStudyServiceTest extends MediumTest {
 
         // then
         assertThat(tasks.getWord()).isNotNull();
-        assertThat(tasks.getWord().getTotal()).isEqualTo(4);
+        assertThat(tasks.getWord().getTotal()).isEqualTo(1);
         assertThat(tasks.getWord().isCompleted()).isFalse();
         assertThat(tasks.getKnowledge()).isNotNull();
         assertThat(tasks.getKnowledge().isCompleted()).isTrue();

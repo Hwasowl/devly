@@ -23,7 +23,7 @@ public class StudyReviewService {
             if (type == StudyTypeEnum.WORD && !userStudy.isCompleted()) {
                 boolean hasReviews = wordReviewRepository.existsByStudyIdAndUserId(userStudy.getStudy().getId(), userStudy.getUserId());
                 counts.put(type, hasReviews
-                    ? wordReviewRepository.countByUserIdAndStudyIdAndCorrectIsTrue(userStudy.getUserId(), userStudy.getStudy().getId())
+                    ? wordReviewRepository.countByUserIdAndStudyIdAndCorrectIsFalse(userStudy.getUserId(), userStudy.getStudy().getId())
                     : type.getRequiredCount()
                 );
             }

@@ -12,5 +12,5 @@ public interface WordReviewRepository extends JpaRepository<WordReview, Long> {
 
     long countByCorrectAndStudyIdAndUserId(boolean correct, Long studyId, Long userId);
 
-    Long countByUserIdAndStudyIdAndCorrectIsTrue(Long userId, Long studyId);
+    Long countByUserIdAndStudyIdAndCorrectIsFalse(Long userId, Long studyId);
 }
