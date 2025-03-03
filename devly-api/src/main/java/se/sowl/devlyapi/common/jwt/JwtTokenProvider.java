@@ -29,10 +29,8 @@ public class JwtTokenProvider {
 
     public TokenResponse createToken(Authentication authentication) {
         CustomOAuth2User user = (CustomOAuth2User) authentication.getPrincipal();
-
         String accessToken = createAccessToken(user);
         String refreshToken = createRefreshToken(user);
-
         return new TokenResponse(accessToken, refreshToken);
     }
 
