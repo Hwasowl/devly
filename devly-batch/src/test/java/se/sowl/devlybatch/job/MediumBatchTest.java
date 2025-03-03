@@ -26,6 +26,9 @@ public abstract class MediumBatchTest {
     protected Job wordCreationJob;
 
     @Autowired
+    protected Job prCreationJob;
+
+    @Autowired
     protected JobRepository jobRepository;
 
     protected List<DeveloperType> getDeveloperTypes() {

@@ -15,6 +15,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 import se.sowl.devlybatch.config.TestBatchConfig;
 import se.sowl.devlybatch.job.MediumBatchTest;
+import se.sowl.devlybatch.job.userStudy.StudyAssignmentJobConfig;
 import se.sowl.devlydomain.study.domain.Study;
 import se.sowl.devlydomain.study.repository.StudyRepository;
 import se.sowl.devlydomain.user.domain.UserStudy;
