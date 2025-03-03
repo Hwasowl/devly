@@ -2,21 +2,24 @@ package se.sowl.devlybatch.job.word;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
+import se.sowl.devlybatch.job.word.utils.WordContentProcessor;
+import se.sowl.devlybatch.job.word.utils.WordPromptManager;
+import se.sowl.devlybatch.service.StudyService;
 import se.sowl.devlydomain.study.domain.Study;
-import se.sowl.devlydomain.study.repository.StudyRepository;
+import se.sowl.devlydomain.study.domain.StudyTypeEnum;
 import se.sowl.devlydomain.word.domain.Word;
 import se.sowl.devlydomain.word.repository.WordRepository;
 import se.sowl.devlyexternal.client.gpt.GPTClient;
 import se.sowl.devlyexternal.client.gpt.dto.GPTResponse;
-import org.springframework.batch.core.Job;
-import org.springframework.batch.core.job.builder.JobBuilder;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,7 +30,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class WordCreationJobConfig {
 
-    private final StudyRepository studyRepository;
+    private final StudyService studyService;
     private final WordRepository wordRepository;
     private final GPTClient gptClient;
     private final WordContentProcessor wordContentProcessor;
@@ -44,22 +47,24 @@ public class WordCreationJobConfig {
     public Step createWordsStep(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
         return new StepBuilder("createWordsStep", jobRepository)
             .tasklet((contribution, chunkContext) -> {
-                List<Study> todayStudies = getTodayStudies();
-                for (Study study : todayStudies) {
-                    String wordGeneratePrompt = createWordGeneratePrompt(study);
-                    GPTResponse response = gptClient.generate(wordContentProcessor.createGPTRequest(wordGeneratePrompt));
-                    saveWordsOf(study, response);
-                    log.info("Created words for study {}", study.getId());
-                }
+                createTodayWordStudies();
                 return RepeatStatus.FINISHED;
             }, transactionManager)
             .build();
     }
 
-    private List<Study> getTodayStudies() {
-        LocalDateTime startOfDay = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0).withNano(0);
-        LocalDateTime endOfDay = startOfDay.plusDays(1);
-        return studyRepository.findByCreatedAtBetween(startOfDay, endOfDay);
+    private void createTodayWordStudies() {
+        List<Study> todayStudies = studyService.getTodayStudiesOf(StudyTypeEnum.WORD.getId());
+        for (Study study : todayStudies) {
+            GPTResponse response = getGptResponse(study);
+            saveWordsOf(study, response);
+            log.info("Created words for study {}", study.getId());
+        }
+    }
+
+    private GPTResponse getGptResponse(Study study) {
+        String wordGeneratePrompt = createWordGeneratePrompt(study);
+        return gptClient.generate(wordContentProcessor.createGPTRequest(wordGeneratePrompt));
     }
 
     private String createWordGeneratePrompt(Study study) {

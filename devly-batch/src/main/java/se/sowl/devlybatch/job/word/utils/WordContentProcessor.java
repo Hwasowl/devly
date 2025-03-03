@@ -1,4 +1,4 @@
-package se.sowl.devlybatch.job.word;
+package se.sowl.devlybatch.job.word.utils;
 
 import org.springframework.stereotype.Component;
 import se.sowl.devlybatch.common.gpt.GptContentProcessor;

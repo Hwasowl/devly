@@ -65,7 +65,7 @@ public class SecurityConfig {
                 .failureHandler(oauth2AuthenticationFailureHandler)
                 .userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint.userService(oAuthService))
             )
-            .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);  // 필터 위치 변경
+            .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 

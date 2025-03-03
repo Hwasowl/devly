@@ -4,6 +4,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import se.sowl.devlybatch.job.word.utils.WordContentProcessor;
 import se.sowl.devlydomain.word.domain.Word;
 import se.sowl.devlyexternal.client.gpt.dto.GPTResponse;
 

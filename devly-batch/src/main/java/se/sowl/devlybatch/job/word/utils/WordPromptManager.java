@@ -1,4 +1,4 @@
-package se.sowl.devlybatch.job.word;
+package se.sowl.devlybatch.job.word.utils;
 
 import org.springframework.stereotype.Component;
 import se.sowl.devlybatch.common.gpt.GptPromptManager;
@@ -7,7 +7,7 @@ import se.sowl.devlybatch.common.gpt.GptPromptManager;
 public class WordPromptManager extends GptPromptManager {
 
     @Override
-    protected void addPrompt(Long developerTypeId, StringBuilder prompt) {
+    public void addPrompt(Long developerTypeId, StringBuilder prompt) {
         if (developerTypeId.equals(1L)) {
             prompt.append("백엔드에 사용되는 언어들 중 공식 문서를 기반으로 백엔드 개발자를 위한 전문 용어 5개를 생성해주세요." +
                 "문서에서 사용되는 단어가 다른 형식으로 사용된다면 유연하게 처리해주세요. dependency -> dependencies 로 사용 된 경우 곤란해집니다." +

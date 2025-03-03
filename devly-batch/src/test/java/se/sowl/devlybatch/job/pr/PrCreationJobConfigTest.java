@@ -72,11 +72,11 @@ class PrCreationJobConfigTest extends MediumBatchTest {
     void createPrStepTest() throws Exception {
         // given
         Study backendStudy = Study.builder()
-            .typeId(1L)
+            .typeId(3L)
             .developerTypeId(1L)
             .build();
         Study frontendStudy = Study.builder()
-            .typeId(1L)
+            .typeId(3L)
             .developerTypeId(2L)
             .build();
         studyRepository.saveAll(List.of(backendStudy, frontendStudy));

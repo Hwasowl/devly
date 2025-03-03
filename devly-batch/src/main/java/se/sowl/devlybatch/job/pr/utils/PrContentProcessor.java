@@ -1,4 +1,4 @@
-package se.sowl.devlybatch.job.pr;
+package se.sowl.devlybatch.job.pr.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -16,7 +16,6 @@ import se.sowl.devlydomain.pr.repository.PrRepository;
 
 import java.util.List;
 
-// PR 콘텐츠 프로세서 구현
 @Component
 @RequiredArgsConstructor
 @Slf4j

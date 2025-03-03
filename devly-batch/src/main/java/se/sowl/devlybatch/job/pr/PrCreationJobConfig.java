@@ -11,10 +11,13 @@ import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
+import se.sowl.devlybatch.job.pr.utils.PrContentProcessor;
+import se.sowl.devlybatch.job.pr.utils.PrPromptManager;
+import se.sowl.devlybatch.service.StudyService;
 import se.sowl.devlydomain.pr.domain.Pr;
 import se.sowl.devlydomain.pr.repository.PrRepository;
 import se.sowl.devlydomain.study.domain.Study;
-import se.sowl.devlydomain.study.repository.StudyRepository;
+import se.sowl.devlydomain.study.domain.StudyTypeEnum;
 import se.sowl.devlyexternal.client.gpt.GPTClient;
 import se.sowl.devlyexternal.client.gpt.dto.GPTResponse;
 
@@ -27,7 +30,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PrCreationJobConfig {
 
-    private final StudyRepository studyRepository;
+    private final StudyService studyService;
     private final PrRepository prRepository;
     private final GPTClient gptClient;
     private final PrContentProcessor prContentProcessor;
@@ -44,32 +47,33 @@ public class PrCreationJobConfig {
     public Step createPrStep(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
         return new StepBuilder("createPrStep", jobRepository)
             .tasklet((contribution, chunkContext) -> {
-                List<Study> todayStudies = getTodayStudies();
-                for (Study study : todayStudies) {
-                    String wordGeneratePrompt = createPrGeneratePrompt(study);
-                    GPTResponse response = gptClient.generate(prContentProcessor.createGPTRequest(wordGeneratePrompt));
-                    savePrOf(study, response);
-                    log.info("Created Pr for study {}", study.getId());
-                }
+                createTodayPrStudies();
                 return RepeatStatus.FINISHED;
             }, transactionManager)
             .build();
     }
 
-    private List<Study> getTodayStudies() {
-        LocalDateTime startOfDay = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0).withNano(0);
-        LocalDateTime endOfDay = startOfDay.plusDays(1);
-        return studyRepository.findByCreatedAtBetween(startOfDay, endOfDay);
+    private void createTodayPrStudies() {
+        List<Study> todayStudies = studyService.getTodayStudiesOf(StudyTypeEnum.PULL_REQUEST.getId());
+        for (Study study : todayStudies) {
+            GPTResponse response = getPrResponse(study);
+            savePrOf(study, response);
+            log.info("Created Pr for study {}", study.getId());
+        }
+    }
+
+    private GPTResponse getPrResponse(Study study) {
+        String prGeneratePrompt = createPrGeneratePrompt(study);
+        return gptClient.generate(prContentProcessor.createGPTRequest(prGeneratePrompt));
     }
 
     private String createPrGeneratePrompt(Study study) {
         List<String> recentTitles = prRepository.findPrsByCreatedAtAfter(LocalDateTime.now().minusDays(7))
-            .stream()
-            .map(Pr::getTitle)
-            .collect(Collectors.toList());
+            .stream().map(Pr::getTitle).collect(Collectors.toList());
         return generatePrompt(study.getDeveloperTypeId(), recentTitles);
     }
 
+    // TODO: 동일한 작업이 반복된다. knowledge 또한 같은 구조로 구현될 경우 공통 로직을 분리해보자.
     private void savePrOf(Study study, GPTResponse response) {
         List<Pr> words = prContentProcessor.parseGPTResponse(response, study.getId());
         prRepository.saveAll(words);

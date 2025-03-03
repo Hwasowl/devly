@@ -1,4 +1,4 @@
-package se.sowl.devlybatch.job.pr;
+package se.sowl.devlybatch.job.pr.utils;
 
 import org.springframework.stereotype.Component;
 import se.sowl.devlybatch.common.gpt.GptPromptManager;
@@ -6,7 +6,7 @@ import se.sowl.devlybatch.common.gpt.GptPromptManager;
 @Component
 public class PrPromptManager extends GptPromptManager {
     @Override
-    protected void addPrompt(Long developerTypeId, StringBuilder prompt) {
+    public void addPrompt(Long developerTypeId, StringBuilder prompt) {
         if (developerTypeId.equals(1L)) {
             prompt.append("백엔드 개발자를 위한 PR(Pull Request) 예시를 생성해주세요.");
         } else if (developerTypeId.equals(2L)) {

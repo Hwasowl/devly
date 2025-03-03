@@ -8,6 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
 import se.sowl.devlydomain.developer.domain.DeveloperType;
+import se.sowl.devlydomain.developer.repository.DeveloperTypeRepository;
+import se.sowl.devlydomain.study.domain.StudyType;
+import se.sowl.devlydomain.study.repository.StudyRepository;
+import se.sowl.devlydomain.study.repository.StudyTypeRepository;
 
 import java.util.List;
 
@@ -29,11 +33,31 @@ public abstract class MediumBatchTest {
     protected Job prCreationJob;
 
     @Autowired
+    protected Job studyCreationJob;
+
+    @Autowired
     protected JobRepository jobRepository;
+
+    @Autowired
+    protected StudyTypeRepository studyTypeRepository;
+
+    @Autowired
+    protected StudyRepository studyRepository;
+
+    @Autowired
+    protected DeveloperTypeRepository developerTypeRepository;
 
     protected List<DeveloperType> getDeveloperTypes() {
         DeveloperType frontEnd = new DeveloperType("Backend Developer");
         DeveloperType backEnd = new DeveloperType("Frontend Developer");
         return List.of(frontEnd, backEnd);
+    }
+
+    protected List<StudyType> getStudyTypes() {
+        StudyType word = new StudyType("word", 100L);
+        StudyType knowledge = new StudyType("knowledge", 150L);
+        StudyType pr = new StudyType("pr", 300L);
+        StudyType discussion = new StudyType("discussion", 300L);
+        return List.of(word, knowledge, pr, discussion);
     }
 }

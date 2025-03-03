@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface StudyRepository extends JpaRepository<Study, Long> {
-    List<Study> findByCreatedAtBetween(LocalDateTime startOfDay, LocalDateTime endOfDay);
+    List<Study> findByCreatedAtBetweenAndTypeId(LocalDateTime startOfDay, LocalDateTime endOfDay, Long typeId);
 
-    Study findByDeveloperTypeId(Long developerTypeId);
+    List<Study> findByDeveloperTypeId(Long developerTypeId);
 
     Optional<Study> findFirstByTypeId(Long typeId);
 
