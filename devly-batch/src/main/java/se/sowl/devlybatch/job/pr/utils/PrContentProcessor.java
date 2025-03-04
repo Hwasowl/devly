@@ -31,7 +31,7 @@ public class PrContentProcessor extends GptContentProcessor<Pr> {
             String[] lines = entry.trim().split("\n");
             String title = lines[0].replace("제목: ", "").trim();
             String description = lines[1].replace("설명: ", "").trim();
-            Pr pr = savePr(title, description);
+            Pr pr = savePr(title, description, studyId);
             Long prId = pr.getId();
             saveChangedFiles(lines, prId);
             savePrLabels(lines, prId);
@@ -41,10 +41,11 @@ public class PrContentProcessor extends GptContentProcessor<Pr> {
         }
     }
 
-    private Pr savePr(String title, String description) {
+    private Pr savePr(String title, String description, Long studyId) {
         Pr pr = Pr.builder()
             .title(title)
             .description(description)
+            .studyId(studyId)
             .build();
         pr = prRepository.save(pr);
         return pr;

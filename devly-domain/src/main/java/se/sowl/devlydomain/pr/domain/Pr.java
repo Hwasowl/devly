@@ -18,11 +18,14 @@ public class Pr extends BaseTimeEntity {
 
     private String title;
 
+    private Long studyId;
+
     private String description;
 
     @Builder
-    public Pr(String title, String description) {
+    public Pr(String title, String description, Long studyId) {
         this.title = title;
         this.description = description;
+        this.studyId = studyId;
     }
 }

@@ -71,6 +71,7 @@ class PrContentProcessorTest {
         Pr pr = prs.getFirst();
         assertThat(pr.getTitle()).isEqualTo("싱글톤 패턴 구현 개선");
         assertThat(pr.getDescription()).isEqualTo("Thread-safe한 싱글톤 패턴으로 개선하고, 불필요한 메모리 사용을 줄였습니다.");
+        assertThat(pr.getStudyId()).isEqualTo(studyId);
 
         // 저장된 PR 조회
         List<Pr> savedPrs = prRepository.findAll();
