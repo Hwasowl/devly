@@ -9,4 +9,6 @@ import java.util.List;
 public interface PrRepository extends JpaRepository<Pr, Long> {
 
     List<Pr> findPrsByCreatedAtAfter(LocalDateTime localDateTime);
+
+    Pr findByStudyId(Long studyId);
 }

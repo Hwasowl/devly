@@ -9,12 +9,17 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import se.sowl.devlyapi.common.jwt.JwtTokenProvider;
 import se.sowl.devlyapi.oauth.service.OAuthService;
+import se.sowl.devlyapi.pr.service.PrService;
 import se.sowl.devlyapi.study.service.StudyService;
 import se.sowl.devlyapi.study.service.UserStudyService;
 import se.sowl.devlyapi.word.service.WordReviewService;
 import se.sowl.devlyapi.word.service.WordService;
 import se.sowl.devlydomain.developer.domain.DeveloperType;
 import se.sowl.devlydomain.developer.repository.DeveloperTypeRepository;
+import se.sowl.devlydomain.pr.domain.Pr;
+import se.sowl.devlydomain.pr.domain.PrLabel;
+import se.sowl.devlydomain.pr.repository.PrLabelRepository;
+import se.sowl.devlydomain.pr.repository.PrRepository;
 import se.sowl.devlydomain.study.domain.Study;
 import se.sowl.devlydomain.study.domain.StudyType;
 import se.sowl.devlydomain.study.repository.StudyRepository;
@@ -46,6 +51,12 @@ public abstract class MediumTest {
     protected WordReviewService wordReviewService;
 
     @Autowired
+    protected StudyService studyService;
+
+    @Autowired
+    protected PrService prService;
+
+    @Autowired
     protected WordRepository wordRepository;
 
     @Autowired
@@ -53,9 +64,6 @@ public abstract class MediumTest {
 
     @Autowired
     protected StudyRepository studyRepository;
-
-    @Autowired
-    protected StudyService studyService;
 
     @Autowired
     protected UserStudyService userStudyService;
@@ -70,6 +78,12 @@ public abstract class MediumTest {
     protected DeveloperTypeRepository developerTypeRepository;
 
     @Autowired
+    protected PrRepository prRepository;
+
+    @Autowired
+    protected PrLabelRepository prLabelRepository;
+
+    @Autowired
     protected ObjectMapper objectMapper;
 
     @Autowired
@@ -77,6 +91,8 @@ public abstract class MediumTest {
 
     @MockBean
     protected DefaultOAuth2UserService defaultOAuth2UserService;
+
+    // TODO: separation create methods of features
 
     protected User createUser(Long id, Long developerTypeId, String name, String nickname, String email, String provider) {
         return User.builder()
@@ -159,5 +175,21 @@ public abstract class MediumTest {
             .quiz("{\"text\":\"\",\"distractors\":[\"Framework\",\"Library\",\"Runtime\",\"Protocol\"]}")
             .build();
         return List.of(word, word2, word3, word4, word5);
+    }
+
+    protected Pr buildPr(Long studyId) {
+        return Pr.builder()
+            .title("싱글톤 패턴 구현")
+            .description("Thread-safe한 싱글톤 패턴으로 개선")
+            .studyId(studyId)
+            .build();
+    }
+
+    protected List<PrLabel> buildPrLabels(Long prId) {
+        return List.of(
+            new PrLabel(prId, "backend"),
+            new PrLabel(prId, "feature"),
+            new PrLabel(prId, "thread")
+        );
     }
 }
