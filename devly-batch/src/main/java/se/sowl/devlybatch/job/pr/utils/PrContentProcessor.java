@@ -67,6 +67,6 @@ public class PrContentProcessor extends GptContentProcessor<Pr> {
     private void savePrLabels(String[] lines, Long prId) throws JsonProcessingException {
         String labelsLine = lines[3].replace("라벨: ", "").trim();
         JsonNode labelsNode = objectMapper.readTree(labelsLine);
-        labelsNode.forEach(labelNode -> prLabelRepository.save(new PrLabel(prId)));
+        labelsNode.forEach(labelNode -> prLabelRepository.save(new PrLabel(prId, labelNode.asText())));
     }
 }

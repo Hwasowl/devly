@@ -101,5 +101,7 @@ class PrContentProcessorTest {
         // 라벨 저장 검증
         List<PrLabel> labels = prLabelRepository.findAllByPrId(savedPrId);
         assertThat(labels).hasSize(5);
+        assertThat(labels.get(0).getLabel()).isEqualTo("Java");
+        assertThat(labels.get(1).getLabel()).isEqualTo("Thread-safe");
     }
 }

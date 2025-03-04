@@ -17,7 +17,10 @@ public class PrLabel extends BaseTimeEntity {
 
     private Long prId;
 
-    public PrLabel(Long prId) {
+    private String label;
+
+    public PrLabel(Long prId, String label) {
         this.prId = prId;
+        this.label = label;
     }
 }
