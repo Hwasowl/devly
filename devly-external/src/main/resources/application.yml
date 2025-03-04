@@ -1,6 +1,21 @@
 spring:
-  application:
-    name: devly-external
+  profiles:
+    group:
+      test: test
+      prod: prod
+---
+spring:
+  config:
+    activate:
+      on-profile: test
 openai:
   api-url: https://api.openai.com
-  api-key:
+  api-key: test-api-key
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+openai:
+  api-url: https://api.openai.com
+  api-key: ${OPENAI_API_KEY}

@@ -64,70 +64,19 @@ pipeline {
             }
         }
 
-        stage('Prepare Configuration') {
-            parallel {
-                stage('Domain Config') {
-                    steps {
-                        sh '''
-                            mkdir -p devly-domain/src/main/resources
-                            cat > devly-domain/src/main/resources/application-prod.yml << EOL
-spring:
-  datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-  jpa:
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.MySQL8Dialect
-    hibernate:
-      ddl-auto: none
-EOL
-                        '''
+        stage('Test') {
+            steps {
+                script {
+                    sh 'chmod +x ./gradlew'
+                    sh 'export SPRING_PROFILES_ACTIVE=test && ./gradlew :devly-domain:test || true'
+                    sh 'export SPRING_PROFILES_ACTIVE=test && ./gradlew :devly-external:test || true'
+
+                    if (params.BUILD_API) {
+                        sh 'export SPRING_PROFILES_ACTIVE=test && ./gradlew :devly-api:test || true'
                     }
-                }
-                stage('API Config') {
-                    when { expression { params.BUILD_API } }
-                    steps {
-                        sh '''
-                            mkdir -p devly-api/src/main/resources
-                            cat > devly-api/src/main/resources/application-prod.yml << EOL
-spring:
-  datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-  security:
-    oauth2:
-      client:
-        registration:
-          google:
-            client-id: ${GOOGLE_CLIENT_ID}
-            client-secret: ${GOOGLE_CLIENT_SECRET}
-jwt:
-  secret-key: ${JWT_SECRET}
-EOL
-                        '''
-                    }
-                }
-                stage('Batch Config') {
-                    when { expression { params.BUILD_BATCH } }
-                    steps {
-                        sh '''
-                            mkdir -p devly-batch/src/main/resources
-                            cat > devly-batch/src/main/resources/application-prod.yml << EOL
-spring:
-  datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-openai:
-  api-url: https://api.openai.com
-  api-key: ${OPENAI_API_KEY}
-server:
-  port: 8090
-EOL
-                        '''
+
+                    if (params.BUILD_BATCH) {
+                        sh 'export SPRING_PROFILES_ACTIVE=test && ./gradlew :devly-batch:test || true'
                     }
                 }
             }
@@ -181,15 +130,27 @@ EOL
                     steps {
                         script {
                             sh """
+                                echo 'SPRING_PROFILES_ACTIVE=prod' > api.env
+                                echo 'SPRING_DATASOURCE_URL=${DB_URL}' >> api.env
+                                echo 'SPRING_DATASOURCE_USERNAME=${DB_USERNAME}' >> api.env
+                                echo 'SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}' >> api.env
+                                echo 'SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}' >> api.env
+                                echo 'SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}' >> api.env
+                                echo 'JWT_SECRET_KEY=${JWT_SECRET}' >> api.env
+
                                 docker stop ${DOCKER_IMAGE_API} || true
                                 docker rm ${DOCKER_IMAGE_API} || true
-                                docker run -d \
-                                    --name ${DOCKER_IMAGE_API} \
-                                    -p 8080:8080 \
-                                    -e SPRING_PROFILES_ACTIVE=prod \
-                                    --restart unless-stopped \
+
+                                docker run -d \\
+                                    --name ${DOCKER_IMAGE_API} \\
+                                    -p 8080:8080 \\
+                                    --env-file api.env \\
+                                    --restart unless-stopped \\
                                     ${DOCKER_IMAGE_API}:${VERSION}
+
                                 docker logs -f ${DOCKER_IMAGE_API} > api.log 2>&1 &
+
+                                rm api.env
                             """
                         }
                     }
@@ -199,15 +160,23 @@ EOL
                     steps {
                         script {
                             sh """
+                                echo 'SPRING_PROFILES_ACTIVE=prod' > batch.env
+                                echo 'SPRING_DATASOURCE_URL=${DB_URL}' >> batch.env
+                                echo 'SPRING_DATASOURCE_USERNAME=${DB_USERNAME}' >> batch.env
+                                echo 'SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}' >> batch.env
+                                echo 'OPENAI_API_KEY=${OPENAI_API_KEY}' >> batch.env
+
                                 docker stop ${DOCKER_IMAGE_BATCH} || true
                                 docker rm ${DOCKER_IMAGE_BATCH} || true
-                                docker run -d \
-                                    --name ${DOCKER_IMAGE_BATCH} \
-                                    -p 8090:8090 \
-                                    -e SPRING_PROFILES_ACTIVE=prod \
-                                    --restart unless-stopped \
+
+                                docker run -d \\
+                                    --name ${DOCKER_IMAGE_BATCH} \\
+                                    -p 8090:8090 \\
+                                    --env-file batch.env \\
+                                    --restart unless-stopped \\
                                     ${DOCKER_IMAGE_BATCH}:${VERSION}
                                 docker logs -f ${DOCKER_IMAGE_BATCH} > batch.log 2>&1 &
+                                rm batch.env
                             """
                         }
                     }
@@ -222,6 +191,9 @@ EOL
         }
         failure {
             echo 'Pipeline failed!'
+        }
+        always {
+            sh 'rm -f *.env || true'
         }
     }
 }

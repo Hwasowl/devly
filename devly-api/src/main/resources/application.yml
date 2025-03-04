@@ -28,14 +28,14 @@ spring:
       client:
         registration:
           google:
-            client-id:
-            client-secret:
+            client-id: test-client-id
+            client-secret: test-client-secret
             scope: profile, email
             redirect-uri: http://localhost:8080/login/oauth2/code/google
 front:
   url: http://localhost:3000
 jwt:
-  secret-key:
+  secret-key: 718fb93ab5fe57fd0bc764114d4ce429b653f0d80fe051994a211fe50e4adcc27189121f1379c459f5bc19528edd72260c6a9139bcc70623e63c28ed1a79d21b4a0bac4902770cb6572926f187d3e0e9e0a1359901cbaa839683315afd51f09a7eddfbe202ad9502efe65f3276d21a6abf9fb9f93157c4823fc607f422642ddfe01db114ff8eb6f618a963046d90eea4e965b82f2f11b767596b0e08e56cfbdc56cbd0770dff643fed4e7a77bef044617a2c8c05f56c16a492f23dd23d8fa9b528383afd343c91c466937fa426aaffe35d8597ce5acd671fd965b0ad8ded1547cb6d6d0aa7afa37ba56593e23d4244742618743ade40879e3bc6aa42350c6557
   access-token-validity-in-seconds: 3600
   refresh-token-validity-in-seconds: 604800
 logging:
@@ -51,9 +51,9 @@ spring:
     console:
       enabled: false
   datasource:
-    url:
-    username:
-    password:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     properties:
@@ -67,14 +67,14 @@ spring:
       client:
         registration:
           google:
-            client-id:
-            client-secret:
+            client-id: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID}
+            client-secret: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET}
             scope: profile, email
             redirect-uri: https://devly.kro.kr/login/oauth2/code/google
 front:
   url: http://localhost:3000
 jwt:
-  secret-key:
+  secret-key: ${JWT_SECRET_KEY}
   access-token-validity-in-seconds: 3600
   refresh-token-validity-in-seconds: 604800
 
