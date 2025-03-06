@@ -15,8 +15,8 @@ public class PrPromptManager extends GptPromptManager {
         prompt.append("\n각 PR은 다음 형식으로 작성해주세요:\n");
         prompt.append("제목: [PR의 간결하고 명확한 제목]\n");
         prompt.append("설명: [PR에 대한 자세한 설명]\n");
-        prompt.append("변경 파일: [{\"fileName\": \"파일 경로와 이름\", \"language\": \"프로그래밍 언어\", \"content\": \"파일 내용\"}, {...}]\n");
-        prompt.append("라벨: [\"Java\", \"Thread-safe\", \"Performance\"]\n---\n");
-        prompt.append("변경 파일은 실제 코드의 일부로 2-3개의 파일을 포함해주세요. 라벨은 PR의 성격을 잘 나타내는 3-5개의 키워드를 포함해주세요.");
+        prompt.append("변경 파일: [{\"fileName\": \"파일 경로와 이름\", \"language\": \"프로그래밍 언어\", \"content\": \"파일 내용\"}]\n");
+        prompt.append("라벨: [\"변경 파일에 해당하는 태그\", \"변경 파일에 해당하는 태그\", \"변경 파일에 해당하는 태그\"]\n---\n");
+        prompt.append("변경 파일은 실제 코드의 일부로 1개 이상의 파일을 포함해주세요. 라벨은 PR의 성격을 잘 나타내는 3-5개의 키워드를 포함해주세요.");
     }
 }

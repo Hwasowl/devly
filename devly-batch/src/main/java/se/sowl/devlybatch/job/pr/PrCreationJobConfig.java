@@ -73,10 +73,8 @@ public class PrCreationJobConfig {
         return generatePrompt(study.getDeveloperTypeId(), recentTitles);
     }
 
-    // TODO: 동일한 작업이 반복된다. knowledge 또한 같은 구조로 구현될 경우 공통 로직을 분리해보자.
     private void savePrOf(Study study, GPTResponse response) {
-        List<Pr> prs = prContentProcessor.parseGPTResponse(response, study.getId());
-        prRepository.saveAll(prs);
+        prContentProcessor.parseGPTResponse(response, study.getId());
     }
 
     private String generatePrompt(Long developerTypeId, List<String> excludeContents) {
