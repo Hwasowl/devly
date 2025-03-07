@@ -67,7 +67,7 @@ public class PrContentProcessor extends GptContentProcessor<Pr> {
     private void saveChangedFiles(Long prId, List<Map<String, String>> changedFiles) {
         for (Map<String, String> file : changedFiles) {
             PrChangedFile changedFile = PrChangedFile.builder()
-                .pullRequestId(prId)
+                .prId(prId)
                 .fileName(file.get("fileName"))
                 .language(file.get("language"))
                 .content(file.get("content"))
