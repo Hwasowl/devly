@@ -12,11 +12,15 @@ public class PrPromptManager extends GptPromptManager {
         } else if (developerTypeId.equals(2L)) {
             prompt.append("프론트엔드 개발자를 위한 PR(Pull Request) 예시를 생성해주세요.");
         }
-        prompt.append("\n각 PR은 다음 형식으로 작성해주세요:\n");
+        prompt.append("\n각 PR은 다음 형식으로 정확히 작성해주세요:\n");
         prompt.append("제목: [PR의 간결하고 명확한 제목]\n");
         prompt.append("설명: [PR에 대한 자세한 설명]\n");
-        prompt.append("변경 파일: [{\"fileName\": \"파일 경로와 이름\", \"language\": \"프로그래밍 언어\", \"content\": \"파일 내용\"}]\n");
-        prompt.append("라벨: [\"변경 파일에 해당하는 태그\", \"변경 파일에 해당하는 태그\", \"변경 파일에 해당하는 태그\"]\n---\n");
-        prompt.append("변경 파일은 실제 코드의 일부로 1개 이상의 파일을 포함해주세요. 라벨은 PR의 성격을 잘 나타내는 3-5개의 키워드를 포함해주세요.");
+        prompt.append("""
+           변경 파일: [{"fileName": "파일 경로와 이름", "language": "프로그래밍 언어", "content": "파일 내용"}]
+        """);
+        prompt.append("""
+        라벨: ["변경 파일에 해당하는 태그1", "변경 파일에 해당하는 태그2", "변경 파일에 해당하는 태그3"]\n
+        """);
+        prompt.append("중요: '변경 파일' 및 '라벨' 필드는 반드시 위와 같은 형식으로 작성해주세요. 특히 '변경 파일' 필드는 JSON 배열을 한 줄에 모두 작성해야 합니다. 줄바꿈 없이 모든 JSON 내용이 한 줄에 있어야 합니다. 파일 내용의 줄바꿈은 \\n으로 표현해주세요.");
     }
 }
