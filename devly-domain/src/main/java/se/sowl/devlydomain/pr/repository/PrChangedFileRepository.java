@@ -6,5 +6,5 @@ import se.sowl.devlydomain.pr.domain.PrChangedFile;
 import java.util.List;
 
 public interface PrChangedFileRepository extends JpaRepository<PrChangedFile, Long> {
-    List<PrChangedFile> findByPullRequestId(Long pullRequestId);
+    List<PrChangedFile> findByPrId(Long pullRequestId);
 }

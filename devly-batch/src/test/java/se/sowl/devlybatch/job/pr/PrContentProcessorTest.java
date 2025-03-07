@@ -1,5 +1,6 @@
 package se.sowl.devlybatch.job.pr;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,8 +10,10 @@ import org.springframework.transaction.annotation.Transactional;
 import se.sowl.devlybatch.job.pr.utils.PrContentProcessor;
 import se.sowl.devlydomain.pr.domain.Pr;
 import se.sowl.devlydomain.pr.domain.PrChangedFile;
+import se.sowl.devlydomain.pr.domain.PrComment;
 import se.sowl.devlydomain.pr.domain.PrLabel;
 import se.sowl.devlydomain.pr.repository.PrChangedFileRepository;
+import se.sowl.devlydomain.pr.repository.PrCommentRepository;
 import se.sowl.devlydomain.pr.repository.PrLabelRepository;
 import se.sowl.devlydomain.pr.repository.PrRepository;
 import se.sowl.devlyexternal.client.gpt.dto.GPTResponse;
@@ -34,7 +37,17 @@ class PrContentProcessorTest {
     private PrChangedFileRepository prChangedFileRepository;
 
     @Autowired
+    private PrCommentRepository prCommentRepository;
+
+    @Autowired
     private PrLabelRepository prLabelRepository;
+
+    @AfterEach
+    void tearDown() {
+        prLabelRepository.deleteAll();
+        prChangedFileRepository.deleteAll();
+        prRepository.deleteAll();
+    }
 
     @Test
     @DisplayName("PR GPT 응답을 파싱 처리 해 PR 엔티티로 변환한다")
@@ -46,6 +59,7 @@ class PrContentProcessorTest {
            설명: Thread-safe한 싱글톤 패턴으로 개선하고, 불필요한 메모리 사용을 줄였습니다.
            변경 파일: [{"fileName": "src/main/java/com/example/SingletonService.java", "language": "Java", "content": "public class SingletonService {\\n\\n    private static volatile SingletonService instance;\\n\\n    private SingletonService() {\\n        // private constructor\\n    }\\n\\n    public static SingletonService getInstance() {\\n        if (instance == null) {\\n            synchronized (SingletonService.class) {\\n                if (instance == null) {\\n                    instance = new SingletonService();\\n                }\\n            }\\n        }\\n        return instance;\\n    }\\n}"},{"fileName": "src/test/java/com/example/SingletonServiceTest.java", "language": "Java", "content": "import org.junit.jupiter.api.Test;\\nimport static org.junit.jupiter.api.Assertions.*;\\n\\npublic class SingletonServiceTest {\\n\\n    @Test\\n    void testSingletonInstance() {\\n        SingletonService instance1 = SingletonService.getInstance();\\n        SingletonService instance2 = SingletonService.getInstance();\\n        assertSame(instance1, instance2);\\n    }\\n}"}]
            라벨: ["Java", "Thread-safe", "Singleton", "Design Pattern", "Performance"]
+           질문: ["싱글톤 패턴을 사용하는 이유는 무엇인가요?", "volatile 키워드의 역할은 무엇인가요?"]
            ---
            """;
         GPTResponse gptResponse = new GPTResponse(
@@ -56,7 +70,6 @@ class PrContentProcessorTest {
             ))
         );
 
-        // DB 초기화 (이전 테스트 데이터 제거)
         prLabelRepository.deleteAll();
         prChangedFileRepository.deleteAll();
         prRepository.deleteAll();
@@ -79,7 +92,7 @@ class PrContentProcessorTest {
         Long savedPrId = savedPrs.get(0).getId();
 
         // Changed Files 저장 검증
-        List<PrChangedFile> changedFiles = prChangedFileRepository.findByPullRequestId(savedPrId);
+        List<PrChangedFile> changedFiles = prChangedFileRepository.findByPrId(savedPrId);
         assertThat(changedFiles).hasSize(2);
 
         // 파일 내용 검증
@@ -104,5 +117,10 @@ class PrContentProcessorTest {
         assertThat(labels).hasSize(5);
         assertThat(labels.get(0).getLabel()).isEqualTo("Java");
         assertThat(labels.get(1).getLabel()).isEqualTo("Thread-safe");
+
+        // 질문 저장 검증
+        List<PrComment> comments = prCommentRepository.findByPrId(savedPrId);
+        assertThat(comments).hasSize(3);
+        assertThat(comments.get(0).getContent()).contains("커밋 로그와 변경된 파일을 확인해 어떤 부분을 반영하고 개선한 PR인지 설명해주세요!");
     }
 }

@@ -132,7 +132,7 @@ class PrCreationJobConfigTest extends MediumBatchTest {
         assertThat(backendPr.getDescription()).contains("Thread-safe");
 
         // 백엔드 PR 변경 파일 검증
-        List<PrChangedFile> backendFiles = prChangedFileRepository.findByPullRequestId(backendPr.getId());
+        List<PrChangedFile> backendFiles = prChangedFileRepository.findByPrId(backendPr.getId());
         assertThat(backendFiles).hasSize(1);
         assertThat(backendFiles.get(0).getFileName()).isEqualTo("src/main/java/com/example/SingletonService.java");
         assertThat(backendFiles.get(0).getLanguage()).isEqualTo("Java");
@@ -149,7 +149,7 @@ class PrCreationJobConfigTest extends MediumBatchTest {
         assertThat(frontendPr.getDescription()).contains("React.memo");
 
         // 프론트엔드 PR 변경 파일 검증
-        List<PrChangedFile> frontendFiles = prChangedFileRepository.findByPullRequestId(frontendPr.getId());
+        List<PrChangedFile> frontendFiles = prChangedFileRepository.findByPrId(frontendPr.getId());
         assertThat(frontendFiles).hasSize(1);
         assertThat(frontendFiles.get(0).getFileName()).isEqualTo("src/components/ProductList.jsx");
         assertThat(frontendFiles.get(0).getLanguage()).isEqualTo("JavaScript");

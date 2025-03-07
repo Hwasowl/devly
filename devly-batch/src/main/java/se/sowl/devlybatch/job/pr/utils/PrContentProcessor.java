@@ -1,82 +1,67 @@
 package se.sowl.devlybatch.job.pr.utils;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import se.sowl.devlybatch.common.JsonExtractor;
 import se.sowl.devlybatch.common.gpt.GptContentProcessor;
 import se.sowl.devlydomain.pr.domain.Pr;
 import se.sowl.devlydomain.pr.domain.PrChangedFile;
+import se.sowl.devlydomain.pr.domain.PrComment;
 import se.sowl.devlydomain.pr.domain.PrLabel;
 import se.sowl.devlydomain.pr.repository.PrChangedFileRepository;
+import se.sowl.devlydomain.pr.repository.PrCommentRepository;
 import se.sowl.devlydomain.pr.repository.PrLabelRepository;
 import se.sowl.devlydomain.pr.repository.PrRepository;
 
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class PrContentProcessor extends GptContentProcessor<Pr> {
-
     private final PrRepository prRepository;
     private final PrChangedFileRepository prChangedFileRepository;
     private final PrLabelRepository prLabelRepository;
-    private final ObjectMapper objectMapper;
-
-    @Autowired
-    public PrContentProcessor(
-        PrRepository prRepository,
-        PrChangedFileRepository prChangedFileRepository,
-        PrLabelRepository prLabelRepository) {
-        this.prRepository = prRepository;
-        this.prChangedFileRepository = prChangedFileRepository;
-        this.prLabelRepository = prLabelRepository;
-        this.objectMapper = new ObjectMapper();
-    }
+    private final PrCommentRepository prCommentRepository;
+    private final JsonExtractor jsonExtractor;
 
     @Override
     protected void parseEntity(Long studyId, String entry, List<Pr> contents) {
         try {
             Pr pr = createPr(studyId, entry);
             contents.add(pr);
-
             processChangedFiles(pr.getId(), entry);
             processLabels(pr.getId(), entry);
+            processComments(pr.getId(), entry);
         } catch (Exception e) {
             log.error("PR Parsing Error: {}\n{}", entry, e);
         }
     }
 
     private Pr createPr(Long studyId, String entry) {
-        String title = extractField(entry, "제목:");
-        String description = extractField(entry, "설명:");
-
+        String title = jsonExtractor.extractField(entry, "제목:");
+        String description = jsonExtractor.extractField(entry, "설명:");
         Pr pr = Pr.builder()
             .title(title)
             .description(description)
             .studyId(studyId)
             .build();
-
         return prRepository.save(pr);
     }
 
     private void processChangedFiles(Long prId, String entry) {
-        String changedFilesJson = extractJsonArray(entry, "변경 파일:");
-        if (isInvalidJson(changedFilesJson)) return;
+        String changedFilesJson = jsonExtractor.extractJsonArray(entry, "변경 파일:");
+        if (jsonExtractor.isInvalidJson(changedFilesJson)) return;
 
         try {
-            List<Map<String, String>> changedFiles = parseChangedFiles(changedFilesJson);
+            List<Map<String, String>> changedFiles = jsonExtractor.parseStringMap(changedFilesJson);
             saveChangedFiles(prId, changedFiles);
         } catch (Exception e) {
             log.error("Changed File Parsing Error: {}", e.getMessage(), e);
         }
-    }
-
-    private List<Map<String, String>> parseChangedFiles(String changedFilesJson) throws IOException {
-        return objectMapper.readValue(changedFilesJson, new TypeReference<>() {});
     }
 
     private void saveChangedFiles(Long prId, List<Map<String, String>> changedFiles) {
@@ -92,19 +77,15 @@ public class PrContentProcessor extends GptContentProcessor<Pr> {
     }
 
     private void processLabels(Long prId, String entry) {
-        String labelsJson = extractJsonArray(entry, "라벨:");
-        if (isInvalidJson(labelsJson)) return;
+        String labelsJson = jsonExtractor.extractJsonArray(entry, "라벨:");
+        if (jsonExtractor.isInvalidJson(labelsJson)) return;
 
         try {
-            List<String> labels = parseLabels(labelsJson);
+            List<String> labels = jsonExtractor.parseListString(labelsJson);
             saveLabels(prId, labels);
         } catch (Exception e) {
             log.error("Label Parsing Error: {}", e.getMessage(), e);
         }
-    }
-
-    private List<String> parseLabels(String labelsJson) throws IOException {
-        return objectMapper.readValue(labelsJson, new TypeReference<>() {});
     }
 
     private void saveLabels(Long prId, List<String> labels) {
@@ -114,47 +95,25 @@ public class PrContentProcessor extends GptContentProcessor<Pr> {
         }
     }
 
-    private boolean isInvalidJson(String json) {
-        return json == null || json.isEmpty();
+    private void processComments(Long prId, String entry) {
+        String labelsJson = jsonExtractor.extractJsonArray(entry, "질문:");
+        if (jsonExtractor.isInvalidJson(labelsJson)) return;
+
+        try {
+            List<String> comments = jsonExtractor.parseListString(labelsJson);
+            saveComments(prId, comments);
+        } catch (Exception e) {
+            log.error("Comment Parsing Error: {}", e.getMessage(), e);
+        }
     }
 
-    private String extractField(String content, String fieldName) {
-        int startIndex = content.indexOf(fieldName);
-        if (startIndex == -1) return "";
-
-        startIndex += fieldName.length();
-        int endIndex = content.indexOf("\n", startIndex);
-        if (endIndex == -1) {
-            endIndex = content.length();
+    private void saveComments(Long prId, List<String> comments) {
+        List<PrComment> prComments = new ArrayList<>();
+        String firstComment = "커밋 로그와 변경된 파일을 확인해 어떤 부분을 반영하고 개선한 PR인지 설명해주세요!";
+        prComments.add(new PrComment(prId, 0L, firstComment));
+        for (int i = 0; i < comments.size(); i++) {
+            prComments.add(new PrComment(prId, (long) (i + 1), comments.get(i)));
         }
-        return content.substring(startIndex, endIndex).trim();
-    }
-
-    private String extractJsonArray(String content, String fieldName) {
-        int startIndex = content.indexOf(fieldName);
-        if (startIndex == -1) return "";
-
-        startIndex += fieldName.length();
-        int arrayStartIndex = content.indexOf("[", startIndex);
-        if (arrayStartIndex == -1) return "";
-
-        return findMatchingClosingBracket(content, arrayStartIndex);
-    }
-
-    private String findMatchingClosingBracket(String content, int arrayStartIndex) {
-        int nestLevel = 1;
-        int currentIndex = arrayStartIndex + 1;
-
-        while (nestLevel > 0 && currentIndex < content.length()) {
-            char c = content.charAt(currentIndex);
-            if (c == '[') nestLevel++;
-            else if (c == ']') nestLevel--;
-            currentIndex++;
-        }
-
-        if (nestLevel == 0) {
-            return content.substring(arrayStartIndex, currentIndex).trim();
-        }
-        return "";
+        prCommentRepository.saveAll(prComments);
     }
 }

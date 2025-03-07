@@ -2,16 +2,15 @@ package se.sowl.devlydomain.pr.domain;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import se.sowl.devlydomain.common.BaseTimeEntity;
 
 @Entity
-@Table(name = "pr_changed_files")
+@Table(name = "pr_comments")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class PrChangedFile extends BaseTimeEntity {
+public class PrComment extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -19,19 +18,13 @@ public class PrChangedFile extends BaseTimeEntity {
     @Column(name = "pull_request_id")
     private Long prId;
 
-    @Column(name = "file_name")
-    private String fileName;
+    private Long index;
 
-    private String language;
-
-    @Column(length = 50000)
     private String content;
 
-    @Builder
-    public PrChangedFile(Long prId, String fileName, String language, String content) {
+    public PrComment(Long prId, Long index, String content) {
         this.prId = prId;
-        this.fileName = fileName;
-        this.language = language;
+        this.index = index;
         this.content = content;
     }
 }

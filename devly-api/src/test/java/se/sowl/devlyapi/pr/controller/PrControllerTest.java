@@ -15,8 +15,10 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import se.sowl.devlyapi.pr.dto.PrChangedFilesResponse;
 import se.sowl.devlyapi.pr.dto.PrResponse;
 import se.sowl.devlyapi.pr.service.PrService;
+import se.sowl.devlydomain.pr.domain.PrChangedFile;
 import se.sowl.devlydomain.user.domain.CustomOAuth2User;
 import se.sowl.devlydomain.user.domain.User;
 
@@ -82,6 +84,38 @@ class PrControllerTest {
                     fieldWithPath("result.title").description("PR 제목"),
                     fieldWithPath("result.description").description("PR 설명"),
                     fieldWithPath("result.labels").description("PR 라벨 목록")
+                )
+            ));
+    }
+
+    @Test
+    @DisplayName("PR ID로 변경 파일 정보를 조회한다")
+    void getChangedFilesTest() throws Exception {
+        // given
+        List<PrChangedFile> changedFiles = List.of(
+            new PrChangedFile(1L, "src/main/java/com/example/SingletonService.java", "Java", "public class SingletonService {\n\n    private static volatile SingletonService instance;\n\n    private SingletonService() {\n        // private constructor\n    }\n\n    public static SingletonService getInstance() {\n        if (instance == null) {\n            synchronized (SingletonService.class) {\n                if (instance == null) {\n                    instance = new SingletonService();\n                }\n            }\n        }\n        return instance;\n    }\n}"),
+            new PrChangedFile(1L, "src/test/java/com/example/SingletonServiceTest.java", "Java", "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\npublic class SingletonServiceTest {\n\n    @Test\n    void testSingletonInstance() {\n        SingletonService instance1 = SingletonService.getInstance();\n        SingletonService instance2 = SingletonService.getInstance();\n        assertSame(instance1, instance2);\n    }\n}")
+        );
+        PrChangedFilesResponse response = PrChangedFilesResponse.from(changedFiles);
+        when(prService.getChangedFiles(anyLong())).thenReturn(response);
+
+        // when & then
+        mockMvc.perform(get("/api/pr/changed-files/{prId}", 1L)
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andDo(document("pr-changed-files",
+                pathParameters(
+                    parameterWithName("prId").description("PR ID")
+                ),
+                responseFields(
+                    fieldWithPath("code").description("응답 코드"),
+                    fieldWithPath("message").description("응답 메시지"),
+                    fieldWithPath("result.files").description("변경 파일 목록"),
+                    fieldWithPath("result.files[].id").description("파일 ID"),
+                    fieldWithPath("result.files[].prId").description("PR ID"),
+                    fieldWithPath("result.files[].fileName").description("파일 이름"),
+                    fieldWithPath("result.files[].language").description("프로그래밍 언어"),
+                    fieldWithPath("result.files[].content").description("파일 내용")
                 )
             ));
     }

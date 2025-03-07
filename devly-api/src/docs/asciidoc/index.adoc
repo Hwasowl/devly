@@ -24,3 +24,9 @@ operation::update-word-review[snippets='http-response']
 === [단어] 학습 결과 조회
 operation::get-word-reviews[snippets='http-request']
 operation::get-word-reviews[snippets='http-response']
+=== [PR] PR 조회
+operation::pr-info[snippets='http-request']
+operation::pr-info[snippets='http-response']
+=== [PR] 변경 파일 조회
+operation::pr-changed-files[snippets='http-request']
+operation::pr-changed-files[snippets='http-response']
