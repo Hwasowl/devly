@@ -92,7 +92,7 @@ class PrContentProcessorTest {
         Long savedPrId = savedPrs.get(0).getId();
 
         // Changed Files 저장 검증
-        List<PrChangedFile> changedFiles = prChangedFileRepository.findByPullRequestId(savedPrId);
+        List<PrChangedFile> changedFiles = prChangedFileRepository.findByPrId(savedPrId);
         assertThat(changedFiles).hasSize(2);
 
         // 파일 내용 검증

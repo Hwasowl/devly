@@ -2,10 +2,13 @@ package se.sowl.devlyapi.pr.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import se.sowl.devlyapi.pr.dto.PrChangedFilesResponse;
 import se.sowl.devlyapi.pr.dto.PrResponse;
 import se.sowl.devlyapi.study.service.UserStudyService;
 import se.sowl.devlydomain.pr.domain.Pr;
+import se.sowl.devlydomain.pr.domain.PrChangedFile;
 import se.sowl.devlydomain.pr.domain.PrLabel;
+import se.sowl.devlydomain.pr.repository.PrChangedFileRepository;
 import se.sowl.devlydomain.pr.repository.PrLabelRepository;
 import se.sowl.devlydomain.pr.repository.PrRepository;
 
@@ -17,6 +20,7 @@ public class PrService {
     private final UserStudyService userStudyService;
     private final PrRepository prRepository;
     private final PrLabelRepository prLabelRepository;
+    private final PrChangedFileRepository prChangedFileRepository;
 
     public PrResponse getPr(Long userId, Long studyId) {
         userStudyService.isUserStudyExist(userId, studyId);
@@ -25,7 +29,8 @@ public class PrService {
         return PrResponse.from(pr, prLabels);
     }
 
-    // file changed 조회
-
-    // pr 커멘트 응답 (분리?)
+    public PrChangedFilesResponse getChangedFiles(Long prId) {
+        List<PrChangedFile> files = prChangedFileRepository.findByPrId(prId);
+        return PrChangedFilesResponse.from(files);
+    }
 }

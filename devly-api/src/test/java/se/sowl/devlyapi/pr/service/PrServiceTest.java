@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import se.sowl.devlyapi.MediumTest;
+import se.sowl.devlyapi.pr.dto.PrChangedFilesResponse;
 import se.sowl.devlyapi.pr.dto.PrResponse;
 import se.sowl.devlydomain.pr.domain.Pr;
 import se.sowl.devlydomain.study.domain.Study;
@@ -49,6 +50,26 @@ class PrServiceTest extends MediumTest {
             assertThat(prResponse.getDescription()).isEqualTo("Thread-safe한 싱글톤 패턴으로 개선");
             assertThat(prResponse.getLabels()).hasSize(3);
             assertThat(prResponse.getLabels()).contains("backend", "feature", "thread");
+        }
+    }
+
+    @Nested
+    class GetChangedFiles {
+
+        @Test
+        @DisplayName("특정 PR의 변경 파일을 조회할 수 있다.")
+        void get() {
+            // given
+            Pr pr = prRepository.save(buildPr(1L));
+            prChangedFileRepository.saveAll(buildPrChangedFiles(pr.getId()));
+
+            // when
+            PrChangedFilesResponse changedFilesResponse = prService.getChangedFiles(pr.getId());
+
+            // then
+            assertThat(changedFilesResponse.getFiles()).hasSize(2);
+            assertThat(changedFilesResponse.getFiles().get(0).getFileName()).isEqualTo("src/main/java/com/example/SingletonService.java");
+            assertThat(changedFilesResponse.getFiles().get(1).getFileName()).isEqualTo("src/test/java/com/example/SingletonServiceTest.java");
         }
     }
 }

@@ -17,7 +17,9 @@ import se.sowl.devlyapi.word.service.WordService;
 import se.sowl.devlydomain.developer.domain.DeveloperType;
 import se.sowl.devlydomain.developer.repository.DeveloperTypeRepository;
 import se.sowl.devlydomain.pr.domain.Pr;
+import se.sowl.devlydomain.pr.domain.PrChangedFile;
 import se.sowl.devlydomain.pr.domain.PrLabel;
+import se.sowl.devlydomain.pr.repository.PrChangedFileRepository;
 import se.sowl.devlydomain.pr.repository.PrLabelRepository;
 import se.sowl.devlydomain.pr.repository.PrRepository;
 import se.sowl.devlydomain.study.domain.Study;
@@ -82,6 +84,9 @@ public abstract class MediumTest {
 
     @Autowired
     protected PrLabelRepository prLabelRepository;
+
+    @Autowired
+    protected PrChangedFileRepository prChangedFileRepository;
 
     @Autowired
     protected ObjectMapper objectMapper;
@@ -190,6 +195,23 @@ public abstract class MediumTest {
             new PrLabel(prId, "backend"),
             new PrLabel(prId, "feature"),
             new PrLabel(prId, "thread")
+        );
+    }
+
+    protected List<PrChangedFile> buildPrChangedFiles(Long prId) {
+        return List.of(
+            PrChangedFile.builder()
+                .prId(prId)
+                .fileName("src/main/java/com/example/SingletonService.java")
+                .language("Java")
+                .content("public class SingletonService {\n\n    private static volatile SingletonService instance;\n\n    private SingletonService() {\n        // private constructor\n    }\n\n    public static SingletonService getInstance() {\n        if (instance == null) {\n            synchronized (SingletonService.class) {\n                if (instance == null) {\n                    instance = new SingletonService();\n                }\n            }\n        }\n        return instance;\n    }\n}")
+                .build(),
+            PrChangedFile.builder()
+                .prId(prId)
+                .fileName("src/test/java/com/example/SingletonServiceTest.java")
+                .language("Java")
+                .content("import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\npublic class SingletonServiceTest {\n\n    @Test\n    void testSingletonInstance() {\n        SingletonService instance1 = SingletonService.getInstance();\n        SingletonService instance2 = SingletonService.getInstance();\n        assertSame(instance1, instance2);\n    }\n}")
+                .build()
         );
     }
 }

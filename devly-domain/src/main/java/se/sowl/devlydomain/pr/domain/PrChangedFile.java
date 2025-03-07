@@ -17,7 +17,7 @@ public class PrChangedFile extends BaseTimeEntity {
     private Long id;
 
     @Column(name = "pull_request_id")
-    private Long pullRequestId;
+    private Long prId;
 
     @Column(name = "file_name")
     private String fileName;
@@ -28,8 +28,8 @@ public class PrChangedFile extends BaseTimeEntity {
     private String content;
 
     @Builder
-    public PrChangedFile(Long pullRequestId, String fileName, String language, String content) {
-        this.pullRequestId = pullRequestId;
+    public PrChangedFile(Long prId, String fileName, String language, String content) {
+        this.prId = prId;
         this.fileName = fileName;
         this.language = language;
         this.content = content;
