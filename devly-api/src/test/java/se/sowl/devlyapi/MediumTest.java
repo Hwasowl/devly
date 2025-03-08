@@ -18,8 +18,10 @@ import se.sowl.devlydomain.developer.domain.DeveloperType;
 import se.sowl.devlydomain.developer.repository.DeveloperTypeRepository;
 import se.sowl.devlydomain.pr.domain.Pr;
 import se.sowl.devlydomain.pr.domain.PrChangedFile;
+import se.sowl.devlydomain.pr.domain.PrComment;
 import se.sowl.devlydomain.pr.domain.PrLabel;
 import se.sowl.devlydomain.pr.repository.PrChangedFileRepository;
+import se.sowl.devlydomain.pr.repository.PrCommentRepository;
 import se.sowl.devlydomain.pr.repository.PrLabelRepository;
 import se.sowl.devlydomain.pr.repository.PrRepository;
 import se.sowl.devlydomain.study.domain.Study;
@@ -87,6 +89,9 @@ public abstract class MediumTest {
 
     @Autowired
     protected PrChangedFileRepository prChangedFileRepository;
+
+    @Autowired
+    protected PrCommentRepository prCommentRepository;
 
     @Autowired
     protected ObjectMapper objectMapper;
@@ -211,6 +216,21 @@ public abstract class MediumTest {
                 .fileName("src/test/java/com/example/SingletonServiceTest.java")
                 .language("Java")
                 .content("import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\npublic class SingletonServiceTest {\n\n    @Test\n    void testSingletonInstance() {\n        SingletonService instance1 = SingletonService.getInstance();\n        SingletonService instance2 = SingletonService.getInstance();\n        assertSame(instance1, instance2);\n    }\n}")
+                .build()
+        );
+    }
+
+    protected List<PrComment> buildPrComments(Long prId) {
+        return List.of(
+            PrComment.builder()
+                .prId(prId)
+                .idx(1L)
+                .content("커밋 로그와 변경된 파일을 확인해 어떤 부분을 반영하고 개선한 PR인지 설명해주세요!")
+                .build(),
+            PrComment.builder()
+                .prId(prId)
+                .idx(2L)
+                .content("왜 구조가 변경되었는지 상세하게 설명해주세요.")
                 .build()
         );
     }

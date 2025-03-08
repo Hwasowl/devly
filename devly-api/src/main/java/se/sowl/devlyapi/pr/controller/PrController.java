@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import se.sowl.devlyapi.common.CommonResponse;
 import se.sowl.devlyapi.pr.dto.PrChangedFilesResponse;
+import se.sowl.devlyapi.pr.dto.PrCommentsResponse;
 import se.sowl.devlyapi.pr.dto.PrResponse;
 import se.sowl.devlyapi.pr.service.PrService;
 import se.sowl.devlydomain.user.domain.CustomOAuth2User;
@@ -31,6 +32,13 @@ public class PrController {
     @PreAuthorize("isAuthenticated()")
     public CommonResponse<PrChangedFilesResponse> getChangedFiles(@PathVariable Long prId) {
         PrChangedFilesResponse response = prService.getChangedFiles(prId);
+        return CommonResponse.ok(response);
+    }
+
+    @GetMapping("/comments/{prId}")
+    @PreAuthorize("isAuthenticated()")
+    public CommonResponse<PrCommentsResponse> getComments(@PathVariable Long prId) {
+        PrCommentsResponse response = prService.getComments(prId);
         return CommonResponse.ok(response);
     }
 }

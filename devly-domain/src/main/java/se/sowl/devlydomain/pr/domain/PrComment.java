@@ -2,6 +2,7 @@ package se.sowl.devlydomain.pr.domain;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import se.sowl.devlydomain.common.BaseTimeEntity;
@@ -22,6 +23,7 @@ public class PrComment extends BaseTimeEntity {
 
     private String content;
 
+    @Builder
     public PrComment(Long prId, Long idx, String content) {
         this.prId = prId;
         this.idx = idx;
