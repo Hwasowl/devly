@@ -98,7 +98,6 @@ public class PrContentProcessor extends GptContentProcessor<Pr> {
     private void processComments(Long prId, String entry) {
         String labelsJson = jsonExtractor.extractJsonArray(entry, "질문:");
         if (jsonExtractor.isInvalidJson(labelsJson)) return;
-
         try {
             List<String> comments = jsonExtractor.parseListString(labelsJson);
             saveComments(prId, comments);
