@@ -1,4 +1,4 @@
-package se.sowl.devlybatch.service;
+package se.sowl.devlybatch.job.study.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

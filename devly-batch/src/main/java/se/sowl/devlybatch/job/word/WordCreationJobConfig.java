@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
 import se.sowl.devlybatch.job.word.utils.WordContentProcessor;
 import se.sowl.devlybatch.job.word.utils.WordPromptManager;
-import se.sowl.devlybatch.service.StudyService;
+import se.sowl.devlybatch.job.study.service.StudyService;
 import se.sowl.devlydomain.study.domain.Study;
 import se.sowl.devlydomain.study.domain.StudyTypeEnum;
 import se.sowl.devlydomain.word.domain.Word;
