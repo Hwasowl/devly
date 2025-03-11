@@ -87,6 +87,7 @@ pipeline {
                     if (params.BUILD_API) {
                         try {
                             sh 'export SPRING_PROFILES_ACTIVE=test && ./gradlew :devly-api:test'
+                            sh 'export SPRING_PROFILES_ACTIVE=test && ./gradlew :devly-api:asciidoctor'
                         } catch (Exception e) {
                             currentBuild.result = 'FAILURE'
                             error "API tests failed: ${e.message}"
