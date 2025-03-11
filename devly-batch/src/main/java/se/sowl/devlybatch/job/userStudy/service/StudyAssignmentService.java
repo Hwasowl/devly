@@ -27,8 +27,7 @@ public class StudyAssignmentService {
     @Transactional
     public UserStudy assignNextStudy(UserStudy completedUserStudy) {
         List<Study> orderedStudies = studyRepository.findAllByOrderById();
-        Map<Long, Study> studyMap = orderedStudies.stream()
-            .collect(Collectors.toMap(Study::getId, s -> s));
+        Map<Long, Study> studyMap = orderedStudies.stream().collect(Collectors.toMap(Study::getId, s -> s));
 
         Study completedStudy = getCompletedStudy(completedUserStudy, studyMap);
         if (completedStudy == null) return null;

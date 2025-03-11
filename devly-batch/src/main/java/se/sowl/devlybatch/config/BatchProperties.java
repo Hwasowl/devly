@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 @Getter
 @Setter
 @Configuration
-public class StudyBatchProperties {
+public class BatchProperties {
     @Value("${spring.jpa.properties.hibernate.batch_size}")
     private int chunkSize;
 

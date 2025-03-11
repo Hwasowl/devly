@@ -18,7 +18,7 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.TransientDataAccessException;
 import org.springframework.transaction.PlatformTransactionManager;
 import se.sowl.devlybatch.common.QuerydslPagingItemReader;
-import se.sowl.devlybatch.config.StudyBatchProperties;
+import se.sowl.devlybatch.config.BatchProperties;
 import se.sowl.devlybatch.job.userStudy.service.StudyAssignmentService;
 import se.sowl.devlydomain.user.domain.UserStudy;
 
@@ -29,7 +29,7 @@ public class StudyAssignmentJobConfig {
     private final JobRepository jobRepository;
     private final PlatformTransactionManager transactionManager;
     private final EntityManagerFactory entityManagerFactory;
-    private final StudyBatchProperties properties;
+    private final BatchProperties properties;
     private final StudyAssignmentService studyAssignmentService;
 
     @Bean
