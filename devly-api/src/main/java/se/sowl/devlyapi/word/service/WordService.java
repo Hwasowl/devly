@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import se.sowl.devlyapi.study.service.UserStudyService;
 import se.sowl.devlyapi.word.dto.WordListOfStudyResponse;
-import se.sowl.devlyapi.word.dto.WordReviewResponse;
+import se.sowl.devlyapi.word.dto.reviews.WordReviewResponse;
 import se.sowl.devlydomain.word.domain.Word;
 import se.sowl.devlydomain.word.domain.WordReview;
 import se.sowl.devlydomain.word.repository.WordRepository;

@@ -9,7 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import se.sowl.devlyapi.MediumTest;
 import se.sowl.devlyapi.word.dto.WordListOfStudyResponse;
 import se.sowl.devlyapi.word.dto.WordResponse;
-import se.sowl.devlyapi.word.dto.WordReviewResponse;
+import se.sowl.devlyapi.word.dto.reviews.WordReviewResponse;
 import se.sowl.devlyapi.word.exception.NotAssignmentWordStudyException;
 import se.sowl.devlydomain.study.domain.Study;
 import se.sowl.devlydomain.user.domain.User;

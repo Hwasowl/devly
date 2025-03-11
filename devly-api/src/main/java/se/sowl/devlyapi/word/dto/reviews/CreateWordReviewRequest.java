@@ -1,14 +1,13 @@
-package se.sowl.devlyapi.word.dto;
+package se.sowl.devlyapi.word.dto.reviews;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Getter
 @AllArgsConstructor
-@NoArgsConstructor
-public class UpdateWordReviewRequest {
+public class CreateWordReviewRequest {
     List<Long> correctIds;
+    List<Long> incorrectIds;
 }

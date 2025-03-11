@@ -1,4 +1,4 @@
-package se.sowl.devlyapi.pr.dto;
+package se.sowl.devlyapi.pr.dto.comments;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

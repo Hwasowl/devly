@@ -2,8 +2,8 @@ package se.sowl.devlyapi.pr.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import se.sowl.devlyapi.pr.dto.PrChangedFilesResponse;
-import se.sowl.devlyapi.pr.dto.PrCommentsResponse;
+import se.sowl.devlyapi.pr.dto.files.PrChangedFilesResponse;
+import se.sowl.devlyapi.pr.dto.comments.PrCommentsResponse;
 import se.sowl.devlyapi.pr.dto.PrResponse;
 import se.sowl.devlyapi.study.service.UserStudyService;
 import se.sowl.devlydomain.pr.domain.Pr;

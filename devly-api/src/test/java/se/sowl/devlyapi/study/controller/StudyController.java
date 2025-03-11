@@ -18,7 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import se.sowl.devlyapi.study.dto.UserStudyTask;
 import se.sowl.devlyapi.study.dto.UserStudyTasksResponse;
 import se.sowl.devlyapi.study.service.UserStudyService;
-import se.sowl.devlyapi.word.dto.WordReviewResponse;
+import se.sowl.devlyapi.word.dto.reviews.WordReviewResponse;
 import se.sowl.devlyapi.word.service.WordService;
 import se.sowl.devlydomain.user.domain.CustomOAuth2User;
 import se.sowl.devlydomain.user.domain.User;
