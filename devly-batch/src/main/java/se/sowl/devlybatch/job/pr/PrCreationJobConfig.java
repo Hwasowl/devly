@@ -11,7 +11,6 @@ import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.annotation.Transactional;
 import se.sowl.devlybatch.job.pr.service.PrProcessService;
 import se.sowl.devlybatch.job.study.service.StudyService;
 import se.sowl.devlydomain.study.domain.Study;
@@ -34,7 +33,6 @@ public class PrCreationJobConfig {
     }
 
     @Bean
-    @Transactional
     public Step createPrStep(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
         return new StepBuilder("createPrStep", jobRepository)
             .tasklet((contribution, chunkContext) -> {

@@ -26,13 +26,9 @@ public class PrProcessService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void processPrStudies(Study study) {
-        GPTResponse response = getPrResponse(study);
-        savePrOf(study, response);
-    }
-
-    private GPTResponse getPrResponse(Study study) {
         String prGeneratePrompt = createPrGeneratePrompt(study);
-        return gptClient.generate(prContentProcessor.createGPTRequest(prGeneratePrompt));
+        GPTResponse response = gptClient.generate(prContentProcessor.createGPTRequest(prGeneratePrompt));
+        savePrOf(study, response);
     }
 
     private String createPrGeneratePrompt(Study study) {
@@ -41,14 +37,14 @@ public class PrProcessService {
         return generatePrompt(study.getDeveloperTypeId(), recentTitles);
     }
 
-    private void savePrOf(Study study, GPTResponse response) {
-        prContentProcessor.parseGPTResponse(response, study.getId());
-    }
-
     private String generatePrompt(Long developerTypeId, List<String> excludeContents) {
         StringBuilder prompt = new StringBuilder();
         prPromptManager.addPrompt(developerTypeId, prompt);
         prPromptManager.addExcludePrompt(excludeContents, prompt);
         return prompt.toString();
+    }
+
+    private void savePrOf(Study study, GPTResponse response) {
+        prContentProcessor.parseGPTResponse(response, study.getId());
     }
 }
