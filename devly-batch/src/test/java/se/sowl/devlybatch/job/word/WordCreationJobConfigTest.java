@@ -22,6 +22,7 @@ import se.sowl.devlydomain.word.domain.Word;
 import se.sowl.devlydomain.word.repository.WordRepository;
 import se.sowl.devlyexternal.client.gpt.GPTClient;
 import se.sowl.devlyexternal.client.gpt.dto.GPTResponse;
+import se.sowl.devlyexternal.client.gpt.exception.GPTClientException;
 
 import java.util.List;
 
@@ -52,7 +53,6 @@ class WordCreationJobConfigTest extends MediumBatchTest {
         jobLauncherTestUtils.setJob(wordCreationJob);
         jobLauncherTestUtils.setJobRepository(jobRepository);
 
-        // Ensure test prompt data exists
         if (promptRepository.findFirstByDeveloperTypeIdAndStudyTypeId(1L, 1L).isEmpty()) {
             Prompt backendPrompt = new Prompt(1L, 1L, "백엔드 개발자를 위한 전문 용어를 생성해주세요.\n" +
                 "단어: [영문 용어]\n" +
@@ -148,7 +148,7 @@ class WordCreationJobConfigTest extends MediumBatchTest {
     }
 
     @Test
-    @DisplayName("GPT 응답 파싱 실패 시 예외가 발생하지만 배치는 실패한다.")
+    @DisplayName("특정 스터디에 대한 GPT 응답 파싱 실패 시 예외가 발생하지만 배치는 성공한다.")
     void createWordsStepWithFailureTest() throws Exception {
         // given
         Study study = Study.builder()
@@ -157,21 +157,14 @@ class WordCreationJobConfigTest extends MediumBatchTest {
             .build();
         studyRepository.save(study);
 
-        String invalidResponse = "잘못된 형식";
-        when(gptClient.generate(any()))
-            .thenReturn(new GPTResponse(
-                List.of(new GPTResponse.Choice(
-                    new GPTResponse.Message("assistant", invalidResponse),
-                    "stop",
-                    0
-                ))
-            ));
+        String invalidResponse = "Invalid Request";
+        when(gptClient.generate(any())).thenThrow(new GPTClientException("GPT API error: " + invalidResponse));
 
         // when
         JobExecution jobExecution = jobLauncherTestUtils.launchStep("createWordsStep");
 
         // then
-        assertThat(jobExecution.getStatus()).isEqualTo(BatchStatus.FAILED);
+        assertThat(jobExecution.getStatus()).isEqualTo(BatchStatus.COMPLETED);
         verify(gptClient, times(1)).generate(any());
 
         List<Word> savedWords = wordRepository.findAll();

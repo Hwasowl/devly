@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import se.sowl.devlybatch.job.pr.dto.PrWithRelations;
 import se.sowl.devlydomain.pr.domain.Pr;
 import se.sowl.devlydomain.pr.repository.PrRepository;
 import se.sowl.devlydomain.study.domain.Study;
@@ -17,16 +18,25 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 public class PrProcessService {
-    private final PrRepository prRepository;
     private final GPTClient gptClient;
-    private final PrContentProcessor prContentProcessor;
+    private final PrEntityParser prEntityParser;
+    private final PrPersistenceService prPersistenceService;
     private final PrPromptManager prPromptManager;
+    private final PrRepository prRepository;
 
     @Transactional
     public void processPrStudies(Study study) {
-        String prompt = createPrGeneratePrompt(study.getDeveloperTypeId(), study.getTypeId());
-        GPTResponse response = gptClient.generate(prContentProcessor.createGPTRequest(prompt));
-        prContentProcessor.parseGPTResponse(response, study.getId());
+        try {
+            String prompt = createPrGeneratePrompt(study.getDeveloperTypeId(), study.getTypeId());
+            GPTResponse response = gptClient.generate(prEntityParser.createGPTRequest(prompt));
+            List<PrWithRelations> parsedPrs = prEntityParser.parseGPTResponse(response, study.getId());
+            for (PrWithRelations prWithRelations : parsedPrs) {
+                prPersistenceService.savePrWithRelations(prWithRelations);
+            }
+            log.info("Created PR for study {}", study.getId());
+        } catch (Exception e) {
+            log.error("Error processing PR for study ID: {}", study.getId(), e);
+        }
     }
 
     private String createPrGeneratePrompt(Long developerTypeId, Long studyTypeId) {

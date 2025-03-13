@@ -3,6 +3,7 @@ package se.sowl.devlybatch.job.word.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import se.sowl.devlybatch.job.word.exception.EmptyWordsException;
 import se.sowl.devlybatch.job.word.exception.WordCreationException;
@@ -22,11 +23,10 @@ import java.util.stream.Collectors;
 public class WordProcessService {
     private final WordRepository wordRepository;
     private final GPTClient gptClient;
-    private final WordContentProcessor wordContentProcessor;
+    private final WordEntityParser wordEntityParser;
     private final WordPromptManager wordPromptManager;
 
-
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Long progressWordsOfStudy(Study study) {
         try {
             String prompt = createWordGeneratePrompt(study.getDeveloperTypeId(), study.getTypeId());
@@ -40,8 +40,8 @@ public class WordProcessService {
     }
 
     private List<Word> createWordsFromGpt(Study study, String prompt) {
-        GPTResponse response = gptClient.generate(wordContentProcessor.createGPTRequest(prompt));
-        List<Word> words = wordContentProcessor.parseGPTResponse(response, study.getId());
+        GPTResponse response = gptClient.generate(wordEntityParser.createGPTRequest(prompt));
+        List<Word> words = wordEntityParser.parseGPTResponse(response, study.getId());
         if (words.isEmpty()) {
             throw new EmptyWordsException("No words parsed for study: " + study.getId());
         }
