@@ -18,17 +18,9 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.TransientDataAccessException;
 import org.springframework.transaction.PlatformTransactionManager;
 import se.sowl.devlybatch.common.QuerydslPagingItemReader;
-import se.sowl.devlybatch.config.StudyBatchProperties;
-import se.sowl.devlydomain.study.domain.Study;
-import se.sowl.devlydomain.study.repository.StudyRepository;
+import se.sowl.devlybatch.config.BatchProperties;
+import se.sowl.devlybatch.job.userStudy.service.StudyAssignmentService;
 import se.sowl.devlydomain.user.domain.UserStudy;
-import se.sowl.devlydomain.user.repository.UserStudyRepository;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Configuration
@@ -36,10 +28,9 @@ import java.util.stream.Collectors;
 public class StudyAssignmentJobConfig {
     private final JobRepository jobRepository;
     private final PlatformTransactionManager transactionManager;
-    private final UserStudyRepository userStudyRepository;
-    private final StudyRepository studyRepository;
     private final EntityManagerFactory entityManagerFactory;
-    private final StudyBatchProperties properties;
+    private final BatchProperties properties;
+    private final StudyAssignmentService studyAssignmentService;
 
     @Bean
     public Job studyAssignmentJob() {
@@ -78,10 +69,12 @@ public class StudyAssignmentJobConfig {
     @Bean
     @StepScope
     protected ItemReader<UserStudy> completedStudiesReader() {
-        LocalDateTime yesterday = LocalDate.now().minusDays(1).atStartOfDay();
-        LocalDateTime todayStart = LocalDate.now().atStartOfDay();
         return new QuerydslPagingItemReader<>(
-            pageable -> userStudyRepository.findCompletedStudiesWithoutNext(yesterday, todayStart, todayStart, pageable),
+            (pageable) -> {
+                int pageNumber = pageable.getPageNumber();
+                int pageSize = pageable.getPageSize();
+                return studyAssignmentService.findCompletedStudiesWithoutNext(pageNumber, pageSize);
+            },
             properties.getChunkSize()
         );
     }
@@ -89,52 +82,7 @@ public class StudyAssignmentJobConfig {
     @Bean
     @StepScope
     protected ItemProcessor<UserStudy, UserStudy> nextStudyProcessor() {
-        List<Study> orderedStudies = studyRepository.findAllByOrderById();
-        Map<Long, Study> studyMap = orderedStudies.stream().collect(Collectors.toMap(Study::getId, s -> s));
-        return completed -> {
-            Study completedStudy = getCompletedStudy(completed, studyMap);
-            if (completedStudy == null) return null;
-            Study nextStudy = getNextStudy(completed, orderedStudies, completedStudy);
-            if (nextStudy == null) return null;
-            return UserStudy.builder()
-                .userId(completed.getUserId())
-                .study(nextStudy)
-                .scheduledAt(LocalDateTime.now())
-                .build();
-        };
-    }
-
-    private static Study getCompletedStudy(UserStudy completed, Map<Long, Study> studyMap) {
-        Study completedStudy = studyMap.get(completed.getStudy().getId());
-        if (completedStudy == null) {
-            log.warn("Completed study not found: {}", completed.getId());
-            return null;
-        }
-        return completedStudy;
-    }
-
-    private static Study getNextStudy(UserStudy completed, List<Study> orderedStudies, Study completedStudy) {
-        Study nextStudy = findNextStudy(orderedStudies, completedStudy);
-        if (nextStudy == null) {
-            log.info("No next study found for user: {}, type: {}, devType: {}",
-                completed.getUserId(), completedStudy.getTypeId(), completedStudy.getDeveloperTypeId());
-            return null;
-        }
-        return nextStudy;
-    }
-
-    public static Study findNextStudy(List<Study> allStudies, Study currentStudy) {
-        boolean foundCurrent = false;
-        for (Study study : allStudies) {
-            if (foundCurrent && isSameStudyType(currentStudy, study)) return study;
-            else if (study.getId().equals(currentStudy.getId())) foundCurrent = true;
-        }
-        return null;
-    }
-
-    private static boolean isSameStudyType(Study currentStudy, Study study) {
-        return study.getTypeId().equals(currentStudy.getTypeId()) &&
-            study.getDeveloperTypeId().equals(currentStudy.getDeveloperTypeId());
+        return studyAssignmentService::assignNextStudy;
     }
 
     @Bean

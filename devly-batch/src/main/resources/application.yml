@@ -31,8 +31,14 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
         show_sql: true
+        batch_size: 100
+        order_inserts: true
+        generate_statistics: true
     hibernate:
       ddl-auto: create
+  batch:
+    retry-limit: 3
+    skip-limit: 10
 logging:
   level:
     org.hibernate.SQL: DEBUG
@@ -54,6 +60,8 @@ spring:
   batch:
     jdbc:
       initialize-schema: never
+    retry-limit: 3
+    skip-limit: 10
   h2:
     console:
       enabled: true
@@ -67,6 +75,8 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
         show_sql: true
+        batch_size: 100
+        order_inserts: true
     hibernate:
       ddl-auto: none
 openai:

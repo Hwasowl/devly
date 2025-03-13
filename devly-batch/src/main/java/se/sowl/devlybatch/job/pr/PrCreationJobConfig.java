@@ -11,30 +11,19 @@ import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
-import se.sowl.devlybatch.job.pr.utils.PrContentProcessor;
-import se.sowl.devlybatch.job.pr.utils.PrPromptManager;
-import se.sowl.devlybatch.service.StudyService;
-import se.sowl.devlydomain.pr.domain.Pr;
-import se.sowl.devlydomain.pr.repository.PrRepository;
+import se.sowl.devlybatch.job.pr.service.PrProcessService;
+import se.sowl.devlybatch.job.study.service.StudyService;
 import se.sowl.devlydomain.study.domain.Study;
 import se.sowl.devlydomain.study.domain.StudyTypeEnum;
-import se.sowl.devlyexternal.client.gpt.GPTClient;
-import se.sowl.devlyexternal.client.gpt.dto.GPTResponse;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
 public class PrCreationJobConfig {
-
     private final StudyService studyService;
-    private final PrRepository prRepository;
-    private final GPTClient gptClient;
-    private final PrContentProcessor prContentProcessor;
-    private final PrPromptManager prPromptManager;
+    private final PrProcessService prProcessService;
 
     @Bean
     public Job prCreationJob(JobRepository jobRepository, Step createPrStep) {
@@ -53,35 +42,18 @@ public class PrCreationJobConfig {
             .build();
     }
 
-    private void createTodayPrStudies() {
+    public void createTodayPrStudies() {
         List<Study> todayStudies = studyService.getTodayStudiesOf(StudyTypeEnum.PULL_REQUEST.getId());
+        log.info("Create pr batch started! studies total count: {}", todayStudies.size());
         for (Study study : todayStudies) {
-            GPTResponse response = getPrResponse(study);
-            savePrOf(study, response);
-            log.info("Created Pr for study {}", study.getId());
+            try {
+                prProcessService.processPrStudies(study);
+                log.info("Created pr for study {}", study.getId());
+            } catch (Exception e) {
+                log.error("[Warning] pr create failed : Study ID={}, Error={}", study.getId(), e.getMessage(), e);
+            }
         }
     }
 
-    private GPTResponse getPrResponse(Study study) {
-        String prGeneratePrompt = createPrGeneratePrompt(study);
-        return gptClient.generate(prContentProcessor.createGPTRequest(prGeneratePrompt));
-    }
-
-    private String createPrGeneratePrompt(Study study) {
-        List<String> recentTitles = prRepository.findPrsByCreatedAtAfter(LocalDateTime.now().minusDays(7))
-            .stream().map(Pr::getTitle).collect(Collectors.toList());
-        return generatePrompt(study.getDeveloperTypeId(), recentTitles);
-    }
-
-    private void savePrOf(Study study, GPTResponse response) {
-        prContentProcessor.parseGPTResponse(response, study.getId());
-    }
-
-    private String generatePrompt(Long developerTypeId, List<String> excludeContents) {
-        StringBuilder prompt = new StringBuilder();
-        prPromptManager.addPrompt(developerTypeId, prompt);
-        prPromptManager.addExcludePrompt(excludeContents, prompt);
-        return prompt.toString();
-    }
 }
 

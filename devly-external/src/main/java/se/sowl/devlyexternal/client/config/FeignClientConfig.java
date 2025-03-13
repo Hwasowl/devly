@@ -3,10 +3,12 @@ package se.sowl.devlyexternal.client.config;
 import feign.Client;
 import feign.Request;
 import feign.RequestInterceptor;
-import feign.Retryer;
+import feign.codec.ErrorDecoder;
+import feign.codec.ErrorDecoder.Default;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import se.sowl.devlyexternal.client.gpt.exception.GPTClientException;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -56,7 +58,12 @@ public class FeignClientConfig {
     }
 
     @Bean
-    public Retryer retryer() {
-        return new Retryer.Default(1000, 2000, 3);
+    public ErrorDecoder errorDecoder() {
+        return (methodKey, response) -> {
+            if (response.status() >= 400) {
+                return new GPTClientException("GPT API error: " + response.reason());
+            }
+            return new Default().decode(methodKey, response);
+        };
     }
 }

@@ -4,7 +4,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.batch.core.*;
+import org.springframework.batch.core.BatchStatus;
+import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.test.JobLauncherTestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -118,5 +119,37 @@ class WordCreationJobConfigTest extends MediumBatchTest {
         Word frontendWord = wordRepository.findByStudyId(frontendStudy.getId());
         assertThat(frontendWord.getWord()).isEqualTo("component");
         assertThat(frontendWord.getMeaning()).isEqualTo("구성 요소");
+    }
+
+    @Test
+    @DisplayName("GPT 응답 파싱 실패 시 예외가 발생하지만 배치는 실패한다.")
+    void createWordsStepWithFailureTest() throws Exception {
+        // given
+        Study study = Study.builder()
+            .typeId(1L)
+            .developerTypeId(1L)
+            .build();
+        studyRepository.save(study);
+
+        String invalidResponse = "잘못된 형식";
+        when(gptClient.generate(any()))
+            .thenReturn(new GPTResponse(
+                List.of(new GPTResponse.Choice(
+                    new GPTResponse.Message("assistant", invalidResponse),
+                    "stop",
+                    0
+                ))
+            ));
+
+        // when
+        JobExecution jobExecution = jobLauncherTestUtils.launchStep("createWordsStep");
+
+        // then
+        assertThat(jobExecution.getStatus()).isEqualTo(BatchStatus.FAILED);
+        verify(gptClient, times(1)).generate(any());
+
+        // 에러 로깅이 발생했지만 배치는 완료됨
+        List<Word> savedWords = wordRepository.findAll();
+        assertThat(savedWords).isEmpty();
     }
 }

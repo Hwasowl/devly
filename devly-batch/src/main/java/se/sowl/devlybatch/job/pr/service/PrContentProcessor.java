@@ -1,4 +1,4 @@
-package se.sowl.devlybatch.job.pr.utils;
+package se.sowl.devlybatch.job.pr.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -89,10 +89,9 @@ public class PrContentProcessor extends GptContentProcessor<Pr> {
     }
 
     private void saveLabels(Long prId, List<String> labels) {
-        for (String label : labels) {
-            PrLabel prLabel = new PrLabel(prId, label);
-            prLabelRepository.save(prLabel);
-        }
+        List<PrLabel> labelsToSave = new ArrayList<>();
+        labels.forEach(label -> labelsToSave.add(new PrLabel(prId, label)));
+        prLabelRepository.saveAll(labelsToSave);
     }
 
     private void processComments(Long prId, String entry) {
