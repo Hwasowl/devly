@@ -3,6 +3,7 @@ package se.sowl.devlybatch.job.word.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import se.sowl.devlybatch.job.word.exception.EmptyWordsException;
 import se.sowl.devlybatch.job.word.exception.WordCreationException;
@@ -25,8 +26,7 @@ public class WordProcessService {
     private final WordEntityParser wordEntityParser;
     private final WordPromptManager wordPromptManager;
 
-
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Long progressWordsOfStudy(Study study) {
         try {
             String prompt = createWordGeneratePrompt(study.getDeveloperTypeId(), study.getTypeId());
