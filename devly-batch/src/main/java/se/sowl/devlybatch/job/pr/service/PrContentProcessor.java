@@ -28,6 +28,7 @@ public class PrContentProcessor extends GptContentProcessor<Pr> {
     private final PrCommentRepository prCommentRepository;
     private final JsonExtractor jsonExtractor;
 
+    // TODO: content processor 의 역할 이상을 수행하고 있음. 분리 필요.
     @Override
     protected void parseEntity(Long studyId, String entry, List<Pr> contents) {
         try {

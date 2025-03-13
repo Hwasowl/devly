@@ -27,9 +27,9 @@ public class WordProcessService {
 
 
     @Transactional
-    public Long createWordsForStudy(Study study) {
+    public Long progressWordsOfStudy(Study study) {
         try {
-            String prompt = createWordGeneratePrompt(study);
+            String prompt = createWordGeneratePrompt(study.getDeveloperTypeId(), study.getTypeId());
             List<Word> words = createWordsFromGpt(study, prompt);
             wordRepository.saveAll(words);
             return study.getId();
@@ -48,13 +48,12 @@ public class WordProcessService {
         return words;
     }
 
-    private String createWordGeneratePrompt(Study study) {
+    private String createWordGeneratePrompt(Long developerTypeId, Long studyTypeId) {
+        StringBuilder prompt = new StringBuilder();
         List<String> recentWords = wordRepository.findWordsByCreatedAtAfter(LocalDateTime.now().minusDays(7))
             .stream().map(Word::getWord).collect(Collectors.toList());
-
-        StringBuilder prompt = new StringBuilder();
-        wordPromptManager.addPrompt(study.getDeveloperTypeId(), prompt);
         wordPromptManager.addExcludePrompt(recentWords, prompt);
+        wordPromptManager.addBasePrompt(developerTypeId, studyTypeId, prompt);
         return prompt.toString();
     }
 }

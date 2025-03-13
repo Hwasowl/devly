@@ -46,7 +46,7 @@ public class WordCreationJobConfig {
         List<Study> todayStudies = studyService.getTodayStudiesOf(StudyTypeEnum.WORD.getId());
         for (Study study : todayStudies) {
             try {
-                Long studyId = wordProcessService.createWordsForStudy(study);
+                Long studyId = wordProcessService.progressWordsOfStudy(study);
                 log.info("Successfully created words for study {}", studyId);
             } catch (Exception e) {
                 log.error("Failed to create words for study {}: {}", study.getId(), e.getMessage(), e);
