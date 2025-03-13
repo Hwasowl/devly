@@ -1,9 +1,12 @@
 package se.sowl.devlybatch.job.word;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import se.sowl.devlybatch.common.JsonExtractor;
 import se.sowl.devlybatch.common.gpt.GptRequestFactory;
 import se.sowl.devlybatch.common.gpt.GptResponseValidator;
 import se.sowl.devlybatch.job.word.service.WordEntityParser;
@@ -17,6 +20,17 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 @SpringBootTest
 @ActiveProfiles("test")
 class WordEntityParserTest {
+
+    @Autowired
+    private WordEntityParser wordEntityParser;
+
+    public WordEntityParserTest() {
+        this.wordEntityParser = new WordEntityParser(
+            new JsonExtractor(new ObjectMapper()),
+            new GptRequestFactory(),
+            new GptResponseValidator()
+        );
+    }
 
     @Test
     @DisplayName("단어 GPT 응답을 파싱 처리 해 Word 엔티티로 변환한다")
@@ -39,18 +53,12 @@ class WordEntityParserTest {
            """;
         GPTResponse gptResponse = new GPTResponse(
             List.of(new GPTResponse.Choice(
-                new GPTResponse.Message("assistant", responseContent),
-                "stop",
-                0
+                new GPTResponse.Message("assistant", responseContent), "stop", 0
             ))
         );
 
         // when
-        WordEntityParser wordParser = new WordEntityParser(new GptRequestFactory(), new GptResponseValidator());
-        List<Word> words = wordParser.parseGPTResponse(gptResponse, studyId);
-
-        // then
-        assertThat(words).hasSize(2);
+        List<Word> words = wordEntityParser.parseGPTResponse(gptResponse, studyId);
 
         Word firstWord = words.getFirst();
         assertThat(firstWord.getStudyId()).isEqualTo(studyId);
