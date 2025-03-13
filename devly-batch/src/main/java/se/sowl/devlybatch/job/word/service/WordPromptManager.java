@@ -1,4 +1,4 @@
-package se.sowl.devlybatch.job.word.utils;
+package se.sowl.devlybatch.job.word.service;
 
 import org.springframework.stereotype.Component;
 import se.sowl.devlybatch.common.gpt.GptPromptManager;
