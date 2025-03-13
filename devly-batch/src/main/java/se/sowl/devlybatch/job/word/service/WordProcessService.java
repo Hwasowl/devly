@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 public class WordProcessService {
     private final WordRepository wordRepository;
     private final GPTClient gptClient;
-    private final WordContentProcessor wordContentProcessor;
+    private final WordEntityParser wordEntityParser;
     private final WordPromptManager wordPromptManager;
 
 
@@ -40,8 +40,8 @@ public class WordProcessService {
     }
 
     private List<Word> createWordsFromGpt(Study study, String prompt) {
-        GPTResponse response = gptClient.generate(wordContentProcessor.createGPTRequest(prompt));
-        List<Word> words = wordContentProcessor.parseGPTResponse(response, study.getId());
+        GPTResponse response = gptClient.generate(wordEntityParser.createGPTRequest(prompt));
+        List<Word> words = wordEntityParser.parseGPTResponse(response, study.getId());
         if (words.isEmpty()) {
             throw new EmptyWordsException("No words parsed for study: " + study.getId());
         }

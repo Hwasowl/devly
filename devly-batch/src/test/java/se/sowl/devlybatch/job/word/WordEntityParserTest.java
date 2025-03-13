@@ -4,7 +4,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import se.sowl.devlybatch.job.word.service.WordContentProcessor;
+import se.sowl.devlybatch.common.gpt.GptRequestFactory;
+import se.sowl.devlybatch.common.gpt.GptResponseValidator;
+import se.sowl.devlybatch.job.word.service.WordEntityParser;
 import se.sowl.devlydomain.word.domain.Word;
 import se.sowl.devlyexternal.client.gpt.dto.GPTResponse;
 
@@ -14,7 +16,7 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 @SpringBootTest
 @ActiveProfiles("test")
-class WordContentProcessorTest {
+class WordEntityParserTest {
 
     @Test
     @DisplayName("단어 GPT 응답을 파싱 처리 해 Word 엔티티로 변환한다")
@@ -44,7 +46,7 @@ class WordContentProcessorTest {
         );
 
         // when
-        WordContentProcessor wordParser = new WordContentProcessor();
+        WordEntityParser wordParser = new WordEntityParser(new GptRequestFactory(), new GptResponseValidator());
         List<Word> words = wordParser.parseGPTResponse(gptResponse, studyId);
 
         // then
