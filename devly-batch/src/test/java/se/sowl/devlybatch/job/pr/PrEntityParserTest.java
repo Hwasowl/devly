@@ -1,21 +1,21 @@
 package se.sowl.devlybatch.job.pr;
 
-import org.junit.jupiter.api.AfterEach;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
-import se.sowl.devlybatch.job.pr.service.PrContentProcessor;
+import se.sowl.devlybatch.common.JsonExtractor;
+import se.sowl.devlybatch.common.gpt.GptRequestFactory;
+import se.sowl.devlybatch.common.gpt.GptResponseValidator;
+import se.sowl.devlybatch.job.pr.dto.PrWithRelations;
+import se.sowl.devlybatch.job.pr.service.PrEntityParser;
 import se.sowl.devlydomain.pr.domain.Pr;
 import se.sowl.devlydomain.pr.domain.PrChangedFile;
 import se.sowl.devlydomain.pr.domain.PrComment;
 import se.sowl.devlydomain.pr.domain.PrLabel;
-import se.sowl.devlydomain.pr.repository.PrChangedFileRepository;
-import se.sowl.devlydomain.pr.repository.PrCommentRepository;
-import se.sowl.devlydomain.pr.repository.PrLabelRepository;
-import se.sowl.devlydomain.pr.repository.PrRepository;
 import se.sowl.devlyexternal.client.gpt.dto.GPTResponse;
 
 import java.util.List;
@@ -25,28 +25,17 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
-class PrContentProcessorTest {
+class PrEntityParserTest {
 
     @Autowired
-    private PrContentProcessor prContentProcessor;
+    private final PrEntityParser prEntityParser;
 
-    @Autowired
-    private PrRepository prRepository;
-
-    @Autowired
-    private PrChangedFileRepository prChangedFileRepository;
-
-    @Autowired
-    private PrCommentRepository prCommentRepository;
-
-    @Autowired
-    private PrLabelRepository prLabelRepository;
-
-    @AfterEach
-    void tearDown() {
-        prLabelRepository.deleteAll();
-        prChangedFileRepository.deleteAll();
-        prRepository.deleteAll();
+    public PrEntityParserTest() {
+        this.prEntityParser = new PrEntityParser(
+            new JsonExtractor(new ObjectMapper()),
+            new GptRequestFactory(),
+            new GptResponseValidator()
+        );
     }
 
     @Test
@@ -70,30 +59,21 @@ class PrContentProcessorTest {
             ))
         );
 
-        prLabelRepository.deleteAll();
-        prChangedFileRepository.deleteAll();
-        prRepository.deleteAll();
-
         // when
-        List<Pr> prs = prContentProcessor.parseGPTResponse(gptResponse, studyId);
+        List<PrWithRelations> prWithRelations = prEntityParser.parseGPTResponse(gptResponse, studyId);
 
         // then
-        assertThat(prs).hasSize(1);
+        assertThat(prWithRelations).hasSize(1);
 
         // PR 검증
-        Pr pr = prs.getFirst();
+        Pr pr = prWithRelations.getFirst().getPr();
         assertThat(pr.getTitle()).isEqualTo("싱글톤 패턴 구현 개선");
         assertThat(pr.getDescription()).isEqualTo("Thread-safe한 싱글톤 패턴으로 개선하고, 불필요한 메모리 사용을 줄였습니다.");
         assertThat(pr.getStudyId()).isEqualTo(studyId);
 
-        // 저장된 PR 조회
-        List<Pr> savedPrs = prRepository.findAll();
-        assertThat(savedPrs).hasSize(1);
-        Long savedPrId = savedPrs.get(0).getId();
-
         // Changed Files 저장 검증
-        List<PrChangedFile> changedFiles = prChangedFileRepository.findByPrId(savedPrId);
-        assertThat(changedFiles).hasSize(2);
+        List<PrChangedFile> changedFiles = prWithRelations.get(0).getChangedFiles();
+        assertThat(prWithRelations.get(0).getChangedFiles()).hasSize(2);
 
         // 파일 내용 검증
         PrChangedFile singletonServiceFile = changedFiles.stream()
@@ -113,13 +93,13 @@ class PrContentProcessorTest {
         assertThat(testFile.getContent()).contains("testSingletonInstance");
 
         // 라벨 저장 검증
-        List<PrLabel> labels = prLabelRepository.findAllByPrId(savedPrId);
+        List<PrLabel> labels = prWithRelations.get(0).getLabels();
         assertThat(labels).hasSize(5);
         assertThat(labels.get(0).getLabel()).isEqualTo("Java");
         assertThat(labels.get(1).getLabel()).isEqualTo("Thread-safe");
 
         // 질문 저장 검증
-        List<PrComment> comments = prCommentRepository.findByPrId(savedPrId);
+        List<PrComment> comments = prWithRelations.get(0).getComments();
         assertThat(comments).hasSize(3);
         assertThat(comments.get(0).getContent()).contains("커밋 로그와 변경된 파일을 확인해 어떤 부분을 반영하고 개선한 PR인지 설명해주세요!");
     }
