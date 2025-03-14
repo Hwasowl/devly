@@ -7,6 +7,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import se.sowl.devlydomain.study.domain.Study;
+import se.sowl.devlydomain.study.domain.StudyStatusEnum;
 import se.sowl.devlydomain.study.repository.StudyRepository;
 import se.sowl.devlydomain.user.domain.UserStudy;
 import se.sowl.devlydomain.user.repository.UserStudyRepository;
@@ -26,7 +27,7 @@ public class StudyAssignmentService {
 
     @Transactional
     public UserStudy assignNextStudy(UserStudy completedUserStudy) {
-        List<Study> orderedStudies = studyRepository.findAllByOrderById();
+        List<Study> orderedStudies = studyRepository.findAllByStatusOrderById(StudyStatusEnum.CONNECTED);
         Map<Long, Study> studyMap = orderedStudies.stream().collect(Collectors.toMap(Study::getId, s -> s));
 
         Study completedStudy = getCompletedStudy(completedUserStudy, studyMap);

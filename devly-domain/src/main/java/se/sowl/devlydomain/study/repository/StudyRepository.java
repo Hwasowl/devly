@@ -16,5 +16,5 @@ public interface StudyRepository extends JpaRepository<Study, Long> {
     Optional<Study> findFirstByTypeId(Long typeId);
 
     // TODO: Consider Pageable
-    List<Study> findAllByOrderById();
+    List<Study> findAllByStatusOrderById(StudyStatusEnum status);
 }

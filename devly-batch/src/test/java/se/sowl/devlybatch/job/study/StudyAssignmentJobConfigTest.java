@@ -66,7 +66,7 @@ class StudyAssignmentJobConfigTest extends MediumBatchTest {
     @Test
     @DisplayName("완료된 스터디가 없으면 새로운 스터디가 할당되지 않는다")
     void noCompletedStudiesShouldNotAssignNewStudies() throws Exception {
-        createStudies(1L, 1L, 2);
+        createConnectedStudies(1L, 1L, 2);
 
         JobExecution execution = jobLauncherTestUtils.launchJob();
 
@@ -94,7 +94,7 @@ class StudyAssignmentJobConfigTest extends MediumBatchTest {
         Map<Long, List<Study>> studiesByType = new HashMap<>();
 
         for (long typeId = 0; typeId < 4; typeId++) {
-            List<Study> typeStudies = createStudies(typeId, 1L, STUDIES_PER_TYPE);
+            List<Study> typeStudies = createConnectedStudies(typeId, 1L, STUDIES_PER_TYPE);
             studiesByType.put(typeId, typeStudies);
         }
 
@@ -115,7 +115,7 @@ class StudyAssignmentJobConfigTest extends MediumBatchTest {
         }
     }
 
-    private List<Study> createStudies(Long typeId, Long devTypeId, int count) {
+    private List<Study> createConnectedStudies(Long typeId, Long devTypeId, int count) {
         List<Study> studies = new ArrayList<>();
         for (int i = 0; i < count; i++) {
             studies.add(Study.builder()
@@ -123,6 +123,7 @@ class StudyAssignmentJobConfigTest extends MediumBatchTest {
                 .developerTypeId(devTypeId)
                 .build());
         }
+        studies.forEach(Study::connect);
         return studyRepository.saveAll(studies);
     }
 
