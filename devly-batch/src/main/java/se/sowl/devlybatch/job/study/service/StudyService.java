@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import se.sowl.devlydomain.developer.domain.DeveloperType;
 import se.sowl.devlydomain.developer.repository.DeveloperTypeRepository;
 import se.sowl.devlydomain.study.domain.Study;
+import se.sowl.devlydomain.study.domain.StudyStatusEnum;
 import se.sowl.devlydomain.study.domain.StudyType;
 import se.sowl.devlydomain.study.repository.StudyRepository;
 import se.sowl.devlydomain.study.repository.StudyTypeRepository;
@@ -21,10 +22,10 @@ public class StudyService {
     private final StudyTypeRepository studyTypeRepository;
     private final DeveloperTypeRepository developerTypeRepository;
 
-    public List<Study> getTodayStudiesOf(Long StudyTypeId) {
+    public List<Study> getTodayStudiesOf(Long StudyTypeId, StudyStatusEnum status) {
         LocalDateTime startOfDay = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0).withNano(0);
         LocalDateTime endOfDay = startOfDay.plusDays(1);
-        return studyRepository.findByCreatedAtBetweenAndTypeId(startOfDay, endOfDay, StudyTypeId);
+        return studyRepository.findByCreatedAtBetweenAndTypeIdAndStatus(startOfDay, endOfDay, StudyTypeId, status);
     }
 
     @Transactional

@@ -33,6 +33,7 @@ public class PrProcessService {
             for (PrWithRelations prWithRelations : parsedPrs) {
                 prPersistenceService.savePrWithRelations(prWithRelations);
             }
+            study.connect();
             log.info("Created PR for study {}", study.getId());
         } catch (Exception e) {
             log.error("Error processing PR for study ID: {}", study.getId(), e);

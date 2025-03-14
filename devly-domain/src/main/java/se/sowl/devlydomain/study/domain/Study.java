@@ -22,12 +22,16 @@ public class Study extends BaseTimeEntity {
     @Column(name = "developer_type_id")
     private Long developerTypeId;
 
-    private StudyStatus status;
+    private StudyStatusEnum status;
+
+    public void connect() {
+        this.status = StudyStatusEnum.CONNECTED;
+    }
 
     @Builder
     public Study(Long typeId, Long developerTypeId) {
         this.typeId = typeId;
         this.developerTypeId = developerTypeId;
-        this.status = StudyStatus.UNCONNECTED;
+        this.status = StudyStatusEnum.UNCONNECTED;
     }
 }

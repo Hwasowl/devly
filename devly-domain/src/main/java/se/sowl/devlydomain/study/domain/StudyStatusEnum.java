@@ -1,6 +1,6 @@
 package se.sowl.devlydomain.study.domain;
 
-public enum StudyStatus {
+public enum StudyStatusEnum {
     UNCONNECTED,
     CONNECTED,
 }

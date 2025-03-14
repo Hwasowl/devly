@@ -23,6 +23,7 @@ import se.sowl.devlydomain.pr.repository.PrRepository;
 import se.sowl.devlydomain.prompt.domain.Prompt;
 import se.sowl.devlydomain.prompt.repository.PromptRepository;
 import se.sowl.devlydomain.study.domain.Study;
+import se.sowl.devlydomain.study.domain.StudyStatusEnum;
 import se.sowl.devlydomain.study.repository.StudyRepository;
 import se.sowl.devlyexternal.client.gpt.GPTClient;
 import se.sowl.devlyexternal.client.gpt.dto.GPTResponse;
@@ -144,6 +145,10 @@ class PrCreationJobConfigTest extends MediumBatchTest {
         // then
         assertThat(jobExecution.getStatus()).isEqualTo(BatchStatus.COMPLETED);
         verify(gptClient, times(2)).generate(any());
+
+        studyRepository.findAll().forEach(study -> {
+            assertThat(study.getStatus()).isEqualTo(StudyStatusEnum.CONNECTED);
+        });
 
         // PR 검증
         List<Pr> savedPrs = prRepository.findAll();

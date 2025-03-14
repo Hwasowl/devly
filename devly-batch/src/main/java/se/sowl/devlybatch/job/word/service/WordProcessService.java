@@ -32,6 +32,7 @@ public class WordProcessService {
             String prompt = createWordGeneratePrompt(study.getDeveloperTypeId(), study.getTypeId());
             List<Word> words = createWordsFromGpt(study, prompt);
             wordRepository.saveAll(words);
+            study.connect();
             return study.getId();
         } catch (Exception e) {
             log.error("Error while creating words for study {}", study.getId(), e);
