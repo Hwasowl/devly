@@ -30,12 +30,9 @@ public class DailyStudyJobConfig {
     public Job dailyStudyJob() {
         return new JobBuilder("dailyStudyJob", jobRepository)
             .start(createStudiesStep)
-            .on("COMPLETED").to(createWordsStep)
-            .from(createWordsStep).on("COMPLETED").to(createPrStep)
-            .from(createPrStep).on("COMPLETED").to(assignStudiesStep)
-            .from(assignStudiesStep).on("COMPLETED").end()
-            .from(assignStudiesStep).on("*").fail()
-            .end()
+            .next(createWordsStep)
+            .next(createPrStep)
+            .next(assignStudiesStep)
             .build();
     }
 
@@ -45,7 +42,6 @@ public class DailyStudyJobConfig {
             JobParameters jobParameters = new JobParametersBuilder()
                 .addLong("time", System.currentTimeMillis())
                 .toJobParameters();
-
             jobLauncher.run(dailyStudyJob(), jobParameters);
             log.info("Daily study job completed successfully");
         } catch (Exception e) {
