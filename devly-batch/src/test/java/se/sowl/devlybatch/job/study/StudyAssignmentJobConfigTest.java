@@ -15,7 +15,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 import se.sowl.devlybatch.config.TestBatchConfig;
 import se.sowl.devlybatch.job.MediumBatchTest;
-import se.sowl.devlybatch.job.userStudy.StudyAssignmentJobConfig;
+import se.sowl.devlybatch.job.study.cache.StudyCache;
 import se.sowl.devlydomain.study.domain.Study;
 import se.sowl.devlydomain.study.repository.StudyRepository;
 import se.sowl.devlydomain.user.domain.UserStudy;
@@ -44,6 +44,9 @@ class StudyAssignmentJobConfigTest extends MediumBatchTest {
     @Autowired
     private Job studyAssignmentJob;
 
+    @Autowired
+    private StudyCache studyCache;
+
     private static final int STUDIES_PER_TYPE = 20;
     private static final Long[] USER_IDS = {1L, 2L, 3L, 4L, 5L};
     private static final LocalDateTime YESTERDAY = LocalDateTime.now().minusDays(1)
@@ -55,8 +58,8 @@ class StudyAssignmentJobConfigTest extends MediumBatchTest {
         jobLauncherTestUtils.setJobLauncher(jobLauncher);
         jobLauncherTestUtils.setJob(studyAssignmentJob);
         jobLauncherTestUtils.setJobRepository(jobRepository);
+        studyCache.clearCache();
     }
-
     @AfterEach
     void cleanUp() {
         userStudyRepository.deleteAll();

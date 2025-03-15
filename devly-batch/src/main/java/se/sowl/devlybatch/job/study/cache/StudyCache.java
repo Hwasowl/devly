@@ -33,6 +33,10 @@ public class StudyCache {
         log.info("Study cache cleared");
     }
 
+    public boolean isEmpty() {
+        return studyCache.isEmpty();
+    }
+
     private String createCacheKey(Study study) {
         return createCacheKey(study.getTypeId(), study.getDeveloperTypeId());
     }
