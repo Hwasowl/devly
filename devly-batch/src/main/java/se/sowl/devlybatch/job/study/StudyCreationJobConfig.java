@@ -12,6 +12,7 @@ import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
+import se.sowl.devlybatch.job.study.exception.CreateStudyFailedException;
 import se.sowl.devlybatch.job.study.service.StudyService;
 import se.sowl.devlydomain.study.domain.Study;
 
@@ -34,9 +35,14 @@ public class StudyCreationJobConfig {
     public Step createStudiesStep(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
         return new StepBuilder("createStudiesStep", jobRepository)
             .tasklet((contribution, chunkContext) -> {
-                List<Study> studies = studyService.generateStudiesOf();
-                log.info("Created {} studies", studies.size());
-                return RepeatStatus.FINISHED;
+                try {
+                    List<Study> studies = studyService.generateStudiesOf();
+                    log.info("Created {} studies", studies.size());
+                    return RepeatStatus.FINISHED;
+                } catch (Exception error) {
+                    log.error("Failed to create studies!", error);
+                    throw new CreateStudyFailedException("Failed to create studies", error);
+                }
             }, transactionManager)
             .build();
     }

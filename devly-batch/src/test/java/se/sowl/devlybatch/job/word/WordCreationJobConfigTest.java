@@ -1,5 +1,6 @@
 package se.sowl.devlybatch.job.word;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -17,6 +18,7 @@ import se.sowl.devlybatch.job.MediumBatchTest;
 import se.sowl.devlydomain.prompt.domain.Prompt;
 import se.sowl.devlydomain.prompt.repository.PromptRepository;
 import se.sowl.devlydomain.study.domain.Study;
+import se.sowl.devlydomain.study.domain.StudyStatusEnum;
 import se.sowl.devlydomain.study.repository.StudyRepository;
 import se.sowl.devlydomain.word.domain.Word;
 import se.sowl.devlydomain.word.repository.WordRepository;
@@ -134,6 +136,10 @@ class WordCreationJobConfigTest extends MediumBatchTest {
         // then
         assertThat(jobExecution.getStatus()).isEqualTo(BatchStatus.COMPLETED);
         verify(gptClient, times(2)).generate(any());
+
+        studyRepository.findAll().forEach(study -> {
+            Assertions.assertThat(study.getStatus()).isEqualTo(StudyStatusEnum.CONNECTED);
+        });
 
         List<Word> savedWords = wordRepository.findAll();
         assertThat(savedWords).hasSize(2);

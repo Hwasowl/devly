@@ -15,7 +15,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 import se.sowl.devlybatch.config.TestBatchConfig;
 import se.sowl.devlybatch.job.MediumBatchTest;
-import se.sowl.devlybatch.job.userStudy.StudyAssignmentJobConfig;
+import se.sowl.devlybatch.job.study.cache.StudyCache;
 import se.sowl.devlydomain.study.domain.Study;
 import se.sowl.devlydomain.study.repository.StudyRepository;
 import se.sowl.devlydomain.user.domain.UserStudy;
@@ -44,6 +44,9 @@ class StudyAssignmentJobConfigTest extends MediumBatchTest {
     @Autowired
     private Job studyAssignmentJob;
 
+    @Autowired
+    private StudyCache studyCache;
+
     private static final int STUDIES_PER_TYPE = 20;
     private static final Long[] USER_IDS = {1L, 2L, 3L, 4L, 5L};
     private static final LocalDateTime YESTERDAY = LocalDateTime.now().minusDays(1)
@@ -55,8 +58,8 @@ class StudyAssignmentJobConfigTest extends MediumBatchTest {
         jobLauncherTestUtils.setJobLauncher(jobLauncher);
         jobLauncherTestUtils.setJob(studyAssignmentJob);
         jobLauncherTestUtils.setJobRepository(jobRepository);
+        studyCache.clearCache();
     }
-
     @AfterEach
     void cleanUp() {
         userStudyRepository.deleteAll();
@@ -66,7 +69,7 @@ class StudyAssignmentJobConfigTest extends MediumBatchTest {
     @Test
     @DisplayName("완료된 스터디가 없으면 새로운 스터디가 할당되지 않는다")
     void noCompletedStudiesShouldNotAssignNewStudies() throws Exception {
-        createStudies(1L, 1L, 2);
+        createConnectedStudies(1L, 1L, 2);
 
         JobExecution execution = jobLauncherTestUtils.launchJob();
 
@@ -90,11 +93,28 @@ class StudyAssignmentJobConfigTest extends MediumBatchTest {
         }
     }
 
+    @Test
+    @DisplayName("할당 로직이 여러번 수행되도 조건이 맞지 않는다면 스터디가 추가로 할당되지 않아야 한다.")
+    void shouldBeNotAssignmentDuplicateUserStudy() throws Exception {
+        Map<Long, List<Study>> studiesByType = createStudiesForAllTypes();
+        setupUserStudies(studiesByType);
+
+        JobExecution execution = jobLauncherTestUtils.launchJob();
+        assertThat(execution.getStatus()).isEqualTo(BatchStatus.COMPLETED);
+        JobExecution execution2 = jobLauncherTestUtils.launchJob();
+        assertThat(execution2.getStatus()).isEqualTo(BatchStatus.COMPLETED);
+
+        for (Long userId : USER_IDS) {
+            List<UserStudy> userStudies = userStudyRepository.findAllWithStudyByUserId(userId);
+            assertStudyAssignments(userStudies);
+        }
+    }
+
     private Map<Long, List<Study>> createStudiesForAllTypes() {
         Map<Long, List<Study>> studiesByType = new HashMap<>();
 
         for (long typeId = 0; typeId < 4; typeId++) {
-            List<Study> typeStudies = createStudies(typeId, 1L, STUDIES_PER_TYPE);
+            List<Study> typeStudies = createConnectedStudies(typeId, 1L, STUDIES_PER_TYPE);
             studiesByType.put(typeId, typeStudies);
         }
 
@@ -115,7 +135,7 @@ class StudyAssignmentJobConfigTest extends MediumBatchTest {
         }
     }
 
-    private List<Study> createStudies(Long typeId, Long devTypeId, int count) {
+    private List<Study> createConnectedStudies(Long typeId, Long devTypeId, int count) {
         List<Study> studies = new ArrayList<>();
         for (int i = 0; i < count; i++) {
             studies.add(Study.builder()
@@ -123,6 +143,7 @@ class StudyAssignmentJobConfigTest extends MediumBatchTest {
                 .developerTypeId(devTypeId)
                 .build());
         }
+        studies.forEach(Study::connect);
         return studyRepository.saveAll(studies);
     }
 
