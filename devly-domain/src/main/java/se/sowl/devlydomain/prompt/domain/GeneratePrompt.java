@@ -7,10 +7,10 @@ import lombok.NoArgsConstructor;
 import se.sowl.devlydomain.common.BaseTimeEntity;
 
 @Entity
-@Table(name = "prompts")
+@Table(name = "generate_prompts")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Prompt extends BaseTimeEntity {
+public class GeneratePrompt extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -24,7 +24,7 @@ public class Prompt extends BaseTimeEntity {
     @Column(length = 50000)
     private String content;
 
-    public Prompt(Long developerTypeId, Long studyTypeId, String content) {
+    public GeneratePrompt(Long developerTypeId, Long studyTypeId, String content) {
         this.developerTypeId = developerTypeId;
         this.studyTypeId = studyTypeId;
         this.content = content;

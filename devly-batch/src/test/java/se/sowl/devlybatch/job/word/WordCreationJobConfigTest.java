@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import se.sowl.devlybatch.config.TestBatchConfig;
 import se.sowl.devlybatch.job.MediumBatchTest;
-import se.sowl.devlydomain.prompt.domain.Prompt;
+import se.sowl.devlydomain.prompt.domain.GeneratePrompt;
 import se.sowl.devlydomain.prompt.repository.PromptRepository;
 import se.sowl.devlydomain.study.domain.Study;
 import se.sowl.devlydomain.study.domain.StudyStatusEnum;
@@ -56,23 +56,23 @@ class WordCreationJobConfigTest extends MediumBatchTest {
         jobLauncherTestUtils.setJobRepository(jobRepository);
 
         if (promptRepository.findFirstByDeveloperTypeIdAndStudyTypeId(1L, 1L).isEmpty()) {
-            Prompt backendPrompt = new Prompt(1L, 1L, "백엔드 개발자를 위한 전문 용어를 생성해주세요.\n" +
+            GeneratePrompt backendGeneratePrompt = new GeneratePrompt(1L, 1L, "백엔드 개발자를 위한 전문 용어를 생성해주세요.\n" +
                 "단어: [영문 용어]\n" +
                 "발음: [발음 기호]\n" +
                 "의미: [한글 의미]\n" +
                 "예문: {\"source\": \"공식 문서 출처\", \"text\": \"영문 예문\", \"translation\": \"한글 번역\"}\n" +
                 "퀴즈: {\"text\": \"\", \"distractors\": [\"오답1\", \"오답2\", \"오답3\", \"오답4\"]}\n" +
                 "---");
-            promptRepository.save(backendPrompt);
+            promptRepository.save(backendGeneratePrompt);
 
-            Prompt frontendPrompt = new Prompt(2L, 1L, "프론트엔드 개발자를 위한 전문 용어를 생성해주세요.\n" +
+            GeneratePrompt frontendGeneratePrompt = new GeneratePrompt(2L, 1L, "프론트엔드 개발자를 위한 전문 용어를 생성해주세요.\n" +
                 "단어: [영문 용어]\n" +
                 "발음: [발음 기호]\n" +
                 "의미: [한글 의미]\n" +
                 "예문: {\"source\": \"공식 문서 출처\", \"text\": \"영문 예문\", \"translation\": \"한글 번역\"}\n" +
                 "퀴즈: {\"text\": \"\", \"distractors\": [\"오답1\", \"오답2\", \"오답3\", \"오답4\"]}\n" +
                 "---");
-            promptRepository.save(frontendPrompt);
+            promptRepository.save(frontendGeneratePrompt);
         }
     }
 

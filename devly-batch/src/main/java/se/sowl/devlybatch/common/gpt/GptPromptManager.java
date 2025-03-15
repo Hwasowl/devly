@@ -3,7 +3,7 @@ package se.sowl.devlybatch.common.gpt;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import se.sowl.devlybatch.common.gpt.exception.PromptNotExistException;
-import se.sowl.devlydomain.prompt.domain.Prompt;
+import se.sowl.devlydomain.prompt.domain.GeneratePrompt;
 import se.sowl.devlydomain.prompt.repository.PromptRepository;
 
 import java.util.List;
@@ -14,9 +14,9 @@ public abstract class GptPromptManager {
     private final PromptRepository promptRepository;
 
     public String getDefaultPrompt(Long developerTypeId, Long studyTypeId) {
-        Prompt prompt = promptRepository.findFirstByDeveloperTypeIdAndStudyTypeId(developerTypeId, studyTypeId)
+        GeneratePrompt generatePrompt = promptRepository.findFirstByDeveloperTypeIdAndStudyTypeId(developerTypeId, studyTypeId)
             .orElseThrow(() -> new PromptNotExistException("프롬프트 정보를 찾을 수 없습니다."));
-        return prompt.getContent();
+        return generatePrompt.getContent();
     }
 
     public void addExcludePrompt(List<String> excludeContents, StringBuilder prompt) {

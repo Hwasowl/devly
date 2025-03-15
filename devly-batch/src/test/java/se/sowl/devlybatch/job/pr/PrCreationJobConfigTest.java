@@ -20,7 +20,7 @@ import se.sowl.devlydomain.pr.domain.PrLabel;
 import se.sowl.devlydomain.pr.repository.PrChangedFileRepository;
 import se.sowl.devlydomain.pr.repository.PrLabelRepository;
 import se.sowl.devlydomain.pr.repository.PrRepository;
-import se.sowl.devlydomain.prompt.domain.Prompt;
+import se.sowl.devlydomain.prompt.domain.GeneratePrompt;
 import se.sowl.devlydomain.prompt.repository.PromptRepository;
 import se.sowl.devlydomain.study.domain.Study;
 import se.sowl.devlydomain.study.domain.StudyStatusEnum;
@@ -65,23 +65,23 @@ class PrCreationJobConfigTest extends MediumBatchTest {
         jobLauncherTestUtils.setJobRepository(jobRepository);
 
         if (promptRepository.findFirstByDeveloperTypeIdAndStudyTypeId(1L, 3L).isEmpty()) {
-            Prompt backendPrompt = new Prompt(1L, 3L, "백엔드 개발자를 위한 PR(Pull Request) 예시를 생성해주세요.\n" +
+            GeneratePrompt backendGeneratePrompt = new GeneratePrompt(1L, 3L, "백엔드 개발자를 위한 PR(Pull Request) 예시를 생성해주세요.\n" +
                 "각 PR은 다음 형식으로 정확히 작성해주세요:\n" +
                 "제목: [PR의 간결하고 명확한 제목]\n" +
                 "설명: [PR에 대한 자세한 설명]\n" +
                 "변경 파일: [{\"fileName\": \"파일 경로와 이름\", \"language\": \"프로그래밍 언어\", \"content\": \"파일 내용\"}]\n" +
                 "라벨: [\"변경 파일에 해당하는 태그1\", \"변경 파일에 해당하는 태그2\", \"변경 파일에 해당하는 태그3\"]\n" +
                 "---");
-            promptRepository.save(backendPrompt);
+            promptRepository.save(backendGeneratePrompt);
 
-            Prompt frontendPrompt = new Prompt(2L, 3L, "프론트엔드 개발자를 위한 PR(Pull Request) 예시를 생성해주세요.\n" +
+            GeneratePrompt frontendGeneratePrompt = new GeneratePrompt(2L, 3L, "프론트엔드 개발자를 위한 PR(Pull Request) 예시를 생성해주세요.\n" +
                 "각 PR은 다음 형식으로 정확히 작성해주세요:\n" +
                 "제목: [PR의 간결하고 명확한 제목]\n" +
                 "설명: [PR에 대한 자세한 설명]\n" +
                 "변경 파일: [{\"fileName\": \"파일 경로와 이름\", \"language\": \"프로그래밍 언어\", \"content\": \"파일 내용\"}]\n" +
                 "라벨: [\"변경 파일에 해당하는 태그1\", \"변경 파일에 해당하는 태그2\", \"변경 파일에 해당하는 태그3\"]\n" +
                 "---");
-            promptRepository.save(frontendPrompt);
+            promptRepository.save(frontendGeneratePrompt);
         }
     }
 
