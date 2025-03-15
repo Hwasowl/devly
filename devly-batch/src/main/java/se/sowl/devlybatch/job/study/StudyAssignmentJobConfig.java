@@ -16,16 +16,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.TransientDataAccessException;
-import org.springframework.data.domain.Page;
 import org.springframework.transaction.PlatformTransactionManager;
 import se.sowl.devlybatch.config.BatchProperties;
 import se.sowl.devlybatch.job.study.listener.StudyAssignmentListener;
+import se.sowl.devlybatch.job.study.service.CompletedStudiesReader;
 import se.sowl.devlybatch.job.study.service.StudyAssignmentService;
 import se.sowl.devlybatch.job.study.service.StudyService;
+import se.sowl.devlybatch.job.study.service.UserStudyBatchWriter;
 import se.sowl.devlydomain.user.domain.UserStudy;
 import se.sowl.devlydomain.user.repository.UserStudyRepository;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -66,31 +66,7 @@ public class StudyAssignmentJobConfig {
     @Bean
     @StepScope
     protected ItemReader<List<UserStudy>> completedStudiesPageReader() {
-        return new CompletedStudiesReader();
-    }
-
-    private class CompletedStudiesReader implements ItemReader<List<UserStudy>> {
-        private int currentPage = 0;
-        private boolean hasMoreData = true;
-
-        @Override
-        public List<UserStudy> read() {
-            if (!hasMoreData) {
-                return null;
-            }
-
-            Page<UserStudy> page = studyService.findCompletedStudiesWithoutNext(
-                currentPage, properties.getChunkSize());
-
-            List<UserStudy> items = page.getContent();
-            currentPage++;
-
-            if (items.isEmpty() || currentPage >= page.getTotalPages()) {
-                hasMoreData = false;
-            }
-
-            return items.isEmpty() ? null : items;
-        }
+        return new CompletedStudiesReader(studyService, properties.getChunkSize());
     }
 
     @Bean
@@ -102,17 +78,6 @@ public class StudyAssignmentJobConfig {
     @Bean
     @StepScope
     public ItemWriter<List<UserStudy>> newStudiesWriter() {
-        return items -> {
-            List<UserStudy> allNewStudies = new ArrayList<>();
-
-            for (List<UserStudy> page : items) {
-                allNewStudies.addAll(page);
-            }
-
-            if (!allNewStudies.isEmpty()) {
-                userStudyRepository.saveAll(allNewStudies);
-                log.info("Saved {} new study assignments", allNewStudies.size());
-            }
-        };
+        return new UserStudyBatchWriter(userStudyRepository);
     }
 }
