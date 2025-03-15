@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import se.sowl.devlybatch.job.study.cache.StudyCache;
 import se.sowl.devlydomain.study.domain.Study;
 import se.sowl.devlydomain.study.domain.StudyStatusEnum;
 import se.sowl.devlydomain.study.repository.StudyRepository;
@@ -15,8 +16,6 @@ import se.sowl.devlydomain.user.repository.UserStudyRepository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -24,23 +23,17 @@ import java.util.stream.Collectors;
 public class StudyAssignmentService {
     private final UserStudyRepository userStudyRepository;
     private final StudyRepository studyRepository;
+    private final StudyCache studyCache;
 
     @Transactional
     public UserStudy assignNextStudy(UserStudy completedUserStudy) {
-        List<Study> orderedStudies = studyRepository.findAllByStatusOrderById(StudyStatusEnum.CONNECTED);
-        Map<Long, Study> studyMap = orderedStudies.stream().collect(Collectors.toMap(Study::getId, s -> s));
-
-        Study completedStudy = getCompletedStudy(completedUserStudy, studyMap);
+        Study completedStudy = getCompletedStudy(completedUserStudy);
         if (completedStudy == null) return null;
 
-        Study nextStudy = getNextStudy(completedUserStudy, orderedStudies, completedStudy);
+        Study nextStudy = findNextStudyFromCache(completedStudy);
         if (nextStudy == null) return null;
 
-        return UserStudy.builder()
-            .userId(completedUserStudy.getUserId())
-            .study(nextStudy)
-            .scheduledAt(LocalDateTime.now())
-            .build();
+        return buildNextUserStudy(completedUserStudy, nextStudy);
     }
 
     @Transactional(readOnly = true)
@@ -53,17 +46,8 @@ public class StudyAssignmentService {
             PageRequest.of(page, size));
     }
 
-    private Study findNextStudy(List<Study> allStudies, Study currentStudy) {
-        boolean foundCurrent = false;
-        for (Study study : allStudies) {
-            if (foundCurrent && isSameStudyType(currentStudy, study)) return study;
-            else if (study.getId().equals(currentStudy.getId())) foundCurrent = true;
-        }
-        return null;
-    }
-
-    private Study getCompletedStudy(UserStudy completed, Map<Long, Study> studyMap) {
-        Study completedStudy = studyMap.get(completed.getStudy().getId());
+    private Study getCompletedStudy(UserStudy completed) {
+        Study completedStudy = completed.getStudy();
         if (completedStudy == null) {
             log.warn("Completed study not found: {}", completed.getId());
             return null;
@@ -71,18 +55,43 @@ public class StudyAssignmentService {
         return completedStudy;
     }
 
-    private Study getNextStudy(UserStudy completed, List<Study> orderedStudies, Study completedStudy) {
-        Study nextStudy = findNextStudy(orderedStudies, completedStudy);
-        if (nextStudy == null) {
-            log.info("No next study found for user: {}, type: {}, devType: {}",
-                completed.getUserId(), completedStudy.getTypeId(), completedStudy.getDeveloperTypeId());
-            return null;
+    private Study findNextStudyFromCache(Study completedStudy) {
+        List<Study> cachedStudies = studyCache.getStudies(
+            completedStudy.getTypeId(),
+            completedStudy.getDeveloperTypeId()
+        );
+
+        if (cachedStudies.isEmpty()) {
+            log.info("No cached studies found, falling back to database");
+            List<Study> orderedStudies = studyRepository.findAllByStatusOrderById(StudyStatusEnum.CONNECTED);
+            studyCache.cacheStudies(orderedStudies);
+            cachedStudies = studyCache.getStudies(
+                completedStudy.getTypeId(),
+                completedStudy.getDeveloperTypeId()
+            );
         }
-        return nextStudy;
+
+        return findNextStudyInList(cachedStudies, completedStudy);
     }
 
-    private boolean isSameStudyType(Study currentStudy, Study study) {
-        return study.getTypeId().equals(currentStudy.getTypeId()) &&
-            study.getDeveloperTypeId().equals(currentStudy.getDeveloperTypeId());
+    private Study findNextStudyInList(List<Study> studies, Study currentStudy) {
+        if (studies.isEmpty()) {
+            return null;
+        }
+
+        int currentIndex = studies.indexOf(currentStudy);
+        if (currentIndex == -1 || currentIndex == studies.size() - 1) {
+            return null;
+        }
+
+        return studies.get(currentIndex + 1);
+    }
+
+    private UserStudy buildNextUserStudy(UserStudy completedUserStudy, Study nextStudy) {
+        return UserStudy.builder()
+            .userId(completedUserStudy.getUserId())
+            .study(nextStudy)
+            .scheduledAt(LocalDateTime.now())
+            .build();
     }
 }

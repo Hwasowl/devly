@@ -90,6 +90,23 @@ class StudyAssignmentJobConfigTest extends MediumBatchTest {
         }
     }
 
+    @Test
+    @DisplayName("할당 로직이 여러번 수행되도 조건이 맞지 않는다면 스터디가 추가로 할당되지 않아야 한다.")
+    void shouldBeNotAssignmentDuplicateUserStudy() throws Exception {
+        Map<Long, List<Study>> studiesByType = createStudiesForAllTypes();
+        setupUserStudies(studiesByType);
+
+        JobExecution execution = jobLauncherTestUtils.launchJob();
+        assertThat(execution.getStatus()).isEqualTo(BatchStatus.COMPLETED);
+        JobExecution execution2 = jobLauncherTestUtils.launchJob();
+        assertThat(execution2.getStatus()).isEqualTo(BatchStatus.COMPLETED);
+
+        for (Long userId : USER_IDS) {
+            List<UserStudy> userStudies = userStudyRepository.findAllWithStudyByUserId(userId);
+            assertStudyAssignments(userStudies);
+        }
+    }
+
     private Map<Long, List<Study>> createStudiesForAllTypes() {
         Map<Long, List<Study>> studiesByType = new HashMap<>();
 

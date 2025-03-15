@@ -12,23 +12,26 @@ import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.Scheduled;
+import se.sowl.devlybatch.job.study.listener.StudyCacheJobListener;
 
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
 public class DailyStudyJobConfig {
-
     private final JobRepository jobRepository;
     private final JobLauncher jobLauncher;
+
     private final Step createStudiesStep;
     private final Step createWordsStep;
     private final Step createPrStep;
     private final Step assignStudiesStep;
 
+    private final StudyCacheJobListener studyCacheJobListener;
 
     @Bean
     public Job dailyStudyJob() {
         return new JobBuilder("dailyStudyJob", jobRepository)
+            .listener(studyCacheJobListener)
             .start(createStudiesStep)
             .next(createWordsStep)
             .next(createPrStep)
