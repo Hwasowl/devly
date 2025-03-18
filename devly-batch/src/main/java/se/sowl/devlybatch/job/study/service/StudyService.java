@@ -54,10 +54,10 @@ public class StudyService {
             PageRequest.of(page, size));
     }
 
-    public List<Study> getTodayStudiesOf(Long StudyTypeId, StudyStatusEnum status) {
+    public List<Study> getTodayStudiesOf(Long StudyTypeId, StudyStatusEnum statusEnum) {
         LocalDateTime startOfDay = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0).withNano(0);
         LocalDateTime endOfDay = startOfDay.plusDays(1);
-        return studyRepository.findByCreatedAtBetweenAndTypeIdAndStatus(startOfDay, endOfDay, StudyTypeId, status);
+        return studyRepository.findByCreatedAtBetweenAndTypeIdAndStatus(startOfDay, endOfDay, StudyTypeId, statusEnum);
     }
 
     private StudyType findStudyTypeByName(List<StudyType> studyTypes, String name) {

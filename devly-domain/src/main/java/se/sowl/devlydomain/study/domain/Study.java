@@ -22,6 +22,7 @@ public class Study extends BaseTimeEntity {
     @Column(name = "developer_type_id")
     private Long developerTypeId;
 
+    @Enumerated(EnumType.STRING)
     private StudyStatusEnum status;
 
     public void connect() {

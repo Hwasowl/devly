@@ -3,6 +3,7 @@ package se.sowl.devlydomain.study.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import se.sowl.devlydomain.study.domain.Study;
 import se.sowl.devlydomain.study.domain.StudyStatusEnum;
+import se.sowl.devlydomain.study.domain.StudyTypeEnum;
 
 import java.time.LocalDateTime;
 import java.util.List;
