@@ -42,4 +42,8 @@ public class PrService {
         List<PrComment> comments = prCommentRepository.findByPrId(prId);
         return PrCommentsResponse.from(comments);
     }
+
+    public void reviewAiComment(Long prCommentId) {
+
+    }
 }

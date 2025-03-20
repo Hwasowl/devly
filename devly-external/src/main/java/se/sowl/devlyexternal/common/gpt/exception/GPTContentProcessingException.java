@@ -1,4 +1,4 @@
-package se.sowl.devlybatch.common.gpt.exception;
+package se.sowl.devlyexternal.common.gpt.exception;
 
 public class GPTContentProcessingException extends RuntimeException {
     public GPTContentProcessingException(String message) {

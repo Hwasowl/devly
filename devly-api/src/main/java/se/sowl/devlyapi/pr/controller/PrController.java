@@ -3,10 +3,7 @@ package se.sowl.devlyapi.pr.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import se.sowl.devlyapi.common.CommonResponse;
 import se.sowl.devlyapi.pr.dto.files.PrChangedFilesResponse;
 import se.sowl.devlyapi.pr.dto.comments.PrCommentsResponse;
@@ -40,5 +37,12 @@ public class PrController {
     public CommonResponse<PrCommentsResponse> getComments(@PathVariable Long prId) {
         PrCommentsResponse response = prService.getComments(prId);
         return CommonResponse.ok(response);
+    }
+
+    @PostMapping("/review/{prCommentId}")
+    @PreAuthorize("isAuthenticated()")
+    public CommonResponse<Void> reviewComment(@PathVariable Long prCommentId) {
+        prService.reviewAiComment(prCommentId);
+        return CommonResponse.ok();
     }
 }

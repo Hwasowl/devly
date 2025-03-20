@@ -2,10 +2,10 @@ package se.sowl.devlybatch.job.word.service;
 
 import org.springframework.stereotype.Component;
 import se.sowl.devlybatch.common.JsonExtractor;
-import se.sowl.devlybatch.common.gpt.GptEntityParser;
-import se.sowl.devlybatch.common.gpt.GptRequestFactory;
-import se.sowl.devlybatch.common.gpt.GptResponseValidator;
-import se.sowl.devlybatch.common.gpt.exception.GPTContentProcessingException;
+import se.sowl.devlyexternal.common.gpt.GptEntityParser;
+import se.sowl.devlyexternal.common.gpt.GptRequestFactory;
+import se.sowl.devlyexternal.common.gpt.GptResponseValidator;
+import se.sowl.devlyexternal.common.gpt.exception.GPTContentProcessingException;
 import se.sowl.devlydomain.word.domain.Word;
 
 @Component

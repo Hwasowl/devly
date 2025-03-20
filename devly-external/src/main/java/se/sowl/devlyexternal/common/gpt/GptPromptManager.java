@@ -1,8 +1,8 @@
-package se.sowl.devlybatch.common.gpt;
+package se.sowl.devlyexternal.common.gpt;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import se.sowl.devlybatch.common.gpt.exception.PromptNotExistException;
+import se.sowl.devlyexternal.common.gpt.exception.PromptNotExistException;
 import se.sowl.devlydomain.prompt.domain.GeneratePrompt;
 import se.sowl.devlydomain.prompt.repository.PromptRepository;
 

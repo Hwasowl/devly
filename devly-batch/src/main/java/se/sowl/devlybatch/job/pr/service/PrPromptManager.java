@@ -1,7 +1,7 @@
 package se.sowl.devlybatch.job.pr.service;
 
 import org.springframework.stereotype.Component;
-import se.sowl.devlybatch.common.gpt.GptPromptManager;
+import se.sowl.devlyexternal.common.gpt.GptPromptManager;
 import se.sowl.devlydomain.prompt.repository.PromptRepository;
 
 @Component

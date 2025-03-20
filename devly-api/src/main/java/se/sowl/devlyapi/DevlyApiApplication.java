@@ -5,8 +5,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Import;
+import se.sowl.devlydomain.config.JpaConfig;
 
 @SpringBootApplication
+@Import({JpaConfig.class})
 @EntityScan(basePackages = {"se.sowl.devlydomain"})
 @ComponentScan(basePackages = {"se.sowl.devlydomain", "se.sowl.devlyapi"})
 @EnableCaching

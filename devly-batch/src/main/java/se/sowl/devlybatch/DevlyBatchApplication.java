@@ -4,22 +4,19 @@ import org.springframework.batch.core.configuration.annotation.EnableBatchProces
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.context.annotation.Import;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import se.sowl.devlydomain.config.JpaConfig;
 
 @SpringBootApplication
+@Import(JpaConfig.class)
 @EntityScan(basePackages = {"se.sowl.devlydomain"})
-@ComponentScan(basePackages = {"se.sowl.devlybatch", "se.sowl.devlydomain"})
-@EnableJpaRepositories(basePackages = {"se.sowl.devlydomain"})
-@ConfigurationPropertiesScan(basePackages = {"se.sowl.devlydomain"})
+@ComponentScan(basePackages = {"se.sowl.devlybatch", "se.sowl.devlydomain", "se.sowl.devlyexternal"})
 @EnableFeignClients(basePackages = {"se.sowl.devlyexternal"})
 @EnableBatchProcessing
 @EnableScheduling
-@EnableJpaAuditing
 public class DevlyBatchApplication {
 
     public static void main(String[] args) {

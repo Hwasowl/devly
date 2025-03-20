@@ -8,7 +8,8 @@ import se.sowl.devlyexternal.client.gpt.dto.GPTRequest;
 import se.sowl.devlyexternal.client.gpt.dto.GPTResponse;
 
 @FeignClient(
-    name = "gpt-client",
+    name = "gpt-feign-client",
+    contextId = "external-gpt-client",
     url = "${openai.api-url}",
     configuration = FeignClientConfig.class
 )

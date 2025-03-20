@@ -1,7 +1,7 @@
-package se.sowl.devlybatch.common.gpt;
+package se.sowl.devlyexternal.common.gpt;
 
 import org.springframework.stereotype.Component;
-import se.sowl.devlybatch.common.gpt.exception.GPTContentProcessingException;
+import se.sowl.devlyexternal.common.gpt.exception.GPTContentProcessingException;
 import se.sowl.devlyexternal.client.gpt.dto.GPTResponse;
 
 @Component

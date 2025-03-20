@@ -1,4 +1,4 @@
-package se.sowl.devlybatch.common.gpt.exception;
+package se.sowl.devlyexternal.common.gpt.exception;
 
 public class PromptNotExistException extends RuntimeException {
     public PromptNotExistException(String message) {
