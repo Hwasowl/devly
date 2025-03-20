@@ -1,4 +1,4 @@
-package se.sowl.devlyapi.common.config;
+package se.sowl.devlydomain.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
