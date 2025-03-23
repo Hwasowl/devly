@@ -21,6 +21,6 @@ public class PrCommentService {
 
     public PrComment getCommentById(Long id) {
         return prCommentRepository.findById(id).orElseThrow(
-            () -> new PrCommentNotExistException("커멘트 정보를 찾을 수 없습니다."));
+            () -> new PrCommentNotExistException("Cannot found pr."));
     }
 }

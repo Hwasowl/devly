@@ -190,6 +190,7 @@ pipeline {
                         def apiEnvVars = [
                             'SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID': env.GOOGLE_CLIENT_ID,
                             'SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET': env.GOOGLE_CLIENT_SECRET,
+                            'OPENAI_API_KEY': env.OPENAI_API_KEY,
                             'JWT_SECRET_KEY': env.JWT_SECRET
                         ]
                         deployContainer(env.DOCKER_IMAGE_API, '8080', apiEnvVars)

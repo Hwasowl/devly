@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import se.sowl.devlybatch.common.JsonExtractor;
+import se.sowl.devlyexternal.common.ParserArguments;
 import se.sowl.devlyexternal.common.gpt.GptRequestFactory;
 import se.sowl.devlyexternal.common.gpt.GptResponseValidator;
 import se.sowl.devlybatch.job.word.service.WordEntityParser;
@@ -58,7 +59,8 @@ class WordEntityParserTest {
         );
 
         // when
-        List<Word> words = wordEntityParser.parseGPTResponse(gptResponse, studyId);
+        ParserArguments parseParameters = new ParserArguments().add("studyId", studyId);
+        List<Word> words = wordEntityParser.parseGPTResponse(gptResponse, parseParameters);
 
         Word firstWord = words.getFirst();
         assertThat(firstWord.getStudyId()).isEqualTo(studyId);

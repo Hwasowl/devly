@@ -12,6 +12,7 @@ import se.sowl.devlydomain.word.domain.Word;
 import se.sowl.devlydomain.word.repository.WordRepository;
 import se.sowl.devlyexternal.client.gpt.GPTClient;
 import se.sowl.devlyexternal.client.gpt.dto.GPTResponse;
+import se.sowl.devlyexternal.common.ParserArguments;
 import se.sowl.devlyexternal.common.gpt.GptPromptManager;
 
 import java.time.LocalDateTime;
@@ -43,11 +44,15 @@ public class WordProcessService {
 
     private List<Word> createWordsFromGpt(Study study, String prompt) {
         GPTResponse response = gptClient.generate(wordEntityParser.createGPTRequest(prompt));
-        List<Word> words = wordEntityParser.parseGPTResponse(response, study.getId());
+        List<Word> words = wordEntityParser.parseGPTResponse(response, createParameters(study.getId()));
         if (words.isEmpty()) {
             throw new EmptyWordsException("No words parsed for study: " + study.getId());
         }
         return words;
+    }
+
+    private ParserArguments createParameters(Long studyId) {
+        return new ParserArguments().add("studyId", studyId);
     }
 
     private String createWordGeneratePrompt(Long developerTypeId, Long studyTypeId) {

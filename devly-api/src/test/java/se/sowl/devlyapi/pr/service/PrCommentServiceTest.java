@@ -11,7 +11,6 @@ import se.sowl.devlyapi.pr.dto.comments.PrCommentsResponse;
 import se.sowl.devlydomain.pr.domain.Pr;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @Profile("test")

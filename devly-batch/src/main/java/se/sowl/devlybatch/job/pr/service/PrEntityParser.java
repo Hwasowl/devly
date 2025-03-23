@@ -3,6 +3,7 @@ package se.sowl.devlybatch.job.pr.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import se.sowl.devlybatch.common.JsonExtractor;
+import se.sowl.devlyexternal.common.ParserArguments;
 import se.sowl.devlyexternal.common.gpt.GptEntityParser;
 import se.sowl.devlyexternal.common.gpt.GptRequestFactory;
 import se.sowl.devlyexternal.common.gpt.GptResponseValidator;
@@ -31,7 +32,8 @@ public class PrEntityParser extends GptEntityParser<PrWithRelations> {
     }
 
     @Override
-    protected PrWithRelations parseEntity(Long studyId, String entry) {
+    protected PrWithRelations parseEntity(ParserArguments parameters, String entry) {
+        Long studyId = parameters.get("studyId", Long.class);
         try {
             String title = jsonExtractor.extractField(entry, "제목:");
             String description = jsonExtractor.extractField(entry, "설명:");

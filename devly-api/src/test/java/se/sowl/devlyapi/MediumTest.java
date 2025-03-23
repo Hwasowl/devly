@@ -9,6 +9,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import se.sowl.devlyapi.common.jwt.JwtTokenProvider;
 import se.sowl.devlyapi.oauth.service.OAuthService;
+import se.sowl.devlyapi.pr.service.PrChangedFilesService;
+import se.sowl.devlyapi.pr.service.PrCommentService;
+import se.sowl.devlyapi.pr.service.PrReviewService;
 import se.sowl.devlyapi.pr.service.PrService;
 import se.sowl.devlyapi.study.service.StudyService;
 import se.sowl.devlyapi.study.service.UserStudyService;
@@ -61,6 +64,18 @@ public abstract class MediumTest {
     protected PrService prService;
 
     @Autowired
+    protected PrChangedFilesService prChangedFilesService;
+
+    @Autowired
+    protected PrCommentService prCommentService;
+
+    @Autowired
+    protected PrReviewService prReviewService;
+
+    @Autowired
+    protected UserStudyService userStudyService;
+
+    @Autowired
     protected WordRepository wordRepository;
 
     @Autowired
@@ -68,9 +83,6 @@ public abstract class MediumTest {
 
     @Autowired
     protected StudyRepository studyRepository;
-
-    @Autowired
-    protected UserStudyService userStudyService;
 
     @Autowired
     protected StudyTypeRepository studyTypeRepository;
@@ -103,7 +115,6 @@ public abstract class MediumTest {
     protected DefaultOAuth2UserService defaultOAuth2UserService;
 
     // TODO: separation create methods of features
-
     protected User createUser(Long id, Long developerTypeId, String name, String nickname, String email, String provider) {
         return User.builder()
             .id(id)

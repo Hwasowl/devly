@@ -8,6 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import se.sowl.devlybatch.common.JsonExtractor;
+import se.sowl.devlyexternal.common.ParserArguments;
 import se.sowl.devlyexternal.common.gpt.GptRequestFactory;
 import se.sowl.devlyexternal.common.gpt.GptResponseValidator;
 import se.sowl.devlybatch.job.pr.dto.PrWithRelations;
@@ -60,7 +61,8 @@ class PrEntityParserTest {
         );
 
         // when
-        List<PrWithRelations> prWithRelations = prEntityParser.parseGPTResponse(gptResponse, studyId);
+        ParserArguments parseParameters = new ParserArguments().add("studyId", studyId);
+        List<PrWithRelations> prWithRelations = prEntityParser.parseGPTResponse(gptResponse, parseParameters);
 
         // then
         assertThat(prWithRelations).hasSize(1);

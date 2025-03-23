@@ -10,6 +10,7 @@ import se.sowl.devlydomain.pr.repository.PrRepository;
 import se.sowl.devlydomain.study.domain.Study;
 import se.sowl.devlyexternal.client.gpt.GPTClient;
 import se.sowl.devlyexternal.client.gpt.dto.GPTResponse;
+import se.sowl.devlyexternal.common.ParserArguments;
 import se.sowl.devlyexternal.common.gpt.GptPromptManager;
 
 import java.time.LocalDateTime;
@@ -30,7 +31,7 @@ public class PrProcessService {
         try {
             String prompt = createPrGeneratePrompt(study.getDeveloperTypeId(), study.getTypeId());
             GPTResponse response = gptClient.generate(prEntityParser.createGPTRequest(prompt));
-            List<PrWithRelations> parsedPrs = prEntityParser.parseGPTResponse(response, study.getId());
+            List<PrWithRelations> parsedPrs = prEntityParser.parseGPTResponse(response, createParameters(study.getId()));
             for (PrWithRelations prWithRelations : parsedPrs) {
                 prPersistenceService.savePrWithRelations(prWithRelations);
             }
@@ -39,6 +40,10 @@ public class PrProcessService {
         } catch (Exception e) {
             log.error("Error processing PR for study ID: {}", study.getId(), e);
         }
+    }
+
+    private ParserArguments createParameters(Long studyId) {
+        return new ParserArguments().add("studyId", studyId);
     }
 
     private String createPrGeneratePrompt(Long developerTypeId, Long studyTypeId) {

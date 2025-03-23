@@ -5,10 +5,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import se.sowl.devlyapi.common.CommonResponse;
-import se.sowl.devlyapi.pr.dto.comments.PrCommentReviewRequest;
+import se.sowl.devlyapi.pr.dto.review.PrCommentReviewRequest;
 import se.sowl.devlyapi.pr.dto.files.PrChangedFilesResponse;
 import se.sowl.devlyapi.pr.dto.comments.PrCommentsResponse;
 import se.sowl.devlyapi.pr.dto.PrResponse;
+import se.sowl.devlyapi.pr.dto.review.PrCommentReviewResponse;
 import se.sowl.devlyapi.pr.service.PrChangedFilesService;
 import se.sowl.devlyapi.pr.service.PrCommentService;
 import se.sowl.devlyapi.pr.service.PrReviewService;
@@ -48,8 +49,8 @@ public class PrController {
 
     @PostMapping("/review/{prCommentId}")
     @PreAuthorize("isAuthenticated()")
-    public CommonResponse<Void> reviewComment(@PathVariable Long prCommentId, PrCommentReviewRequest request) {
-        prReviewService.reviewAiComment(prCommentId, request.getStudyId(), request.getAnswer());
-        return CommonResponse.ok();
+    public CommonResponse<PrCommentReviewResponse> reviewComment(@AuthenticationPrincipal CustomOAuth2User customOAuth2User, @PathVariable Long prCommentId, PrCommentReviewRequest request) {
+        PrCommentReviewResponse response = prReviewService.reviewPrComment(customOAuth2User.getUserId(), prCommentId, request.getStudyId(), request.getAnswer());
+        return CommonResponse.ok(response);
     }
 }

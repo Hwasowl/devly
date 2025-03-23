@@ -2,6 +2,7 @@ package se.sowl.devlybatch.job.word.service;
 
 import org.springframework.stereotype.Component;
 import se.sowl.devlybatch.common.JsonExtractor;
+import se.sowl.devlyexternal.common.ParserArguments;
 import se.sowl.devlyexternal.common.gpt.GptEntityParser;
 import se.sowl.devlyexternal.common.gpt.GptRequestFactory;
 import se.sowl.devlyexternal.common.gpt.GptResponseValidator;
@@ -22,7 +23,8 @@ public class WordEntityParser extends GptEntityParser<Word> {
     }
 
     @Override
-    protected Word parseEntity(Long studyId, String entry) {
+    protected Word parseEntity(ParserArguments parameters, String entry) {
+        Long studyId = parameters.get("studyId", Long.class);
         try {
             return Word.builder()
                 .studyId(studyId)

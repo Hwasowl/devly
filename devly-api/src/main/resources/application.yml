@@ -42,6 +42,9 @@ logging:
   level:
     org.hibernate.SQL: DEBUG
     org.springframework.jdbc.core: TRACE
+openai:
+  api-url: https://api.openai.com
+  api-key: test-api-key
 ---
 spring:
   config:
@@ -77,4 +80,6 @@ jwt:
   secret-key: ${JWT_SECRET_KEY}
   access-token-validity-in-seconds: 3600
   refresh-token-validity-in-seconds: 604800
-
+openai:
+  api-url: https://api.openai.com
+  api-key: ${OPENAI_API_KEY}

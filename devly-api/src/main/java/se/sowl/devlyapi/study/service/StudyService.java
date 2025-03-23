@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import se.sowl.devlyapi.study.exception.DuplicateInitialUserStudiesException;
-import se.sowl.devlyapi.study.exception.StudyNotFoundException;
+import se.sowl.devlyapi.study.exception.StudyNotExistException;
 import se.sowl.devlydomain.study.domain.Study;
 import se.sowl.devlydomain.study.domain.StudyType;
 import se.sowl.devlydomain.study.domain.StudyTypeEnum;
@@ -32,13 +32,19 @@ public class StudyService {
             for (StudyTypeEnum typeEnum : StudyTypeEnum.values()) {
                 StudyType studyType = validateStudyType(typeEnum, studyTypes);
                 Study study = studyRepository.findFirstByTypeId(studyType.getId())
-                    .orElseThrow(() -> new IllegalStateException("No study found for type: " + typeEnum.getValue()));
+                    .orElseThrow(() -> new StudyNotExistException("Study Not Exist"));
                 UserStudy userStudy = UserStudy.builder().userId(user.getId()).study(study).build();
                 userStudyRepository.save(userStudy);
             }
         } catch (Exception e) {
             throw new IllegalStateException("Failed to initialize user studies", e);
         }
+    }
+
+    public Study getStudyById(Long id) {
+        return studyRepository.findById(id).orElseThrow(
+            () -> new StudyNotExistException("Study Not Exist")
+        );
     }
 
     private void isStudyInitialed(User user) {
@@ -51,7 +57,7 @@ public class StudyService {
         return studyTypes.stream()
             .filter(st -> st.getName().equals(typeEnum.getValue()))
             .findFirst()
-            .orElseThrow(() -> new StudyNotFoundException("Study type not found: " + typeEnum.getValue()));
+            .orElseThrow(() -> new StudyNotExistException("Study type not found: " + typeEnum.getValue()));
     }
 }
 
