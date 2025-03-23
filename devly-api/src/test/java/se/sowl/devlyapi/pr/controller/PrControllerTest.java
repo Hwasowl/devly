@@ -18,6 +18,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import se.sowl.devlyapi.pr.dto.files.PrChangedFilesResponse;
 import se.sowl.devlyapi.pr.dto.comments.PrCommentsResponse;
 import se.sowl.devlyapi.pr.dto.PrResponse;
+import se.sowl.devlyapi.pr.service.PrChangedFilesService;
+import se.sowl.devlyapi.pr.service.PrCommentService;
 import se.sowl.devlyapi.pr.service.PrService;
 import se.sowl.devlydomain.pr.domain.PrChangedFile;
 import se.sowl.devlydomain.pr.domain.PrComment;
@@ -46,6 +48,12 @@ class PrControllerTest {
     @MockBean
     private PrService prService;
 
+    @MockBean
+    private PrChangedFilesService prChangedFilesService;
+
+    @MockBean
+    private PrCommentService prCommentService;
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -69,7 +77,7 @@ class PrControllerTest {
         // given
         List<String> labels = List.of("backend", "feature", "bug-fix");
         PrResponse response = new PrResponse(1L, "테스트 PR 제목", "테스트 PR 설명", labels);
-        when(prService.getPr(anyLong(), anyLong())).thenReturn(response);
+        when(prService.getPrResponse(anyLong(), anyLong())).thenReturn(response);
 
         // when & then
         mockMvc.perform(get("/api/pr/{studyId}", 1L)
@@ -99,7 +107,7 @@ class PrControllerTest {
             new PrChangedFile(1L, "src/test/java/com/example/SingletonServiceTest.java", "Java", "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\npublic class SingletonServiceTest {\n\n    @Test\n    void testSingletonInstance() {\n        SingletonService instance1 = SingletonService.getInstance();\n        SingletonService instance2 = SingletonService.getInstance();\n        assertSame(instance1, instance2);\n    }\n}")
         );
         PrChangedFilesResponse response = PrChangedFilesResponse.from(changedFiles);
-        when(prService.getChangedFiles(anyLong())).thenReturn(response);
+        when(prChangedFilesService.getChangedFilesResponse(anyLong())).thenReturn(response);
 
         // when & then
         mockMvc.perform(get("/api/pr/changed-files/{prId}", 1L)
@@ -131,7 +139,7 @@ class PrControllerTest {
             new PrComment(1L, 1L, "사용자가 슬라이더를 원하는 이미지로 넘길 수 있는 기능에 대한 의견을 여쭤보고 싶습니다.")
         );
         PrCommentsResponse response = PrCommentsResponse.from(comments);
-        when(prService.getComments(anyLong())).thenReturn(response);
+        when(prCommentService.getCommentsResponse(anyLong())).thenReturn(response);
 
         // when & then
         mockMvc.perform(get("/api/pr/comments/{prId}", 1L)

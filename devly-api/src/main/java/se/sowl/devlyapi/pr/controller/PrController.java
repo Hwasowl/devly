@@ -5,9 +5,13 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import se.sowl.devlyapi.common.CommonResponse;
+import se.sowl.devlyapi.pr.dto.comments.PrCommentReviewRequest;
 import se.sowl.devlyapi.pr.dto.files.PrChangedFilesResponse;
 import se.sowl.devlyapi.pr.dto.comments.PrCommentsResponse;
 import se.sowl.devlyapi.pr.dto.PrResponse;
+import se.sowl.devlyapi.pr.service.PrChangedFilesService;
+import se.sowl.devlyapi.pr.service.PrCommentService;
+import se.sowl.devlyapi.pr.service.PrReviewService;
 import se.sowl.devlyapi.pr.service.PrService;
 import se.sowl.devlydomain.user.domain.CustomOAuth2User;
 
@@ -17,32 +21,35 @@ import se.sowl.devlydomain.user.domain.CustomOAuth2User;
 public class PrController {
 
     private final PrService prService;
+    private final PrCommentService prCommentService;
+    private final PrChangedFilesService prChangedFilesService;
+    private final PrReviewService prReviewService;
 
     @GetMapping("/{studyId}")
     @PreAuthorize("isAuthenticated()")
     public CommonResponse<PrResponse> getWords(@AuthenticationPrincipal CustomOAuth2User customOAuth2User, @PathVariable Long studyId) {
-        PrResponse response = prService.getPr(customOAuth2User.getUserId(), studyId);
+        PrResponse response = prService.getPrResponse(customOAuth2User.getUserId(), studyId);
         return CommonResponse.ok(response);
     }
 
     @GetMapping("/changed-files/{prId}")
     @PreAuthorize("isAuthenticated()")
     public CommonResponse<PrChangedFilesResponse> getChangedFiles(@PathVariable Long prId) {
-        PrChangedFilesResponse response = prService.getChangedFiles(prId);
+        PrChangedFilesResponse response = prChangedFilesService.getChangedFilesResponse(prId);
         return CommonResponse.ok(response);
     }
 
     @GetMapping("/comments/{prId}")
     @PreAuthorize("isAuthenticated()")
     public CommonResponse<PrCommentsResponse> getComments(@PathVariable Long prId) {
-        PrCommentsResponse response = prService.getComments(prId);
+        PrCommentsResponse response = prCommentService.getCommentsResponse(prId);
         return CommonResponse.ok(response);
     }
 
     @PostMapping("/review/{prCommentId}")
     @PreAuthorize("isAuthenticated()")
-    public CommonResponse<Void> reviewComment(@PathVariable Long prCommentId) {
-        prService.reviewAiComment(prCommentId);
+    public CommonResponse<Void> reviewComment(@PathVariable Long prCommentId, PrCommentReviewRequest request) {
+        prReviewService.reviewAiComment(prCommentId, request.getStudyId(), request.getAnswer());
         return CommonResponse.ok();
     }
 }
