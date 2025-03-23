@@ -5,7 +5,7 @@ import se.sowl.devlydomain.prompt.domain.GeneratePrompt;
 
 import java.util.Optional;
 
-public interface PromptRepository extends JpaRepository<GeneratePrompt, Long> {
+public interface GeneratePromptRepository extends JpaRepository<GeneratePrompt, Long> {
 
     Optional<GeneratePrompt> findFirstByDeveloperTypeIdAndStudyTypeId(Long developerTypeId, Long studyTypeId);
 }

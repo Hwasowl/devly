@@ -21,7 +21,7 @@ import se.sowl.devlydomain.pr.repository.PrChangedFileRepository;
 import se.sowl.devlydomain.pr.repository.PrLabelRepository;
 import se.sowl.devlydomain.pr.repository.PrRepository;
 import se.sowl.devlydomain.prompt.domain.GeneratePrompt;
-import se.sowl.devlydomain.prompt.repository.PromptRepository;
+import se.sowl.devlydomain.prompt.repository.GeneratePromptRepository;
 import se.sowl.devlydomain.study.domain.Study;
 import se.sowl.devlydomain.study.domain.StudyStatusEnum;
 import se.sowl.devlydomain.study.repository.StudyRepository;
@@ -52,7 +52,7 @@ class PrCreationJobConfigTest extends MediumBatchTest {
     private PrLabelRepository prLabelRepository;
 
     @Autowired
-    private PromptRepository promptRepository;
+    private GeneratePromptRepository promptRepository;
 
     @MockBean
     private GPTClient gptClient;

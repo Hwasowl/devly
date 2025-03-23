@@ -16,7 +16,7 @@ import org.springframework.test.context.ActiveProfiles;
 import se.sowl.devlybatch.config.TestBatchConfig;
 import se.sowl.devlybatch.job.MediumBatchTest;
 import se.sowl.devlydomain.prompt.domain.GeneratePrompt;
-import se.sowl.devlydomain.prompt.repository.PromptRepository;
+import se.sowl.devlydomain.prompt.repository.GeneratePromptRepository;
 import se.sowl.devlydomain.study.domain.Study;
 import se.sowl.devlydomain.study.domain.StudyStatusEnum;
 import se.sowl.devlydomain.study.repository.StudyRepository;
@@ -43,7 +43,7 @@ class WordCreationJobConfigTest extends MediumBatchTest {
     private WordRepository wordRepository;
 
     @Autowired
-    private PromptRepository promptRepository;
+    private GeneratePromptRepository promptRepository;
 
     @MockBean
     private GPTClient gptClient;
