@@ -12,6 +12,7 @@ import se.sowl.devlydomain.word.domain.Word;
 import se.sowl.devlydomain.word.repository.WordRepository;
 import se.sowl.devlyexternal.client.gpt.GPTClient;
 import se.sowl.devlyexternal.client.gpt.dto.GPTResponse;
+import se.sowl.devlyexternal.common.gpt.GptPromptManager;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,7 +25,7 @@ public class WordProcessService {
     private final WordRepository wordRepository;
     private final GPTClient gptClient;
     private final WordEntityParser wordEntityParser;
-    private final WordPromptManager wordPromptManager;
+    private final GptPromptManager gptPromptManager;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Long progressWordsOfStudy(Study study) {
@@ -53,8 +54,8 @@ public class WordProcessService {
         StringBuilder prompt = new StringBuilder();
         List<String> recentWords = wordRepository.findWordsByCreatedAtAfter(LocalDateTime.now().minusDays(7))
             .stream().map(Word::getWord).collect(Collectors.toList());
-        wordPromptManager.addExcludePrompt(recentWords, prompt);
-        wordPromptManager.addBasePrompt(developerTypeId, studyTypeId, prompt);
+        gptPromptManager.addExcludePrompt(recentWords, prompt);
+        gptPromptManager.addBasePrompt(developerTypeId, studyTypeId, prompt);
         return prompt.toString();
     }
 }

@@ -10,7 +10,7 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public abstract class GptPromptManager {
+public class GptPromptManager {
     private final PromptRepository promptRepository;
 
     public String getDefaultPrompt(Long developerTypeId, Long studyTypeId) {
@@ -26,5 +26,8 @@ public abstract class GptPromptManager {
         }
     }
 
-    public abstract void addBasePrompt(Long developerTypeId, Long studyTypeId, StringBuilder builder);
+    public void addBasePrompt(Long developerTypeId, Long studyTypeId, StringBuilder builder) {
+        String defaultPrompt = getDefaultPrompt(developerTypeId, studyTypeId);
+        builder.append(defaultPrompt);
+    }
 }

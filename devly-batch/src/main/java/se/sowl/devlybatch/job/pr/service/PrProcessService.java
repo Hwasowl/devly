@@ -10,6 +10,7 @@ import se.sowl.devlydomain.pr.repository.PrRepository;
 import se.sowl.devlydomain.study.domain.Study;
 import se.sowl.devlyexternal.client.gpt.GPTClient;
 import se.sowl.devlyexternal.client.gpt.dto.GPTResponse;
+import se.sowl.devlyexternal.common.gpt.GptPromptManager;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,7 +22,7 @@ public class PrProcessService {
     private final GPTClient gptClient;
     private final PrEntityParser prEntityParser;
     private final PrPersistenceService prPersistenceService;
-    private final PrPromptManager prPromptManager;
+    private final GptPromptManager gptPromptManager;
     private final PrRepository prRepository;
 
     @Transactional
@@ -44,8 +45,8 @@ public class PrProcessService {
         StringBuilder prompt = new StringBuilder();
         List<String> recentTitles = prRepository.findPrsByCreatedAtAfter(LocalDateTime.now().minusDays(7))
             .stream().map(Pr::getTitle).toList();
-        prPromptManager.addExcludePrompt(recentTitles, prompt);
-        prPromptManager.addBasePrompt(developerTypeId, studyTypeId, prompt);
+        gptPromptManager.addExcludePrompt(recentTitles, prompt);
+        gptPromptManager.addBasePrompt(developerTypeId, studyTypeId, prompt);
         return prompt.toString();
     }
 }
