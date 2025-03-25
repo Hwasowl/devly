@@ -180,10 +180,10 @@ class PrControllerTest {
         Long prCommentId = 1L;
         String requestAnswer = "이 커밋은 개인적으로 타당하지 못합니다. 그 이유는 ---";
         Long studyId = 1L;
-        String responseAnswer = "동의합니다. 이 부분은 이런 부분이 타당하지 못하지만 이 부분은 다시 볼 필요가 ---";
+        String responseReview = "동의합니다. 이 부분은 이런 부분이 타당하지 못하지만 이 부분은 다시 볼 필요가 ---";
 
         PrCommentReviewRequest request = new PrCommentReviewRequest(requestAnswer, studyId);
-        PrCommentReviewResponse response = new PrCommentReviewResponse(responseAnswer);
+        PrCommentReviewResponse response = new PrCommentReviewResponse(responseReview);
 
         when(prReviewService.reviewPrComment(any(), any(), any(), any()))
             .thenReturn(response);
@@ -201,7 +201,7 @@ class PrControllerTest {
                 responseFields(
                     fieldWithPath("code").description("응답 코드"),
                     fieldWithPath("message").description("응답 메시지"),
-                    fieldWithPath("result.answer").description("피드백 내용")
+                    fieldWithPath("result.review").description("피드백 내용")
                 )
             ));
     }

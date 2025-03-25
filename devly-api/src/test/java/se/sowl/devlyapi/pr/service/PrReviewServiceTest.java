@@ -71,7 +71,7 @@ class PrReviewServiceTest extends MediumTest {
 
             // then
             assertThat(response).isNotNull();
-            assertThat(response.getAnswer()).isEqualTo("AI 리뷰 내용");
+            assertThat(response.getReview()).isEqualTo("AI 리뷰 내용");
         }
 
         @Test
