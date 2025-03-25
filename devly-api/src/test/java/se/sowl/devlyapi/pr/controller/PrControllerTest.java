@@ -1,5 +1,6 @@
 package se.sowl.devlyapi.pr.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,11 +16,14 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import se.sowl.devlyapi.pr.dto.files.PrChangedFilesResponse;
-import se.sowl.devlyapi.pr.dto.comments.PrCommentsResponse;
 import se.sowl.devlyapi.pr.dto.PrResponse;
+import se.sowl.devlyapi.pr.dto.comments.PrCommentsResponse;
+import se.sowl.devlyapi.pr.dto.files.PrChangedFilesResponse;
+import se.sowl.devlyapi.pr.dto.review.PrCommentReviewRequest;
+import se.sowl.devlyapi.pr.dto.review.PrCommentReviewResponse;
 import se.sowl.devlyapi.pr.service.PrChangedFilesService;
 import se.sowl.devlyapi.pr.service.PrCommentService;
+import se.sowl.devlyapi.pr.service.PrReviewService;
 import se.sowl.devlyapi.pr.service.PrService;
 import se.sowl.devlydomain.pr.domain.PrChangedFile;
 import se.sowl.devlydomain.pr.domain.PrComment;
@@ -28,11 +32,13 @@ import se.sowl.devlydomain.user.domain.User;
 
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
@@ -54,8 +60,14 @@ class PrControllerTest {
     @MockBean
     private PrCommentService prCommentService;
 
+    @MockBean
+    private PrReviewService prReviewService;
+
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @BeforeEach
     void setUp() {
@@ -161,4 +173,36 @@ class PrControllerTest {
             ));
     }
 
+    @Test
+    @DisplayName("PR 커멘트에 대한 리뷰를 받는다.")
+    void reviewPRComment() throws Exception {
+        // given
+        Long prCommentId = 1L;
+        String requestAnswer = "이 커밋은 개인적으로 타당하지 못합니다. 그 이유는 ---";
+        Long studyId = 1L;
+        String responseAnswer = "동의합니다. 이 부분은 이런 부분이 타당하지 못하지만 이 부분은 다시 볼 필요가 ---";
+
+        PrCommentReviewRequest request = new PrCommentReviewRequest(requestAnswer, studyId);
+        PrCommentReviewResponse response = new PrCommentReviewResponse(responseAnswer);
+
+        when(prReviewService.reviewPrComment(any(), any(), any(), any()))
+            .thenReturn(response);
+
+        // when & then
+        mockMvc.perform(post("/api/pr/review/comment/{prCommentId}", prCommentId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))
+            )
+            .andExpect(status().isOk())
+            .andDo(document("pr-comment-review",
+                pathParameters(
+                    parameterWithName("prCommentId").description("PR 댓글 ID")
+                ),
+                responseFields(
+                    fieldWithPath("code").description("응답 코드"),
+                    fieldWithPath("message").description("응답 메시지"),
+                    fieldWithPath("result.answer").description("피드백 내용")
+                )
+            ));
+    }
 }

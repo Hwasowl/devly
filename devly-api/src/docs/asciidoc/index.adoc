@@ -35,4 +35,7 @@ operation::pr-changed-files[snippets='http-response']
 === [PR] 질문 내역 조회
 operation::pr-comments[snippets='http-request']
 operation::pr-comments[snippets='http-response']
+=== [PR] 커멘트 리뷰 요청
+operation::pr-comment-review[snippets='http-request']
+operation::pr-comment-review[snippets='http-response']
 

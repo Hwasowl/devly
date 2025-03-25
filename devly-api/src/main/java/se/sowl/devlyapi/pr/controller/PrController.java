@@ -47,9 +47,9 @@ public class PrController {
         return CommonResponse.ok(response);
     }
 
-    @PostMapping("/review/{prCommentId}")
+    @PostMapping("/review/comment/{prCommentId}")
     @PreAuthorize("isAuthenticated()")
-    public CommonResponse<PrCommentReviewResponse> reviewComment(@AuthenticationPrincipal CustomOAuth2User customOAuth2User, @PathVariable Long prCommentId, PrCommentReviewRequest request) {
+    public CommonResponse<PrCommentReviewResponse> reviewPrComment(@AuthenticationPrincipal CustomOAuth2User customOAuth2User, @PathVariable Long prCommentId, PrCommentReviewRequest request) {
         PrCommentReviewResponse response = prReviewService.reviewPrComment(customOAuth2User.getUserId(), prCommentId, request.getStudyId(), request.getAnswer());
         return CommonResponse.ok(response);
     }
