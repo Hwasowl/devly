@@ -87,7 +87,6 @@ pipeline {
                     if (params.BUILD_API) {
                         try {
                             sh 'export SPRING_PROFILES_ACTIVE=test && ./gradlew :devly-api:test'
-                            sh 'export SPRING_PROFILES_ACTIVE=test && ./gradlew :devly-api:asciidoctor'
                         } catch (Exception e) {
                             currentBuild.result = 'FAILURE'
                             error "API tests failed: ${e.message}"
@@ -114,15 +113,38 @@ pipeline {
                     sh './gradlew :devly-external:clean :devly-external:build -x test'
                     if (params.BUILD_API) {
                         sh '''
-                            mkdir -p devly-api/build/generated-snippets
-                            ./gradlew :devly-api:clean :devly-api:build -x test -x asciidoctor -Pspring.profiles.active=prod
+                            ./gradlew :devly-api:build -x test -Pspring.profiles.active=prod
                         '''
                     }
                     if (params.BUILD_BATCH) {
                         sh '''
-                            mkdir -p devly-batch/build/generated-snippets
-                            ./gradlew :devly-batch:clean :devly-batch:build -x test -x asciidoctor -Pspring.profiles.active=prod
+                            ./gradlew :devly-batch:clean :devly-batch:build -x test -Pspring.profiles.active=prod
                         '''
+                    }
+                }
+            }
+        }
+
+        stage('Generate Documentation') {
+            when {
+                expression { return params.BUILD_API }
+            }
+            steps {
+                script {
+                    try {
+                        // 테스트에서 생성된 스니펫을 보존하면서 문서 생성
+                        sh '''
+                            export SPRING_PROFILES_ACTIVE=test
+                            ./gradlew :devly-api:asciidoctor
+                        '''
+
+                        sh 'ls -la devly-api/build/docs/asciidoc/ || echo "No documentation generated"'
+
+                        // 문서를 아티팩트 디렉토리로 복사
+                        sh 'mkdir -p ${WORKSPACE}/docs'
+                        sh 'cp -R devly-api/build/docs/asciidoc/* ${WORKSPACE}/docs/ || echo "No documentation to copy"'
+                    } catch (Exception e) {
+                        echo "Documentation generation failed: ${e.message}"
                     }
                 }
             }

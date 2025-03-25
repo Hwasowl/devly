@@ -28,7 +28,6 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
-    // springdoc-openapi
     asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor'
     testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
 }
@@ -45,19 +44,19 @@ test {
 asciidoctor {
     inputs.dir snippetsDir
     configurations 'asciidoctorExt'
-    dependsOn test
 }
 
-task copyDocument(type: Copy) {
-    dependsOn asciidoctor
-    from file("build/docs/asciidoc/index.html")
-    into file("src/main/resources/static/docs")
+task testAndGenerateDocs(type: GradleBuild) {
+    tasks = ['test', 'asciidoctor']
 }
 
 bootJar {
-    dependsOn copyDocument
-    dependsOn asciidoctor
     from ("${asciidoctor.outputDir}/html5") {
-        into 'static/docs'
+        into 'BOOT-INF/classes/static/docs'
     }
+    finalizedBy 'cleanupDocumentation'
+}
+
+task cleanupDocumentation(type: Delete) {
+    delete fileTree(dir: "${asciidoctor.outputDir}")
 }
