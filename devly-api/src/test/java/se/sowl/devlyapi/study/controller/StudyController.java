@@ -18,22 +18,16 @@ import org.springframework.test.web.servlet.MockMvc;
 import se.sowl.devlyapi.study.dto.UserStudyTask;
 import se.sowl.devlyapi.study.dto.UserStudyTasksResponse;
 import se.sowl.devlyapi.study.service.UserStudyService;
-import se.sowl.devlyapi.word.dto.reviews.WordReviewResponse;
-import se.sowl.devlyapi.word.service.WordService;
 import se.sowl.devlydomain.user.domain.CustomOAuth2User;
 import se.sowl.devlydomain.user.domain.User;
-
-import java.util.List;
 
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
-import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
-import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -44,9 +38,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class StudyControllerTest {
     @MockBean
     private UserStudyService userStudyService;
-
-    @MockBean
-    private WordService wordService;
 
     @Autowired
     private MockMvc mockMvc;
@@ -104,76 +95,6 @@ class StudyControllerTest {
                     fieldWithPath("result.discussion.studyId").description("토론 학습 ID"),
                     fieldWithPath("result.discussion.total").description("총 토론 수"),
                     fieldWithPath("result.discussion.completed").description("완료 여부")
-                )
-            ));
-    }
-
-    @Test
-    @DisplayName("단어 학습에 대한 오답 노트를 제출한다")
-    void createReviewTest() throws Exception {
-        // given
-        String request = "{\"correctIds\":[1,2],\"incorrectIds\":[3,4,5]}";
-
-        // when & then
-        mockMvc.perform(post("/api/studies/{studyId}/words/review", 1L)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(request))
-            .andExpect(status().isOk())
-            .andDo(document("create-word-review",
-                pathParameters(
-                    parameterWithName("studyId").description("학습 ID")
-                ),
-                responseFields(
-                    fieldWithPath("code").description("응답 코드"),
-                    fieldWithPath("message").description("응답 메시지"),
-                    fieldWithPath("result").description("결과")
-                )
-            ));
-    }
-
-    @Test
-    @DisplayName("단어 학습에 대한 오답 노트를 갱신한다.")
-    void updateReviewTest() throws Exception {
-        // given
-        String request = "{\"correctIds\":[1,2]}";
-
-        // when & then
-        mockMvc.perform(put("/api/studies/{studyId}/words/review", 1L)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(request))
-            .andExpect(status().isOk())
-            .andDo(document("update-word-review",
-                pathParameters(
-                    parameterWithName("studyId").description("학습 ID")
-                ),
-                responseFields(
-                    fieldWithPath("code").description("응답 코드"),
-                    fieldWithPath("message").description("응답 메시지"),
-                    fieldWithPath("result").description("결과")
-                )
-            ));
-    }
-
-    @Test
-    @DisplayName("단어 학습에 대한 오답 정보를 조회한다")
-    void getWordReviewsTest() throws Exception {
-        // given
-        WordReviewResponse response = new WordReviewResponse(List.of(1L, 2L, 3L), List.of(4L, 5L));
-        when(wordService.getWordReviews(anyLong(), anyLong())).thenReturn(response);
-
-        // when & then
-        mockMvc.perform(get("/api/studies/{studyId}/words/review", 1L)
-                .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andDo(document("get-word-reviews",
-                pathParameters(
-                    parameterWithName("studyId").description("학습 ID")
-                ),
-                responseFields(
-                    fieldWithPath("code").description("응답 코드"),
-                    fieldWithPath("message").description("응답 메시지"),
-                    fieldWithPath("result.correctIds").description("정답 ID 목록"),
-                    fieldWithPath("result.incorrectIds").description("오답 ID 목록")
                 )
             ));
     }

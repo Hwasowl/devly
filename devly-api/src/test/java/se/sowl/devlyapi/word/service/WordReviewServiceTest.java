@@ -22,10 +22,11 @@ class WordReviewServiceTest extends MediumTest {
 
     @AfterEach
     void tearDown() {
-        wordRepository.deleteAllInBatch();
+        wordReviewRepository.deleteAllInBatch();
         userStudyRepository.deleteAllInBatch();
-        studyRepository.deleteAllInBatch();
         userRepository.deleteAllInBatch();
+        studyRepository.deleteAllInBatch();
+        wordRepository.deleteAllInBatch();
     }
 
     @Nested
@@ -77,11 +78,9 @@ class WordReviewServiceTest extends MediumTest {
             wordReviewService.updateReview(study.getId(), user.getId(), newCorrectIds);
 
             // then
-            List<WordReview> all = wordReviewRepository.findAll();
-            for(WordReview r : all) {
-                System.out.println(r.getWordId() + " " + r.isCorrect());
-            }
-            wordReviewRepository.findAll().forEach(review -> {
+            List<WordReview> all = wordReviewRepository.findByStudyIdAndUserId(study.getId(), user.getId());
+
+            all.forEach(review -> {
                 if (review.getWordId() == 1L || review.getWordId() == 2L || review.getWordId() == 3L || review.getWordId() == 4L) {
                     assertThat(review.isCorrect()).isTrue();
                 } else {

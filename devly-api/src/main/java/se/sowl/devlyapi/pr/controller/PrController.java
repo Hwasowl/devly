@@ -33,14 +33,14 @@ public class PrController {
         return CommonResponse.ok(response);
     }
 
-    @GetMapping("/changed-files/{prId}")
+    @GetMapping("/{prId}/changed-files")
     @PreAuthorize("isAuthenticated()")
     public CommonResponse<PrChangedFilesResponse> getChangedFiles(@PathVariable Long prId) {
         PrChangedFilesResponse response = prChangedFilesService.getChangedFilesResponse(prId);
         return CommonResponse.ok(response);
     }
 
-    @GetMapping("/comments/{prId}")
+    @GetMapping("/{prId}/comments")
     @PreAuthorize("isAuthenticated()")
     public CommonResponse<PrCommentsResponse> getComments(@PathVariable Long prId) {
         PrCommentsResponse response = prCommentService.getCommentsResponse(prId);

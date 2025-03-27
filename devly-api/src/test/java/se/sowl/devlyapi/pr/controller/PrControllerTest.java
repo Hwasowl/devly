@@ -122,7 +122,7 @@ class PrControllerTest {
         when(prChangedFilesService.getChangedFilesResponse(anyLong())).thenReturn(response);
 
         // when & then
-        mockMvc.perform(get("/api/pr/changed-files/{prId}", 1L)
+        mockMvc.perform(get("/api/pr/{prId}/changed-files", 1L)
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andDo(document("pr-changed-files",
@@ -154,7 +154,7 @@ class PrControllerTest {
         when(prCommentService.getCommentsResponse(anyLong())).thenReturn(response);
 
         // when & then
-        mockMvc.perform(get("/api/pr/comments/{prId}", 1L)
+        mockMvc.perform(get("/api/pr/{prId}/comments", 1L)
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andDo(document("pr-comments",
