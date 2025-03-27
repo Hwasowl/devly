@@ -19,14 +19,14 @@ public class PrComment extends BaseTimeEntity {
     @Column(name = "pull_request_id")
     private Long prId;
 
-    private Long idx;
+    private Long sequence;
 
     private String content;
 
     @Builder
-    public PrComment(Long prId, Long idx, String content) {
+    public PrComment(Long prId, Long sequence, String content) {
         this.prId = prId;
-        this.idx = idx;
+        this.sequence = sequence;
         this.content = content;
     }
 }

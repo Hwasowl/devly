@@ -166,7 +166,7 @@ class PrControllerTest {
                     fieldWithPath("message").description("응답 메시지"),
                     fieldWithPath("result.comments").description("질문 목록"),
                     fieldWithPath("result.comments[].id").description("ID"),
-                    fieldWithPath("result.comments[].idx").description("인덱스"),
+                    fieldWithPath("result.comments[].sequence").description("인덱스"),
                     fieldWithPath("result.comments[].prId").description("PR ID"),
                     fieldWithPath("result.comments[].content").description("질문 내역")
                 )

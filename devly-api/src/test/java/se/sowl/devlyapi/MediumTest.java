@@ -235,12 +235,12 @@ public abstract class MediumTest {
         return List.of(
             PrComment.builder()
                 .prId(prId)
-                .idx(1L)
+                .sequence(1L)
                 .content("커밋 로그와 변경된 파일을 확인해 어떤 부분을 반영하고 개선한 PR인지 설명해주세요!")
                 .build(),
             PrComment.builder()
                 .prId(prId)
-                .idx(2L)
+                .sequence(2L)
                 .content("왜 구조가 변경되었는지 상세하게 설명해주세요.")
                 .build()
         );

@@ -8,11 +8,11 @@ import se.sowl.devlydomain.pr.domain.PrComment;
 @AllArgsConstructor
 public class PrCommentResponse {
     private Long id;
-    private Long idx;
+    private Long sequence;
     private Long prId;
     private String content;
 
     public static PrCommentResponse from(PrComment comment) {
-        return new PrCommentResponse(comment.getId(), comment.getIdx(), comment.getPrId(), comment.getContent());
+        return new PrCommentResponse(comment.getId(), comment.getSequence(), comment.getPrId(), comment.getContent());
     }
 }

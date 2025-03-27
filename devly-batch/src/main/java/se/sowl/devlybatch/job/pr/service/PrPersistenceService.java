@@ -77,6 +77,6 @@ public class PrPersistenceService {
     }
 
     private PrComment createPrCommentWithPrId(PrComment original, Long prId) {
-        return new PrComment(prId, original.getIdx(), original.getContent());
+        return new PrComment(prId, original.getSequence(), original.getContent());
     }
 }
