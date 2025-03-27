@@ -14,7 +14,7 @@ public class GptRequestFactory {
         }
         try {
             return GPTRequest.builder()
-                .model("gpt-4o-mini")
+                .model("gpt-4")
                 .messages(List.of(GPTRequest.Message.builder()
                     .role("user")
                     .content(prompt)
