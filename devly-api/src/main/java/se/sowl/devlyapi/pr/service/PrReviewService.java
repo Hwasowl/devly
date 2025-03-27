@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import se.sowl.devlyapi.pr.dto.review.PrCommentReviewResponse;
 import se.sowl.devlyapi.study.service.StudyService;
+import se.sowl.devlydomain.pr.domain.PrChangedFile;
 import se.sowl.devlydomain.pr.domain.PrComment;
 import se.sowl.devlydomain.pr.domain.PrReview;
 import se.sowl.devlydomain.study.domain.Study;
@@ -12,6 +13,8 @@ import se.sowl.devlyexternal.client.gpt.GPTClient;
 import se.sowl.devlyexternal.client.gpt.dto.GPTResponse;
 import se.sowl.devlyexternal.common.ParserArguments;
 import se.sowl.devlyexternal.common.gpt.GptPromptManager;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +24,7 @@ public class PrReviewService {
     private final PrReviewEntityParser prReviewEntityParser;
     private final StudyService studyService;
     private final PrCommentService prCommentService;
+    private final PrChangedFilesService prChangedFilesService;
 
     @Transactional
     public PrCommentReviewResponse reviewPrComment(Long userId, Long prCommentId, Long studyId, String answer) {
@@ -44,6 +48,7 @@ public class PrReviewService {
         gptPromptManager.addRolePrompt(developerTypeId, studyTypeId, prompt);
         addPrCommentPrompt(prCommentId, prompt);
         addUserAnswerPrompt(answer, prompt);
+        addCodePrompt(prCommentId, prompt);
         return prompt.toString();
     }
 
@@ -54,6 +59,14 @@ public class PrReviewService {
 
     private void addUserAnswerPrompt(String answer, StringBuilder prompt) {
         prompt.append("유저 답변: ").append(answer);
+    }
+
+    private void addCodePrompt(Long prCommentId, StringBuilder prompt) {
+        PrComment comment = prCommentService.getCommentById(prCommentId);
+        List<PrChangedFile> changedFiles = prChangedFilesService.getChangedFileById(comment.getPrId());
+        changedFiles.stream()
+            .map(PrChangedFile::getContent)
+            .forEach(code -> prompt.append("코드: ").append(code));
     }
 
     private ParserArguments createParameters(Long userId, Long prCommentId, String answer) {

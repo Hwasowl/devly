@@ -63,7 +63,7 @@ class PrReviewServiceTest extends MediumTest {
 
             String answer = "테스트 답변입니다.";
 
-            mockReviewCreation(answer);
+            mockReviewCreation();
 
             // when
             PrCommentReviewResponse response = prReviewService.reviewPrComment(
@@ -125,7 +125,7 @@ class PrReviewServiceTest extends MediumTest {
                 .isInstanceOf(StudyNotExistException.class);
         }
 
-        private void mockReviewCreation(String answer) {
+        private void mockReviewCreation() {
             GPTResponse gptResponse = mock(GPTResponse.class);
             when(gptResponse.getContent()).thenReturn("AI 응답 내용");
 

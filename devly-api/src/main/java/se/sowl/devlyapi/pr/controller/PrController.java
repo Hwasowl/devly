@@ -28,7 +28,7 @@ public class PrController {
 
     @GetMapping("/{studyId}")
     @PreAuthorize("isAuthenticated()")
-    public CommonResponse<PrResponse> getWords(@AuthenticationPrincipal CustomOAuth2User customOAuth2User, @PathVariable Long studyId) {
+    public CommonResponse<PrResponse> getPr(@AuthenticationPrincipal CustomOAuth2User customOAuth2User, @PathVariable Long studyId) {
         PrResponse response = prService.getPrResponse(customOAuth2User.getUserId(), studyId);
         return CommonResponse.ok(response);
     }

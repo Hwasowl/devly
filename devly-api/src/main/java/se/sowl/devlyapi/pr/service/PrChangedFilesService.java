@@ -18,4 +18,7 @@ public class PrChangedFilesService {
         return PrChangedFilesResponse.from(files);
     }
 
+    public List<PrChangedFile> getChangedFileById(Long id) {
+        return prChangedFileRepository.findByPrId(id);
+    }
 }
