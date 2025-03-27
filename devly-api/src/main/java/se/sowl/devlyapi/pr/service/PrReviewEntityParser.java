@@ -29,7 +29,6 @@ public class PrReviewEntityParser extends GptEntityParser<PrReview> {
                 .answer(answer)
                 .review(entry)
                 .build();
-
         } catch (Exception e) {
             throw new GPTContentProcessingException("Error parsing PrReview entity: " + e.getMessage(), e);
         }

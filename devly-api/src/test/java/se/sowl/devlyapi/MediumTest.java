@@ -23,10 +23,7 @@ import se.sowl.devlydomain.pr.domain.Pr;
 import se.sowl.devlydomain.pr.domain.PrChangedFile;
 import se.sowl.devlydomain.pr.domain.PrComment;
 import se.sowl.devlydomain.pr.domain.PrLabel;
-import se.sowl.devlydomain.pr.repository.PrChangedFileRepository;
-import se.sowl.devlydomain.pr.repository.PrCommentRepository;
-import se.sowl.devlydomain.pr.repository.PrLabelRepository;
-import se.sowl.devlydomain.pr.repository.PrRepository;
+import se.sowl.devlydomain.pr.repository.*;
 import se.sowl.devlydomain.study.domain.Study;
 import se.sowl.devlydomain.study.domain.StudyType;
 import se.sowl.devlydomain.study.repository.StudyRepository;
@@ -104,6 +101,9 @@ public abstract class MediumTest {
 
     @Autowired
     protected PrCommentRepository prCommentRepository;
+
+    @Autowired
+    protected PrReviewRepository prReviewRepository;
 
     @Autowired
     protected ObjectMapper objectMapper;

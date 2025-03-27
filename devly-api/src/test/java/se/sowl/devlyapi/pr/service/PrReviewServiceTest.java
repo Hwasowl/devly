@@ -9,6 +9,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Profile;
 import se.sowl.devlyapi.MediumTest;
 import se.sowl.devlyapi.pr.dto.review.PrCommentReviewResponse;
+import se.sowl.devlyapi.pr.exception.AlreadyPrReviewedException;
 import se.sowl.devlyapi.pr.exception.PrCommentNotExistException;
 import se.sowl.devlyapi.study.exception.StudyNotExistException;
 import se.sowl.devlydomain.pr.domain.Pr;
@@ -20,6 +21,8 @@ import se.sowl.devlyexternal.client.gpt.GPTClient;
 import se.sowl.devlyexternal.client.gpt.dto.GPTRequest;
 import se.sowl.devlyexternal.client.gpt.dto.GPTResponse;
 import se.sowl.devlyexternal.common.gpt.GptPromptManager;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -59,7 +62,7 @@ class PrReviewServiceTest extends MediumTest {
             User user = userRepository.save(createUser(1L, 1L, "테스트", "닉네임", "test@email.com", "github"));
             Study study = studyRepository.save(buildStudy(3L, 1L));
             Pr pr = prRepository.save(buildPr(study.getId()));
-            PrComment prComment = prCommentRepository.save(buildPrComments(pr.getId()).get(0));
+            PrComment prComment = prCommentRepository.save(buildPrComments(pr.getId()).getFirst());
 
             String answer = "테스트 답변입니다.";
 
@@ -70,6 +73,8 @@ class PrReviewServiceTest extends MediumTest {
                 user.getId(), prComment.getId(), study.getId(), answer);
 
             // then
+            List<PrReview> all = prReviewRepository.findAll();
+            assertThat(all).hasSize(1);
             assertThat(response).isNotNull();
             assertThat(response.getReview()).isEqualTo("AI 리뷰 내용");
         }
@@ -81,7 +86,7 @@ class PrReviewServiceTest extends MediumTest {
             User user = userRepository.save(createUser(1L, 1L, "테스트", "닉네임", "test@email.com", "github"));
             Study study = studyRepository.save(buildStudy(3L, 1L));
             Pr pr = prRepository.save(buildPr(study.getId()));
-            PrComment prComment = prCommentRepository.save(buildPrComments(pr.getId()).get(0));
+            PrComment prComment = prCommentRepository.save(buildPrComments(pr.getId()).getFirst());
 
             String emptyAnswer = "";
 
@@ -90,6 +95,30 @@ class PrReviewServiceTest extends MediumTest {
                 user.getId(), prComment.getId(), study.getId(), emptyAnswer))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Cannot review empty answer comment. Please check your argument");
+        }
+
+        @Test
+        @DisplayName("이미 리뷰된 경우 예외가 발생한다.")
+        void already_reviewed() {
+            // given
+            User user = userRepository.save(createUser(1L, 1L, "테스트", "닉네임", "test@email.com", "github"));
+            Study study = studyRepository.save(buildStudy(3L, 1L));
+            Pr pr = prRepository.save(buildPr(study.getId()));
+            PrComment prComment = prCommentRepository.save(buildPrComments(pr.getId()).getFirst());
+            PrReview prReview = PrReview.builder()
+                .userId(user.getId())
+                .prCommentId(prComment.getId())
+                .answer("answer")
+                .review("review")
+                .build();
+            prReviewRepository.save(prReview);
+
+            String answer = "테스트 답변입니다.";
+
+            // when & then
+            assertThatThrownBy(() -> prReviewService.reviewPrComment(
+                user.getId(), prComment.getId(), study.getId(), answer))
+                .isInstanceOf(AlreadyPrReviewedException.class);
         }
 
         @Test
@@ -114,7 +143,7 @@ class PrReviewServiceTest extends MediumTest {
             User user = userRepository.save(createUser(1L, 1L, "테스트", "닉네임", "test@email.com", "github"));
             Study study = studyRepository.save(buildStudy(3L, 1L));
             Pr pr = prRepository.save(buildPr(study.getId()));
-            PrComment prComment = prCommentRepository.save(buildPrComments(pr.getId()).get(0));
+            PrComment prComment = prCommentRepository.save(buildPrComments(pr.getId()).getFirst());
 
             Long nonExistentStudyId = 999L;
             String answer = "테스트 답변입니다.";
