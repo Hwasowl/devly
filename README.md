@@ -10,7 +10,7 @@
 
   
 ## 기술적 issue 해결 과정
-* 블로그 작성 중 ...
+* [트랜잭션 전파 옵션 REQUIRES_NEW를 사용해 효율적으로 처리하기](https://hwasowl-log.tistory.com/25)
 
 
 ## 프로젝트 중점 사항

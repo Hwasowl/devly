@@ -27,6 +27,8 @@ import se.sowl.devlyexternal.client.gpt.dto.GPTResponse;
 import se.sowl.devlyexternal.client.gpt.exception.GPTClientException;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.mockito.Mockito.*;
@@ -151,6 +153,51 @@ class WordCreationJobConfigTest extends MediumBatchTest {
         Word frontendWord = wordRepository.findByStudyId(frontendStudy.getId());
         assertThat(frontendWord.getWord()).isEqualTo("component");
         assertThat(frontendWord.getMeaning()).isEqualTo("구성 요소");
+    }
+
+    @Test
+    @DisplayName("5번 호출 중 3번째 호출에 실패하고 나머지는 모두 성공하면 4개의 단어가 저장되어야 한다.")
+    void createWordsWithFailureRequest() throws Exception {
+        // given
+        List<Study> studies = IntStream.range(0, 5)
+            .mapToObj(i -> Study.builder()
+                .typeId(1L)
+                .developerTypeId(1L)
+                .build())
+            .collect(Collectors.toList());
+        studyRepository.saveAll(studies);
+
+        String validResponse = """
+        단어: implementation
+        발음: /ˌɪmplɪmenˈteɪʃən/
+        의미: 구현, 실행
+        예문: {"source": "Spring Documentation", "text": "The implementation details should be hidden.", "translation": "구현 세부사항은 숨겨져야 합니다."}
+        퀴즈: {"text": "", "distractors": ["Interface", "Abstract", "Class", "Object"]}
+        ---
+        """;
+
+        when(gptClient.generate(any()))
+            .thenReturn(new GPTResponse(List.of(new GPTResponse.Choice(new GPTResponse.Message("assistant", validResponse), "stop", 0))))
+            .thenReturn(new GPTResponse(List.of(new GPTResponse.Choice(new GPTResponse.Message("assistant", validResponse), "stop", 0))))
+            .thenThrow(new GPTClientException("GPT API error"))
+            .thenReturn(new GPTResponse(List.of(new GPTResponse.Choice(new GPTResponse.Message("assistant", validResponse), "stop", 0))))
+            .thenReturn(new GPTResponse(List.of(new GPTResponse.Choice(new GPTResponse.Message("assistant", validResponse), "stop", 0))));
+
+        // when
+        JobExecution jobExecution = jobLauncherTestUtils.launchStep("createWordsStep");
+
+        // then
+        assertThat(jobExecution.getStatus()).isEqualTo(BatchStatus.COMPLETED);
+        verify(gptClient, times(5)).generate(any());
+
+        List<Word> savedWords = wordRepository.findAll();
+        assertThat(savedWords).hasSize(4);
+
+        List<Study> updatedStudies = studyRepository.findAll();
+        long connectedCount = updatedStudies.stream()
+            .filter(s -> s.getStatus() == StudyStatusEnum.CONNECTED)
+            .count();
+        assertThat(connectedCount).isEqualTo(4);
     }
 
     @Test
