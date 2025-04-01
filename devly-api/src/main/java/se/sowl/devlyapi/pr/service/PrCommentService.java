@@ -23,4 +23,8 @@ public class PrCommentService {
         return prCommentRepository.findById(id).orElseThrow(
             () -> new PrCommentNotExistException("Cannot found pr."));
     }
+
+    public List<PrComment> getCommentsByPrId(Long prId) {
+        return prCommentRepository.findByPrId(prId);
+    }
 }

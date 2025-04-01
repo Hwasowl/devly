@@ -26,7 +26,7 @@ public class PrController {
     private final PrChangedFilesService prChangedFilesService;
     private final PrReviewService prReviewService;
 
-    @GetMapping("/{studyId}")
+    @GetMapping("/study/{studyId}")
     @PreAuthorize("isAuthenticated()")
     public CommonResponse<PrResponse> getPr(@AuthenticationPrincipal CustomOAuth2User customOAuth2User, @PathVariable Long studyId) {
         PrResponse response = prService.getPrResponse(customOAuth2User.getUserId(), studyId);
@@ -52,5 +52,12 @@ public class PrController {
     public CommonResponse<PrCommentReviewResponse> reviewPrComment(@AuthenticationPrincipal CustomOAuth2User customOAuth2User, @PathVariable Long prCommentId, @RequestBody PrCommentReviewRequest request) {
         PrCommentReviewResponse response = prReviewService.reviewPrComment(customOAuth2User.getUserId(), prCommentId, request.getStudyId(), request.getAnswer());
         return CommonResponse.ok(response);
+    }
+
+    @PostMapping("/{prId}/study/{studyId}/done")
+    @PreAuthorize("isAuthenticated()")
+    public CommonResponse<Void> completePr(@AuthenticationPrincipal CustomOAuth2User customOAuth2User, @PathVariable Long prId, @PathVariable Long studyId ) {
+        prService.complete(customOAuth2User.getUserId(), prId, studyId);
+        return CommonResponse.ok();
     }
 }
