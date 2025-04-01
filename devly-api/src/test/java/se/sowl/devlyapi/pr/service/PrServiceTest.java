@@ -51,4 +51,25 @@ class PrServiceTest extends MediumTest {
             assertThat(prResponse.getLabels()).contains("backend", "feature", "thread");
         }
     }
+
+    @Nested
+    class CompletePr {
+
+        @Test
+        @DisplayName("특정 스터디의 PR을 완료할 수 있다.")
+        void complete() {
+            // given
+            User user = userRepository.save(createUser(1L, 1L, "박정수", "솔", "hwasowl598@gmail.com", "google"));
+            Study study = studyRepository.save(buildStudy(2L, 1L));
+            userStudyRepository.save(UserStudy.builder().userId(user.getId()).study(study).scheduledAt(LocalDateTime.now()).build());
+            Pr pr = prRepository.save(buildPr(study.getId()));
+
+            // when
+            prService.complete(user.getId(), pr.getId(), study.getId());
+
+            // then
+            UserStudy userStudy = userStudyRepository.findByUserIdAndStudyId(user.getId(), study.getId()).orElseThrow();
+            assertThat(userStudy.isCompleted()).isTrue();
+        }
+    }
 }

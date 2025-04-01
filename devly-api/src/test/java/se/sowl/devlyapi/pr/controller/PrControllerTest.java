@@ -34,8 +34,7 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
@@ -92,7 +91,7 @@ class PrControllerTest {
         when(prService.getPrResponse(anyLong(), anyLong())).thenReturn(response);
 
         // when & then
-        mockMvc.perform(get("/api/pr/{studyId}", 1L)
+        mockMvc.perform(get("/api/pr/study/{studyId}", 1L)
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andDo(document("pr-info",
@@ -202,6 +201,27 @@ class PrControllerTest {
                     fieldWithPath("code").description("응답 코드"),
                     fieldWithPath("message").description("응답 메시지"),
                     fieldWithPath("result.review").description("피드백 내용")
+                )
+            ));
+    }
+
+    @Test
+    @DisplayName("PR를 완료한다.")
+    void completePrTest() throws Exception {
+        // given
+        Long prId = 1L;
+        Long studyId = 2L;
+
+        doNothing().when(prService).complete(any(), any(), any());
+
+        // when & then
+        mockMvc.perform(post("/api/pr/{prId}/study/{studyId}/done", prId, studyId)
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andDo(document("pr-complete",
+                pathParameters(
+                    parameterWithName("prId").description("PR ID"),
+                    parameterWithName("studyId").description("학습 ID")
                 )
             ));
     }

@@ -30,6 +30,11 @@ public class UserStudyService {
         }
     }
 
+    public UserStudy getUserStudy(Long userId, Long studyId) {
+        return userStudyRepository.findByUserIdAndStudyId(userId, studyId)
+            .orElseThrow(NotAssignmentWordStudyException::new);
+    }
+
     public UserStudyTasksResponse getUserStudyTasks(Long userId) {
         List<UserStudy> userStudies = userStudyRepository.findLatestByUserIdWithStudyType(userId);
         Map<Long, StudyType> studyTypeMap = studyTypeRepository.findAll()

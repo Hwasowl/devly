@@ -38,4 +38,7 @@ operation::pr-comments[snippets='http-response']
 === [PR] 커멘트 리뷰 요청
 operation::pr-comment-review[snippets='http-request']
 operation::pr-comment-review[snippets='http-response']
+=== [PR] 완료
+operation::pr-complete[snippets='http-request']
+operation::pr-complete[snippets='http-response']
 
