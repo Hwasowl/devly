@@ -12,11 +12,13 @@ pipeline {
         VERSION = "${BUILD_NUMBER}"
         GOOGLE_CLIENT_ID = credentials('GOOGLE_CLIENT_ID')
         GOOGLE_CLIENT_SECRET = credentials('GOOGLE_CLIENT_SECRET')
+        GOOGLE_REDIRECT_URI = credentials('REDIRECT_URI')
         DB_URL = credentials('DB_URL')
         DB_USERNAME = credentials('DB_USERNAME')
         DB_PASSWORD = credentials('DB_PASSWORD')
         JWT_SECRET = credentials('JWT_SECRET_KEY')
         OPENAI_API_KEY = credentials('OPENAI_API_KEY')
+        FRONT_URL = credentials('FRONT_URL')
         JAVA_HOME = '/usr/lib/jvm/java-21-openjdk'
         PATH = "$JAVA_HOME/bin:${env.PATH}"
         LOG_DIR = "${WORKSPACE}/logs"
@@ -176,25 +178,21 @@ pipeline {
                         def envFile = "${serviceName}.env"
                         sh "echo 'SPRING_PROFILES_ACTIVE=prod' > ${envFile}"
 
-                        // 공통 환경 변수 추가
                         sh """
                             echo 'SPRING_DATASOURCE_URL=${DB_URL}' >> ${envFile}
                             echo 'SPRING_DATASOURCE_USERNAME=${DB_USERNAME}' >> ${envFile}
                             echo 'SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}' >> ${envFile}
                         """
 
-                        // 서비스별 환경 변수 추가
                         envVars.each { key, value ->
                             sh "echo '${key}=${value}' >> ${envFile}"
                         }
 
-                        // 이전 컨테이너 정리
                         sh """
                             docker stop ${serviceName} || true
                             docker rm ${serviceName} || true
                         """
 
-                        // 새 컨테이너 실행
                         sh """
                             docker run -d \\
                                 --name ${serviceName} \\
@@ -212,8 +210,10 @@ pipeline {
                         def apiEnvVars = [
                             'SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID': env.GOOGLE_CLIENT_ID,
                             'SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET': env.GOOGLE_CLIENT_SECRET,
+                            'SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_REDIRECT_URI': env.GOOGLE_REDIRECT_URI,
                             'OPENAI_API_KEY': env.OPENAI_API_KEY,
-                            'JWT_SECRET_KEY': env.JWT_SECRET
+                            'JWT_SECRET_KEY': env.JWT_SECRET,
+                            'FRONT_URL': env.FRONT_URL
                         ]
                         deployContainer(env.DOCKER_IMAGE_API, '8080', apiEnvVars)
                     }
