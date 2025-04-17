@@ -32,21 +32,21 @@ class UserStudyServiceTest extends MediumTest {
         List<DeveloperType> developerTypes = developerTypeRepository.saveAll(getDeveloperTypes());
         DeveloperType backendDeveloperType = developerTypes.stream().filter(developerType -> developerType.getName().equals("Backend Developer")).findFirst().orElseThrow();
 
-        User user = userRepository.save(createUser(1L, backendDeveloperType.getId(), "박정수", "솔", "hwasowl598@gmail.com", "google"));
+        User user = userRepository.save(createUser(1L, backendDeveloperType, "박정수", "솔", "hwasowl598@gmail.com", "google"));
 
         // TODO: 추후 학습 도메인이 추가된다면 부가 학습을 추가해 대응해야만 한다.
         List<StudyType> studyTypes = studyTypeRepository.saveAll(getStudyTypes());
-        Long wordTypeId = studyTypes.stream().filter(studyType -> studyType.getName().equals("word")).findFirst().orElseThrow().getId();
-        Study study = studyRepository.save(buildStudy(wordTypeId, backendDeveloperType.getId()));
+        StudyType wordTypeId = studyTypes.stream().filter(studyType -> studyType.getName().equals("word")).findFirst().orElseThrow();
+        Study study = studyRepository.save(buildStudy(wordTypeId, backendDeveloperType));
         wordRepository.saveAll(getBackendWordList(study.getId()));
         wordReviewService.createReview(study.getId(), user.getId(), List.of(1L, 2L, 3L, 4L), List.of(5L)); // 리뷰 4개 정답 1개 오답
-        userStudyRepository.save(UserStudy.builder().userId(user.getId()).study(study).scheduledAt(LocalDateTime.now()).build());
+        userStudyRepository.save(UserStudy.builder().user(user).study(study).scheduledAt(LocalDateTime.now()).build());
 
         // else type studies
         for (int i = 1; i <= 3; i++) {
             StudyType studyType = studyTypes.get(i);
-            Study study2 = studyRepository.save(buildStudy(studyType.getId(), backendDeveloperType.getId()));
-            UserStudy build = UserStudy.builder().userId(user.getId()).study(study2).scheduledAt(LocalDateTime.now()).build();
+            Study study2 = studyRepository.save(buildStudy(studyType, backendDeveloperType));
+            UserStudy build = UserStudy.builder().user(user).study(study2).scheduledAt(LocalDateTime.now()).build();
             build.complete();
             userStudyRepository.save(build);
         }

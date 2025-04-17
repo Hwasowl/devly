@@ -20,6 +20,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import se.sowl.devlyapi.MediumTest;
 import se.sowl.devlyapi.common.jwt.JwtTokenProvider;
 import se.sowl.devlyapi.oauth.dto.TokenResponse;
+import se.sowl.devlydomain.developer.domain.DeveloperType;
 import se.sowl.devlydomain.oauth.domain.OAuth2Provider;
 import se.sowl.devlydomain.study.domain.StudyType;
 import se.sowl.devlydomain.study.domain.StudyTypeEnum;
@@ -56,8 +57,7 @@ public class OAuthServiceTest extends MediumTest {
         String provider = OAuth2Provider.GOOGLE.getRegistrationId();
         String email = "hwasowl598@gmail.com";
         String name = "박정수";
-        Long developerType = 1L;
-
+        DeveloperType developerType = developerTypeRepository.save(new DeveloperType("Backend Developer"));
         User user = createUser(1L, developerType, name, "화솔", email, provider);
         userRepository.save(user);
 
@@ -66,7 +66,7 @@ public class OAuthServiceTest extends MediumTest {
 
         // state 생성
         Map<String, String> stateData = new HashMap<>();
-        stateData.put("developerType", String.valueOf(developerType));
+        stateData.put("developerType", String.valueOf(developerType.getId()));
         stateData.put("originalState", "random-state");
         String encodedState = Base64.getUrlEncoder().encodeToString(
             objectMapper.writeValueAsString(stateData).getBytes(StandardCharsets.UTF_8)
@@ -124,7 +124,7 @@ public class OAuthServiceTest extends MediumTest {
         String provider = OAuth2Provider.GOOGLE.getRegistrationId();
         String email = "hwasowl598@gmail.com";
         String name = "박정수";
-        Long developerType = 1L;
+        DeveloperType developerType = developerTypeRepository.save(new DeveloperType("Backend Developer"));
         // 기존 유저를 미리 생성하지 않음 X
 
         List<StudyType> studyTypes = studyTypeRepository.saveAll(getStudyTypes());
@@ -135,7 +135,7 @@ public class OAuthServiceTest extends MediumTest {
 
         // state 생성
         Map<String, String> stateData = new HashMap<>();
-        stateData.put("developerType", String.valueOf(developerType));
+        stateData.put("developerType", String.valueOf(developerType.getId()));
         stateData.put("originalState", "random-state");
         String encodedState = Base64.getUrlEncoder().encodeToString(
             objectMapper.writeValueAsString(stateData).getBytes(StandardCharsets.UTF_8)
@@ -159,7 +159,7 @@ public class OAuthServiceTest extends MediumTest {
         assertThat(userStudies.size()).isEqualTo(StudyTypeEnum.values().length);
 
         for (UserStudy userStudy : userStudies) {
-            assertThat(userStudy.getUserId()).isEqualTo(loadedUser.getUserId());
+            assertThat(userStudy.getUser()).isEqualTo(loadedUser.getUser());
             assertThat(userStudy.getStudy()).isNotNull();
         }
         RequestContextHolder.resetRequestAttributes();

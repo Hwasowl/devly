@@ -35,7 +35,7 @@ public class PrReviewService {
         validateIsAlreadyReviewed(prCommentId);
         Study study = studyService.getStudyById(studyId);
         GPTResponse gptResponse = gptClient.generate(prReviewEntityParser.createGPTRequest(
-            createCommentReviewRequestPrompt(study.getDeveloperTypeId(), study.getTypeId(), prCommentId, answer)
+            createCommentReviewRequestPrompt(study.getDeveloperType().getId(), study.getStudyType().getId(), prCommentId, answer)
         ));
         PrReview review = savePrReview(userId, prCommentId, answer, gptResponse);
         return new PrCommentReviewResponse(review.getReview());

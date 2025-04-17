@@ -46,7 +46,7 @@ public class UserStudyTaskGroup {
 
     private static UserStudy findUserStudyByType(List<UserStudy> userStudies, Map<Long, StudyType> studyTypeMap, StudyTypeEnum type) {
         return userStudies.stream()
-            .filter(us -> type == StudyTypeEnum.fromValue(studyTypeMap.get(us.getStudy().getTypeId()).getName()))
+            .filter(us -> type == StudyTypeEnum.fromValue(studyTypeMap.get(us.getStudy().getStudyType().getId()).getName()))
             .findFirst()
             .orElse(null);
     }

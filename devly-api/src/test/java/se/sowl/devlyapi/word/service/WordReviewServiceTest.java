@@ -7,7 +7,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import se.sowl.devlyapi.MediumTest;
 import se.sowl.devlyapi.word.exception.NotAssignmentWordStudyException;
+import se.sowl.devlydomain.developer.domain.DeveloperType;
 import se.sowl.devlydomain.study.domain.Study;
+import se.sowl.devlydomain.study.domain.StudyType;
 import se.sowl.devlydomain.user.domain.User;
 import se.sowl.devlydomain.user.domain.UserStudy;
 import se.sowl.devlydomain.word.domain.WordReview;
@@ -35,10 +37,12 @@ class WordReviewServiceTest extends MediumTest {
         @DisplayName("단어 학습에 대한 결과를 저장할 수 있다.")
         void review() {
             // given
-            User user = userRepository.save(createUser(1L, 1L, "박정수", "솔", "test@naver.com", "google"));
-            Study study = studyRepository.save(buildStudy(2L, 1L));
+            DeveloperType developerType = developerTypeRepository.save(new DeveloperType("Backend Developer"));
+            User user = userRepository.save(createUser(1L, developerType, "박정수", "솔", "test@naver.com", "google"));
+            StudyType studyType = studyTypeRepository.save(new StudyType("word", 100L));
+            Study study = studyRepository.save(buildStudy(studyType, developerType));
             wordRepository.saveAll(getBackendWordList(study.getId()));
-            userStudyRepository.save(UserStudy.builder().userId(user.getId()).study(study).scheduledAt(LocalDateTime.now()).build());
+            userStudyRepository.save(UserStudy.builder().user(user).study(study).scheduledAt(LocalDateTime.now()).build());
 
             // when
             wordReviewService.createReview(study.getId(), user.getId(), List.of(1L, 2L), List.of(3L, 4L, 5L));
@@ -64,10 +68,12 @@ class WordReviewServiceTest extends MediumTest {
         @DisplayName("이미 학습한 단어 학습에 대한 결과를 업데이트 할 수 있다.")
         void updateReview() {
             // given
-            User user = userRepository.save(createUser(1L, 1L, "박정수", "솔", "test@naver.com", "google"));
-            Study study = studyRepository.save(buildStudy(2L, 1L));
+            DeveloperType developerType = developerTypeRepository.save(new DeveloperType("Backend Developer"));
+            User user = userRepository.save(createUser(1L, developerType, "박정수", "솔", "test@naver.com", "google"));
+            StudyType studyType = studyTypeRepository.save(new StudyType("word", 100L));
+            Study study = studyRepository.save(buildStudy(studyType, developerType));
             wordRepository.saveAll(getBackendWordList(study.getId()));
-            userStudyRepository.save(UserStudy.builder().userId(user.getId()).study(study).scheduledAt(LocalDateTime.now()).build());
+            userStudyRepository.save(UserStudy.builder().user(user).study(study).scheduledAt(LocalDateTime.now()).build());
 
             List<Long> correctIds = List.of(1L, 2L);
             List<Long> incorrectIds = List.of(3L, 4L, 5L);
@@ -93,10 +99,12 @@ class WordReviewServiceTest extends MediumTest {
         @DisplayName("만약 처음 제출한 답이 모두 정답이라면 단어 학습을 완료 처리한다.")
         void complete() {
             // given
-            User user = userRepository.save(createUser(1L, 1L, "박정수", "솔", "test@naver.com", "google"));
-            Study study = studyRepository.save(buildStudy(2L, 1L));
+            DeveloperType developerType = developerTypeRepository.save(new DeveloperType("Backend Developer"));
+            User user = userRepository.save(createUser(1L, developerType, "박정수", "솔", "test@naver.com", "google"));
+            StudyType studyType = studyTypeRepository.save(new StudyType("word", 100L));
+            Study study = studyRepository.save(buildStudy(studyType, developerType));
             wordRepository.saveAll(getBackendWordList(study.getId()));
-            userStudyRepository.save(UserStudy.builder().userId(user.getId()).study(study).scheduledAt(LocalDateTime.now()).build());
+            userStudyRepository.save(UserStudy.builder().user(user).study(study).scheduledAt(LocalDateTime.now()).build());
 
             List<Long> correctIds = List.of(1L, 2L, 3L, 4L, 5L);
             List<Long> incorrectIds = List.of();
@@ -118,10 +126,12 @@ class WordReviewServiceTest extends MediumTest {
         @DisplayName("리뷰 후 맞춘게 없는 경우 현 상태를 유지해야 한다.")
         void noAnswerAfterReview() {
             // given
-            User user = userRepository.save(createUser(1L, 1L, "박정수", "솔", "test@naver.com", "google"));
-            Study study = studyRepository.save(buildStudy(2L, 1L));
+            DeveloperType developerType = developerTypeRepository.save(new DeveloperType("Backend Developer"));
+            User user = userRepository.save(createUser(1L, developerType, "박정수", "솔", "test@naver.com", "google"));
+            StudyType studyType = studyTypeRepository.save(new StudyType("word", 100L));
+            Study study = studyRepository.save(buildStudy(studyType, developerType));
             wordRepository.saveAll(getBackendWordList(study.getId()));
-            userStudyRepository.save(UserStudy.builder().userId(user.getId()).study(study).scheduledAt(LocalDateTime.now()).build());
+            userStudyRepository.save(UserStudy.builder().user(user).study(study).scheduledAt(LocalDateTime.now()).build());
 
             List<Long> correctIds = List.of(1L, 2L);
             List<Long> incorrectIds = List.of(3L, 4L, 5L);
@@ -145,10 +155,12 @@ class WordReviewServiceTest extends MediumTest {
         @DisplayName("이미 학습한 단어 학습에 대한 결과를 업데이트 할 수 있다.")
         void completeAfterInitial() {
             // given
-            User user = userRepository.save(createUser(1L, 1L, "박정수", "솔", "test@naver.com", "google"));
-            Study study = studyRepository.save(buildStudy(2L, 1L));
+            DeveloperType developerType = developerTypeRepository.save(new DeveloperType("Backend Developer"));
+            User user = userRepository.save(createUser(1L, developerType, "박정수", "솔", "test@naver.com", "google"));
+            StudyType studyType = studyTypeRepository.save(new StudyType("word", 100L));
+            Study study = studyRepository.save(buildStudy(studyType, developerType));
             wordRepository.saveAll(getBackendWordList(study.getId()));
-            userStudyRepository.save(UserStudy.builder().userId(user.getId()).study(study).scheduledAt(LocalDateTime.now()).build());
+            userStudyRepository.save(UserStudy.builder().user(user).study(study).scheduledAt(LocalDateTime.now()).build());
 
             List<Long> correctIds = List.of(1L, 2L);
             List<Long> incorrectIds = List.of(3L, 4L, 5L);

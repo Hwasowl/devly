@@ -114,21 +114,19 @@ public abstract class MediumTest {
     @MockBean
     protected DefaultOAuth2UserService defaultOAuth2UserService;
 
-    // TODO: separation create methods of features
-    protected User createUser(Long id, Long developerTypeId, String name, String nickname, String email, String provider) {
+    protected User createUser(Long id, DeveloperType developerType, String name, String nickname, String email, String provider) {
         return User.builder()
-            .id(id)
-            .developerTypeId(developerTypeId)
             .name(name)
+            .developerType(developerType)
             .nickname(nickname)
             .email(email)
             .provider(provider)
             .build();
     }
 
-    protected List<Study> generateStudiesOfStudyTypes(List<StudyType> studyTypes, Long developerTypeId) {
+    protected List<Study> generateStudiesOfStudyTypes(List<StudyType> studyTypes, DeveloperType developerType) {
         return studyTypes.stream()
-            .map(studyType -> buildStudy(studyType.getId(), developerTypeId))
+            .map(studyType -> buildStudy(studyType, developerType))
             .toList();
     }
 
@@ -146,10 +144,10 @@ public abstract class MediumTest {
         return List.of(frontEnd, backEnd);
     }
 
-    protected static Study buildStudy(Long typeId, Long developerTypeId) {
+    protected Study buildStudy(StudyType studyType, DeveloperType developerType) {
         return Study.builder()
-            .typeId(typeId)
-            .developerTypeId(developerTypeId)
+            .studyType(studyType)
+            .developerType(developerType)
             .build();
     }
 

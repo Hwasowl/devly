@@ -11,7 +11,9 @@ import se.sowl.devlyapi.word.dto.WordListOfStudyResponse;
 import se.sowl.devlyapi.word.dto.WordResponse;
 import se.sowl.devlyapi.word.dto.reviews.WordReviewResponse;
 import se.sowl.devlyapi.word.exception.NotAssignmentWordStudyException;
+import se.sowl.devlydomain.developer.domain.DeveloperType;
 import se.sowl.devlydomain.study.domain.Study;
+import se.sowl.devlydomain.study.domain.StudyType;
 import se.sowl.devlydomain.user.domain.User;
 import se.sowl.devlydomain.user.domain.UserStudy;
 
@@ -39,10 +41,12 @@ class WordServiceTest extends MediumTest {
         @DisplayName("학습 ID로 소속 단어 목록을 조회할 수 있다.")
         void get() {
             // given
-            User user = userRepository.save(createUser(1L, 1L, "박정수", "솔", "hwasowl598@gmail.com", "google"));
-            Study study = studyRepository.save(buildStudy(2L, 2L));
+            DeveloperType developerType = developerTypeRepository.save(new DeveloperType("Backend Developer"));
+            User user = userRepository.save(createUser(1L, developerType, "박정수", "솔", "hwasowl598@gmail.com", "google"));
+            StudyType studyType = studyTypeRepository.save(new StudyType("word", 100L));
+            Study study = studyRepository.save(buildStudy(studyType, developerType));
             wordRepository.saveAll(getBackendWordList(study.getId()));
-            userStudyRepository.save(UserStudy.builder().userId(user.getId()).study(study).scheduledAt(LocalDateTime.now()).build());
+            userStudyRepository.save(UserStudy.builder().user(user).study(study).scheduledAt(LocalDateTime.now()).build());
 
             // when
             WordListOfStudyResponse list = wordService.getList(user.getId(), study.getId());
@@ -62,10 +66,11 @@ class WordServiceTest extends MediumTest {
         @DisplayName("배정되지 않은 학습 ID로 소속 단어 목록을 조회하면 NotAssignmentWordStudyException이 발생한다.")
         void notAssignment () {
             // given
-            userRepository.save(createUser(1L, 1L, "박정수", "솔", "hwasowl598@gmail.com", "google"));
-            Study study = studyRepository.save(buildStudy(2L, 2L));
+            DeveloperType developerType = developerTypeRepository.save(new DeveloperType("Backend Developer"));
+            userRepository.save(createUser(1L, developerType, "박정수", "솔", "hwasowl598@gmail.com", "google"));
+            StudyType studyType = studyTypeRepository.save(new StudyType("word", 100L));
+            Study study = studyRepository.save(buildStudy(studyType, developerType));
             wordRepository.saveAll(getBackendWordList(study.getId()));
-            // 단어와 스터디는 있지만 유저에게 할당되지 않은 상태
 
             // when & then
             NotAssignmentWordStudyException exception = assertThrows(
@@ -80,10 +85,13 @@ class WordServiceTest extends MediumTest {
         @Test
         @DisplayName("단어 학습 결과를 조회할 수 있다.")
         void getWordReviews() {
-            User user = userRepository.save(createUser(1L, 1L, "박정수", "솔", "test@naver.com", "google"));
-            Study study = studyRepository.save(buildStudy(2L, 1L));
+            // given
+            DeveloperType developerType = developerTypeRepository.save(new DeveloperType("Backend Developer"));
+            User user = userRepository.save(createUser(1L, developerType, "박정수", "솔", "test@naver.com", "google"));
+            StudyType studyType = studyTypeRepository.save(new StudyType("word", 100L));
+            Study study = studyRepository.save(buildStudy(studyType, developerType));
             wordRepository.saveAll(getBackendWordList(study.getId()));
-            userStudyRepository.save(UserStudy.builder().userId(user.getId()).study(study).scheduledAt(LocalDateTime.now()).build());
+            userStudyRepository.save(UserStudy.builder().user(user).study(study).scheduledAt(LocalDateTime.now()).build());
             wordReviewService.createReview(study.getId(), user.getId(), List.of(1L, 2L), List.of(3L, 4L, 5L));
 
             // when

@@ -7,8 +7,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import se.sowl.devlyapi.MediumTest;
 import se.sowl.devlyapi.pr.dto.PrResponse;
+import se.sowl.devlydomain.developer.domain.DeveloperType;
 import se.sowl.devlydomain.pr.domain.Pr;
 import se.sowl.devlydomain.study.domain.Study;
+import se.sowl.devlydomain.study.domain.StudyType;
 import se.sowl.devlydomain.user.domain.User;
 import se.sowl.devlydomain.user.domain.UserStudy;
 
@@ -35,9 +37,11 @@ class PrServiceTest extends MediumTest {
         @DisplayName("특정 스터디의 PR을 조회할 수 있다.")
         void get() {
             // given
-            User user = userRepository.save(createUser(1L, 1L, "박정수", "솔", "hwasowl598@gmail.com", "google"));
-            Study study = studyRepository.save(buildStudy(2L, 1L));
-            userStudyRepository.save(UserStudy.builder().userId(user.getId()).study(study).scheduledAt(LocalDateTime.now()).build());
+            DeveloperType developerType = developerTypeRepository.save(new DeveloperType("Backend Developer"));
+            User user = userRepository.save(createUser(1L, developerType, "박정수", "솔", "hwasowl598@gmail.com", "google"));
+            StudyType studyType = studyTypeRepository.save(new StudyType("Word", 100L));
+            Study study = studyRepository.save(buildStudy(studyType, developerType));
+            userStudyRepository.save(UserStudy.builder().user(user).study(study).scheduledAt(LocalDateTime.now()).build());
             Pr pr = prRepository.save(buildPr(study.getId()));
             prLabelRepository.saveAll(buildPrLabels(pr.getId()));
 
@@ -59,9 +63,11 @@ class PrServiceTest extends MediumTest {
         @DisplayName("특정 스터디의 PR을 완료할 수 있다.")
         void complete() {
             // given
-            User user = userRepository.save(createUser(1L, 1L, "박정수", "솔", "hwasowl598@gmail.com", "google"));
-            Study study = studyRepository.save(buildStudy(2L, 1L));
-            userStudyRepository.save(UserStudy.builder().userId(user.getId()).study(study).scheduledAt(LocalDateTime.now()).build());
+            DeveloperType developerType = developerTypeRepository.save(new DeveloperType("Backend Developer"));
+            User user = userRepository.save(createUser(1L, developerType, "박정수", "솔", "hwasowl598@gmail.com", "google"));
+            StudyType studyType = studyTypeRepository.save(new StudyType("PR", 100L));
+            Study study = studyRepository.save(buildStudy(studyType, developerType));
+            userStudyRepository.save(UserStudy.builder().user(user).study(study).scheduledAt(LocalDateTime.now()).build());
             Pr pr = prRepository.save(buildPr(study.getId()));
 
             // when
