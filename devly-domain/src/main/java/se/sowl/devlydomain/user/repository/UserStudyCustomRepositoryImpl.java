@@ -2,7 +2,6 @@ package se.sowl.devlydomain.user.repository;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cglib.core.Local;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -10,7 +9,6 @@ import org.springframework.stereotype.Repository;
 import se.sowl.devlydomain.user.domain.QUserStudy;
 import se.sowl.devlydomain.user.domain.UserStudy;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -36,7 +34,7 @@ public class UserStudyCustomRepositoryImpl implements UserStudyCustomRepository 
         List<UserStudy> content = queryFactory
             .selectFrom(userStudy)
             .leftJoin(nextStudy)
-            .on(nextStudy.userId.eq(userStudy.userId), nextStudy.scheduledAt.eq(today))
+            .on(nextStudy.user.id.eq(userStudy.user.id), nextStudy.scheduledAt.eq(today))
             .where(userStudy.completedAt.between(yesterday, todayStart), userStudy.isCompleted.isTrue(), nextStudy.id.isNull())
             .orderBy(userStudy.id.asc())
             .offset(pageable.getOffset())
@@ -46,7 +44,7 @@ public class UserStudyCustomRepositoryImpl implements UserStudyCustomRepository 
         long total = queryFactory
             .selectFrom(userStudy)
             .leftJoin(nextStudy)
-            .on(nextStudy.userId.eq(userStudy.userId), nextStudy.scheduledAt.eq(today))
+            .on(nextStudy.user.id.eq(userStudy.user.id), nextStudy.scheduledAt.eq(today))
             .where(userStudy.completedAt.between(yesterday, todayStart), userStudy.isCompleted.isTrue(), nextStudy.id.isNull())
             .fetch().size();
 

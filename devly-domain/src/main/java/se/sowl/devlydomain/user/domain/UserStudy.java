@@ -19,13 +19,15 @@ public class UserStudy extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "user_id")
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "study_id")
     private Study study;
 
+    @Column(name = "is_completed")
     private boolean isCompleted;
 
     @Column(name = "completed_at")
@@ -35,8 +37,8 @@ public class UserStudy extends BaseTimeEntity {
     private LocalDateTime scheduledAt;
 
     @Builder
-    public UserStudy(Long userId, Study study, LocalDateTime scheduledAt) {
-        this.userId = userId;
+    public UserStudy(User user, Study study, LocalDateTime scheduledAt) {
+        this.user = user;
         this.study = study;
         this.scheduledAt = scheduledAt;
         this.isCompleted = false;

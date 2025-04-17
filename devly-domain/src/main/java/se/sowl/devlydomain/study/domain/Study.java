@@ -5,7 +5,14 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import net.minidev.json.annotate.JsonIgnore;
+import org.hibernate.annotations.BatchSize;
 import se.sowl.devlydomain.common.BaseTimeEntity;
+import se.sowl.devlydomain.developer.domain.DeveloperType;
+import se.sowl.devlydomain.user.domain.UserStudy;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "studies")
@@ -16,23 +23,32 @@ public class Study extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "type_id")
-    private Long typeId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "type_id")
+    private StudyType studyType;
 
-    @Column(name = "developer_type_id")
-    private Long developerTypeId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "developer_type_id")
+    private DeveloperType developerType;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private StudyStatusEnum status;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "study", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 100)
+    @JsonIgnore
+    private List<UserStudy> userStudies = new ArrayList<>();
 
     public void connect() {
         this.status = StudyStatusEnum.CONNECTED;
     }
 
     @Builder
-    public Study(Long typeId, Long developerTypeId) {
-        this.typeId = typeId;
-        this.developerTypeId = developerTypeId;
+    public Study(StudyType studyType, DeveloperType developerType) {
+        this.studyType = studyType;
+        this.developerType = developerType;
         this.status = StudyStatusEnum.UNCONNECTED;
+        this.userStudies = new ArrayList<>();
     }
 }
