@@ -155,41 +155,34 @@ class PrCreationJobConfigTest extends MediumBatchTest {
             assertThat(study.getStatus()).isEqualTo(StudyStatusEnum.CONNECTED);
         });
 
-        // PR 검증
         List<Pr> savedPrs = prRepository.findAll();
         assertThat(savedPrs).hasSize(2);
 
-        // 백엔드 PR 검증
         Pr backendPr = savedPrs.stream()
             .filter(pr -> pr.getTitle().contains("싱글톤"))
             .findFirst()
             .orElseThrow();
         assertThat(backendPr.getDescription()).contains("Thread-safe");
 
-        // 백엔드 PR 변경 파일 검증
         List<PrChangedFile> backendFiles = prChangedFileRepository.findByPrId(backendPr.getId());
         assertThat(backendFiles).hasSize(1);
         assertThat(backendFiles.get(0).getFileName()).isEqualTo("src/main/java/com/example/SingletonService.java");
         assertThat(backendFiles.get(0).getLanguage()).isEqualTo("Java");
 
-        // 백엔드 PR 라벨 검증
         List<PrLabel> backendLabels = prLabelRepository.findAllByPrId(backendPr.getId());
         assertThat(backendLabels).hasSize(3);
 
-        // 프론트엔드 PR 검증
         Pr frontendPr = savedPrs.stream()
             .filter(pr -> pr.getTitle().contains("리액트"))
             .findFirst()
             .orElseThrow();
         assertThat(frontendPr.getDescription()).contains("React.memo");
 
-        // 프론트엔드 PR 변경 파일 검증
         List<PrChangedFile> frontendFiles = prChangedFileRepository.findByPrId(frontendPr.getId());
         assertThat(frontendFiles).hasSize(1);
         assertThat(frontendFiles.get(0).getFileName()).isEqualTo("src/components/ProductList.jsx");
         assertThat(frontendFiles.get(0).getLanguage()).isEqualTo("JavaScript");
 
-        // 프론트엔드 PR 라벨 검증
         List<PrLabel> frontendLabels = prLabelRepository.findAllByPrId(frontendPr.getId());
         assertThat(frontendLabels).hasSize(3);
     }

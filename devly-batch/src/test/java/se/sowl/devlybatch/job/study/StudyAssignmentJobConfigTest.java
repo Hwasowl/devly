@@ -11,6 +11,7 @@ import org.springframework.batch.test.JobLauncherTestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 import se.sowl.devlybatch.config.TestBatchConfig;
@@ -37,6 +38,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 @ActiveProfiles("test")
 @Import({TestBatchConfig.class, StudyAssignmentJobConfig.class})
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class StudyAssignmentJobConfigTest extends MediumBatchTest {
 
     @Autowired
