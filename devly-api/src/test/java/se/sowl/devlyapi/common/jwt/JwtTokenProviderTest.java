@@ -15,6 +15,7 @@ import se.sowl.devlyapi.MediumTest;
 import se.sowl.devlyapi.common.jwt.exception.ExpiredTokenException;
 import se.sowl.devlyapi.common.jwt.exception.InvalidTokenException;
 import se.sowl.devlyapi.oauth.dto.TokenResponse;
+import se.sowl.devlydomain.developer.domain.DeveloperType;
 import se.sowl.devlydomain.user.domain.CustomOAuth2User;
 import se.sowl.devlydomain.user.domain.User;
 
@@ -34,7 +35,8 @@ class JwtTokenProviderTest extends MediumTest {
     @DisplayName("유효한 토큰으로 인증 정보를 생성한다")
     void createAuthenticationWithValidToken() {
         // given
-        User user = createUser(1L, 1L, "박정수", "솔", "123@naver.com", "google");
+        DeveloperType developerType = developerTypeRepository.save(new DeveloperType("Backend Developer"));
+        User user = userRepository.save(createUser(1L, developerType, "박정수", "솔", "123@naver.com", "google"));
         Map<String, Object> attributes = new HashMap<>();
         attributes.put("email", user.getEmail());
         attributes.put("name", user.getName());

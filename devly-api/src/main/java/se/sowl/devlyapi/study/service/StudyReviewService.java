@@ -19,11 +19,11 @@ public class StudyReviewService {
     public Map<StudyTypeEnum, Long> calculateReviewCounts(List<UserStudy> userStudies, Map<Long, StudyType> studyTypeMap) {
         Map<StudyTypeEnum, Long> counts = new EnumMap<>(StudyTypeEnum.class);
         for (UserStudy userStudy : userStudies) {
-            StudyTypeEnum type = StudyTypeEnum.fromValue(studyTypeMap.get(userStudy.getStudy().getTypeId()).getName());
+            StudyTypeEnum type = StudyTypeEnum.fromValue(studyTypeMap.get(userStudy.getStudy().getStudyType().getId()).getName());
             if (type == StudyTypeEnum.WORD && !userStudy.isCompleted()) {
-                boolean hasReviews = wordReviewRepository.existsByStudyIdAndUserId(userStudy.getStudy().getId(), userStudy.getUserId());
+                boolean hasReviews = wordReviewRepository.existsByStudyIdAndUserId(userStudy.getStudy().getId(), userStudy.getUser().getId());
                 counts.put(type, hasReviews
-                    ? wordReviewRepository.countByUserIdAndStudyIdAndCorrectIsFalse(userStudy.getUserId(), userStudy.getStudy().getId())
+                    ? wordReviewRepository.countByUserIdAndStudyIdAndCorrectIsFalse(userStudy.getUser().getId(), userStudy.getStudy().getId())
                     : type.getRequiredCount()
                 );
             }

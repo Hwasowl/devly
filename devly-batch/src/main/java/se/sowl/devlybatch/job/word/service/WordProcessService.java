@@ -31,7 +31,7 @@ public class WordProcessService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Long progressWordsOfStudy(Study study) {
         try {
-            String prompt = createWordGeneratePrompt(study.getDeveloperTypeId(), study.getTypeId());
+            String prompt = createWordGeneratePrompt(study.getDeveloperType().getId(), study.getStudyType().getId());
             List<Word> words = createWordsFromGpt(study, prompt);
             wordRepository.saveAll(words);
             study.connect();

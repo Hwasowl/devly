@@ -30,7 +30,7 @@ public class PrProcessService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void processPrStudies(Study study) {
         try {
-            String prompt = createPrGeneratePrompt(study.getDeveloperTypeId(), study.getTypeId());
+            String prompt = createPrGeneratePrompt(study.getDeveloperType().getId(), study.getStudyType().getId());
             GPTResponse response = gptClient.generate(prEntityParser.createGPTRequest(prompt));
             List<PrWithRelations> parsedPrs = prEntityParser.parseGPTResponse(response, createParameters(study.getId()));
             for (PrWithRelations prWithRelations : parsedPrs) {

@@ -12,10 +12,12 @@ import se.sowl.devlyapi.pr.dto.review.PrCommentReviewResponse;
 import se.sowl.devlyapi.pr.exception.AlreadyPrReviewedException;
 import se.sowl.devlyapi.pr.exception.PrCommentNotExistException;
 import se.sowl.devlyapi.study.exception.StudyNotExistException;
+import se.sowl.devlydomain.developer.domain.DeveloperType;
 import se.sowl.devlydomain.pr.domain.Pr;
 import se.sowl.devlydomain.pr.domain.PrComment;
 import se.sowl.devlydomain.pr.domain.PrReview;
 import se.sowl.devlydomain.study.domain.Study;
+import se.sowl.devlydomain.study.domain.StudyType;
 import se.sowl.devlydomain.user.domain.User;
 import se.sowl.devlyexternal.client.gpt.GPTClient;
 import se.sowl.devlyexternal.client.gpt.dto.GPTRequest;
@@ -59,8 +61,10 @@ class PrReviewServiceTest extends MediumTest {
         @DisplayName("PR 코멘트에 대한 사용자 답변을 AI로 리뷰할 수 있다")
         void reviewPrComment_Success() {
             // given
-            User user = userRepository.save(createUser(1L, 1L, "테스트", "닉네임", "test@email.com", "github"));
-            Study study = studyRepository.save(buildStudy(3L, 1L));
+            DeveloperType developerType = developerTypeRepository.save(new DeveloperType("Backend Developer"));
+            User user = userRepository.save(createUser(1L, developerType, "테스트", "닉네임", "test@email.com", "github"));
+            StudyType studyType = studyTypeRepository.save(new StudyType("PR", 100L));
+            Study study = studyRepository.save(buildStudy(studyType, developerType));
             Pr pr = prRepository.save(buildPr(study.getId()));
             PrComment prComment = prCommentRepository.save(buildPrComments(pr.getId()).getFirst());
 
@@ -83,8 +87,10 @@ class PrReviewServiceTest extends MediumTest {
         @DisplayName("빈 답변으로 리뷰를 요청하면 예외가 발생한다")
         void reviewPrComment_EmptyAnswer() {
             // given
-            User user = userRepository.save(createUser(1L, 1L, "테스트", "닉네임", "test@email.com", "github"));
-            Study study = studyRepository.save(buildStudy(3L, 1L));
+            DeveloperType developerType = developerTypeRepository.save(new DeveloperType("Backend Developer"));
+            User user = userRepository.save(createUser(1L, developerType, "테스트", "닉네임", "test@email.com", "github"));
+            StudyType studyType = studyTypeRepository.save(new StudyType("PR", 100L));
+            Study study = studyRepository.save(buildStudy(studyType, developerType));
             Pr pr = prRepository.save(buildPr(study.getId()));
             PrComment prComment = prCommentRepository.save(buildPrComments(pr.getId()).getFirst());
 
@@ -101,8 +107,10 @@ class PrReviewServiceTest extends MediumTest {
         @DisplayName("이미 리뷰된 경우 예외가 발생한다.")
         void already_reviewed() {
             // given
-            User user = userRepository.save(createUser(1L, 1L, "테스트", "닉네임", "test@email.com", "github"));
-            Study study = studyRepository.save(buildStudy(3L, 1L));
+            DeveloperType developerType = developerTypeRepository.save(new DeveloperType("Backend Developer"));
+            User user = userRepository.save(createUser(1L, developerType, "테스트", "닉네임", "test@email.com", "github"));
+            StudyType studyType = studyTypeRepository.save(new StudyType("PR", 100L));
+            Study study = studyRepository.save(buildStudy(studyType, developerType));
             Pr pr = prRepository.save(buildPr(study.getId()));
             PrComment prComment = prCommentRepository.save(buildPrComments(pr.getId()).getFirst());
             PrReview prReview = PrReview.builder()
@@ -125,8 +133,10 @@ class PrReviewServiceTest extends MediumTest {
         @DisplayName("존재하지 않는 PR 코멘트로 리뷰를 요청하면 예외가 발생한다")
         void reviewPrComment_NonExistentComment() {
             // given
-            User user = userRepository.save(createUser(1L, 1L, "테스트", "닉네임", "test@email.com", "github"));
-            Study study = studyRepository.save(buildStudy(3L, 1L));
+            DeveloperType developerType = developerTypeRepository.save(new DeveloperType("Backend Developer"));
+            User user = userRepository.save(createUser(1L, developerType, "테스트", "닉네임", "test@email.com", "github"));
+            StudyType studyType = studyTypeRepository.save(new StudyType("PR", 100L));
+            Study study = studyRepository.save(buildStudy(studyType, developerType));
             Long nonExistentCommentId = 999L;
             String answer = "테스트 답변입니다.";
 
@@ -140,8 +150,10 @@ class PrReviewServiceTest extends MediumTest {
         @DisplayName("존재하지 않는 스터디로 리뷰를 요청하면 예외가 발생한다")
         void reviewPrComment_NonExistentStudy() {
             // given
-            User user = userRepository.save(createUser(1L, 1L, "테스트", "닉네임", "test@email.com", "github"));
-            Study study = studyRepository.save(buildStudy(3L, 1L));
+            DeveloperType developerType = developerTypeRepository.save(new DeveloperType("Backend Developer"));
+            User user = userRepository.save(createUser(1L, developerType, "테스트", "닉네임", "test@email.com", "github"));
+            StudyType studyType = studyTypeRepository.save(new StudyType("PR", 100L));
+            Study study = studyRepository.save(buildStudy(studyType, developerType));
             Pr pr = prRepository.save(buildPr(study.getId()));
             PrComment prComment = prCommentRepository.save(buildPrComments(pr.getId()).getFirst());
 

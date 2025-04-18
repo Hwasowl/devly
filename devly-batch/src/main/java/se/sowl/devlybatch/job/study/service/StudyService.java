@@ -57,7 +57,7 @@ public class StudyService {
     public List<Study> getTodayStudiesOf(Long StudyTypeId, StudyStatusEnum statusEnum) {
         LocalDateTime startOfDay = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0).withNano(0);
         LocalDateTime endOfDay = startOfDay.plusDays(1);
-        return studyRepository.findByCreatedAtBetweenAndTypeIdAndStatus(startOfDay, endOfDay, StudyTypeId, statusEnum);
+        return studyRepository.findByCreatedAtBetweenAndStudyTypeIdAndStatus(startOfDay, endOfDay, StudyTypeId, statusEnum);
     }
 
     private StudyType findStudyTypeByName(List<StudyType> studyTypes, String name) {
@@ -70,16 +70,16 @@ public class StudyService {
     private List<Study> createStudiesForAllDevTypes(StudyType wordType, StudyType prType, List<DeveloperType> devTypes) {
         return devTypes.stream()
             .flatMap(devType -> Stream.of(
-                createStudy(wordType.getId(), devType.getId()),
-                createStudy(prType.getId(), devType.getId())
+                createStudy(wordType, devType),
+                createStudy(prType, devType)
             ))
             .collect(Collectors.toList());
     }
 
-    private Study createStudy(Long typeId, Long developerTypeId) {
+    private Study createStudy(StudyType studyType, DeveloperType developerType) {
         return Study.builder()
-            .typeId(typeId)
-            .developerTypeId(developerTypeId)
+            .studyType(studyType)
+            .developerType(developerType)
             .build();
     }
 

@@ -15,10 +15,12 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import se.sowl.devlybatch.config.TestBatchConfig;
 import se.sowl.devlybatch.job.MediumBatchTest;
+import se.sowl.devlydomain.developer.domain.DeveloperType;
 import se.sowl.devlydomain.prompt.domain.GeneratePrompt;
 import se.sowl.devlydomain.prompt.repository.GeneratePromptRepository;
 import se.sowl.devlydomain.study.domain.Study;
 import se.sowl.devlydomain.study.domain.StudyStatusEnum;
+import se.sowl.devlydomain.study.domain.StudyType;
 import se.sowl.devlydomain.study.repository.StudyRepository;
 import se.sowl.devlydomain.word.domain.Word;
 import se.sowl.devlydomain.word.repository.WordRepository;
@@ -76,27 +78,32 @@ class WordCreationJobConfigTest extends MediumBatchTest {
                 "---");
             promptRepository.save(frontendGeneratePrompt);
         }
+        studyTypeRepository.saveAll(List.of(
+            StudyType.builder().name("Word").build(),
+            StudyType.builder().name("Knowledge").build(),
+            StudyType.builder().name("PR").build(),
+            StudyType.builder().name("Discussion").build()
+        ));
     }
 
     @AfterEach
     void tearDown() {
         wordRepository.deleteAll();
         studyRepository.deleteAll();
+        developerTypeRepository.deleteAll();
     }
 
     @Test
     @DisplayName("오늘 생성된 스터디에 대해 GPT 응답을 파싱하여 단어를 저장한다")
     void createWordsStepTest() throws Exception {
         // given
-        Study backendStudy = Study.builder()
-            .typeId(1L)
-            .developerTypeId(1L)
-            .build();
-        Study frontendStudy = Study.builder()
-            .typeId(1L)
-            .developerTypeId(2L)
-            .build();
-        studyRepository.saveAll(List.of(backendStudy, frontendStudy));
+        StudyType studyType = studyTypeRepository.findAll().stream().filter(s -> s.getName().equals("Word")).findFirst()
+            .orElseThrow(() -> new IllegalArgumentException("StudyType not found"));
+        System.out.println("스틑입: " + studyType.getId());
+        DeveloperType beType = developerTypeRepository.save(new DeveloperType("Backend Developer"));
+        Study backendStudy = studyRepository.save(Study.builder().studyType(studyType).developerType(beType).build());
+        DeveloperType feType = developerTypeRepository.save(new DeveloperType("Frontend Developer"));
+        Study frontendStudy = studyRepository.save(Study.builder().studyType(studyType).developerType(feType).build());
 
         String backendResponse = """
         단어: implementation
@@ -159,10 +166,13 @@ class WordCreationJobConfigTest extends MediumBatchTest {
     @DisplayName("5번 호출 중 3번째 호출에 실패하고 나머지는 모두 성공하면 4개의 단어가 저장되어야 한다.")
     void createWordsWithFailureRequest() throws Exception {
         // given
+        StudyType studyType = studyTypeRepository.findAll().stream().filter(s -> s.getName().equals("Word")).findFirst()
+            .orElseThrow(() -> new IllegalArgumentException("StudyType not found"));
+        DeveloperType beType = developerTypeRepository.save(new DeveloperType("backend"));
         List<Study> studies = IntStream.range(0, 5)
             .mapToObj(i -> Study.builder()
-                .typeId(1L)
-                .developerTypeId(1L)
+                .studyType(studyType)
+                .developerType(beType)
                 .build())
             .collect(Collectors.toList());
         studyRepository.saveAll(studies);
@@ -204,11 +214,13 @@ class WordCreationJobConfigTest extends MediumBatchTest {
     @DisplayName("특정 스터디에 대한 GPT 응답 파싱 실패 시 예외가 발생하지만 배치는 성공한다.")
     void createWordsStepWithFailureTest() throws Exception {
         // given
-        Study study = Study.builder()
-            .typeId(1L)
-            .developerTypeId(1L)
-            .build();
-        studyRepository.save(study);
+        StudyType studyType = studyTypeRepository.findAll()
+            .stream()
+            .filter(s -> s.getName().equals("Word"))
+            .findFirst()
+            .orElseThrow(() -> new IllegalArgumentException("StudyType not found"));
+        DeveloperType beType = developerTypeRepository.save(new DeveloperType("backend"));
+        studyRepository.save(Study.builder().studyType(studyType).developerType(beType).build());
 
         String invalidResponse = "Invalid Request";
         when(gptClient.generate(any())).thenThrow(new GPTClientException("GPT API error: " + invalidResponse));

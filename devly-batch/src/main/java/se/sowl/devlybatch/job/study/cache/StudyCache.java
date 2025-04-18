@@ -38,7 +38,7 @@ public class StudyCache {
     }
 
     private String createCacheKey(Study study) {
-        return createCacheKey(study.getTypeId(), study.getDeveloperTypeId());
+        return createCacheKey(study.getStudyType().getId(), study.getDeveloperType().getId());
     }
 
     private String createCacheKey(Long typeId, Long developerTypeId) {

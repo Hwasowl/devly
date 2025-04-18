@@ -6,7 +6,12 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 import se.sowl.devlydomain.common.BaseTimeEntity;
+import se.sowl.devlydomain.developer.domain.DeveloperType;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Entity
@@ -18,8 +23,9 @@ public class User extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "developer_type_id")
-    private Long developerTypeId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "developer_type_id")
+    private DeveloperType developerType;
 
     @Column(nullable = false)
     private String name;
@@ -32,10 +38,14 @@ public class User extends BaseTimeEntity {
     @Column(nullable = false)
     private String provider;
 
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 100)
+    private List<UserStudy> userStudies = new ArrayList<>();
+
     @Builder
-    public User(Long id, Long developerTypeId, String name, String nickname, String email, String provider) {
+    public User(Long id, DeveloperType developerType, String name, String nickname, String email, String provider) {
         this.id = id;
-        this.developerTypeId = developerTypeId;
+        this.developerType = developerType;
         this.name = name;
         this.nickname = nickname;
         this.email = email;

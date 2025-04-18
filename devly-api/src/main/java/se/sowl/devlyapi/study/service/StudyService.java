@@ -31,9 +31,9 @@ public class StudyService {
             List<StudyType> studyTypes = studyTypeRepository.findAll();
             for (StudyTypeEnum typeEnum : StudyTypeEnum.values()) {
                 StudyType studyType = validateStudyType(typeEnum, studyTypes);
-                Study study = studyRepository.findFirstByTypeId(studyType.getId())
+                Study study = studyRepository.findFirstByStudyTypeId(studyType.getId())
                     .orElseThrow(() -> new StudyNotExistException("Study Not Exist"));
-                UserStudy userStudy = UserStudy.builder().userId(user.getId()).study(study).build();
+                UserStudy userStudy = UserStudy.builder().user(user).study(study).build();
                 userStudyRepository.save(userStudy);
             }
         } catch (Exception e) {

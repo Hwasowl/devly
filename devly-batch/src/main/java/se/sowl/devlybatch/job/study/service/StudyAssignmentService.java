@@ -38,7 +38,7 @@ public class StudyAssignmentService {
 
     private Set<Long> extractUserIds(List<UserStudy> studies) {
         return studies.stream()
-            .map(UserStudy::getUserId)
+            .map(userStudy -> userStudy.getUser().getId())
             .collect(Collectors.toSet());
     }
 
@@ -64,7 +64,7 @@ public class StudyAssignmentService {
     ) {
         List<UserStudy> newAssignments = new ArrayList<>();
         for (UserStudy completedStudy : completedStudies) {
-            Long userId = completedStudy.getUserId();
+            Long userId = completedStudy.getUser().getId();
             Study study = completedStudy.getStudy();
             if (canAssignNextStudy(completedStudy.getStudy(), userToStudiesMap.get(userId))) {
                 Study nextStudy = findNextStudy(study);
@@ -90,8 +90,8 @@ public class StudyAssignmentService {
 
     private boolean isNextStudy(Study currentStudy, Study potentialNextStudy) {
         List<Study> typeStudies = studyCache.getStudies(
-            currentStudy.getTypeId(),
-            currentStudy.getDeveloperTypeId()
+            currentStudy.getStudyType().getId(),
+            currentStudy.getDeveloperType().getId()
         );
 
         int currentIndex = findStudyIndex(typeStudies, currentStudy.getId());
@@ -104,14 +104,14 @@ public class StudyAssignmentService {
     }
 
     private boolean isSameStudyType(Study study1, Study study2) {
-        return Objects.equals(study1.getTypeId(), study2.getTypeId()) &&
-            Objects.equals(study1.getDeveloperTypeId(), study2.getDeveloperTypeId());
+        return Objects.equals(study1.getStudyType().getId(), study2.getStudyType().getId()) &&
+            Objects.equals(study1.getDeveloperType().getId(), study2.getDeveloperType().getId());
     }
 
     private Study findNextStudy(Study currentStudy) {
         List<Study> studies = studyCache.getStudies(
-            currentStudy.getTypeId(),
-            currentStudy.getDeveloperTypeId()
+            currentStudy.getStudyType().getId(),
+            currentStudy.getDeveloperType().getId()
         );
 
         return findNextInList(studies, currentStudy);
@@ -141,7 +141,7 @@ public class StudyAssignmentService {
 
     private UserStudy createNextUserStudy(UserStudy completed, Study nextStudy) {
         return UserStudy.builder()
-            .userId(completed.getUserId())
+            .user(completed.getUser())
             .study(nextStudy)
             .scheduledAt(LocalDateTime.now())
             .build();
