@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import se.sowl.devlybatch.config.TestBatchConfig;
 import se.sowl.devlybatch.job.MediumBatchTest;
+import se.sowl.devlydomain.developer.domain.DeveloperType;
 import se.sowl.devlydomain.pr.domain.Pr;
 import se.sowl.devlydomain.pr.domain.PrChangedFile;
 import se.sowl.devlydomain.pr.domain.PrLabel;
@@ -24,6 +25,7 @@ import se.sowl.devlydomain.prompt.domain.GeneratePrompt;
 import se.sowl.devlydomain.prompt.repository.GeneratePromptRepository;
 import se.sowl.devlydomain.study.domain.Study;
 import se.sowl.devlydomain.study.domain.StudyStatusEnum;
+import se.sowl.devlydomain.study.domain.StudyType;
 import se.sowl.devlydomain.study.repository.StudyRepository;
 import se.sowl.devlyexternal.client.gpt.GPTClient;
 import se.sowl.devlyexternal.client.gpt.dto.GPTResponse;
@@ -97,14 +99,11 @@ class PrCreationJobConfigTest extends MediumBatchTest {
     @DisplayName("오늘 생성된 스터디에 대해 GPT 응답을 파싱하여 PR을 저장한다")
     void createPrStepTest() throws Exception {
         // given
-        Study backendStudy = Study.builder()
-            .typeId(3L)
-            .developerTypeId(1L)
-            .build();
-        Study frontendStudy = Study.builder()
-            .typeId(3L)
-            .developerTypeId(2L)
-            .build();
+        StudyType studyType = studyTypeRepository.save(StudyType.builder().name("Word").build());
+        DeveloperType beType = developerTypeRepository.save(DeveloperType.builder().name("Backend").build());
+        DeveloperType feType = developerTypeRepository.save(DeveloperType.builder().name("Frontend").build());
+        Study backendStudy = Study.builder().studyType(studyType).developerType(beType).build();
+        Study frontendStudy = Study.builder().studyType(studyType).developerType(feType).build();
         studyRepository.saveAll(List.of(backendStudy, frontendStudy));
 
         String backendResponse = """

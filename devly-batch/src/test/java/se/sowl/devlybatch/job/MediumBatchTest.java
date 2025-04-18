@@ -12,6 +12,7 @@ import se.sowl.devlydomain.developer.repository.DeveloperTypeRepository;
 import se.sowl.devlydomain.study.domain.StudyType;
 import se.sowl.devlydomain.study.repository.StudyRepository;
 import se.sowl.devlydomain.study.repository.StudyTypeRepository;
+import se.sowl.devlydomain.user.domain.User;
 
 import java.util.List;
 
@@ -59,5 +60,15 @@ public abstract class MediumBatchTest {
         StudyType pr = new StudyType("pr", 300L);
         StudyType discussion = new StudyType("discussion", 300L);
         return List.of(word, knowledge, pr, discussion);
+    }
+
+    protected User createUser(DeveloperType developerType, String name, String nickname, String email, String provider) {
+        return User.builder()
+            .name(name)
+            .developerType(developerType)
+            .nickname(nickname)
+            .email(email)
+            .provider(provider)
+            .build();
     }
 }

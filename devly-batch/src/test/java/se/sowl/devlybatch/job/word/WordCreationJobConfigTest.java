@@ -15,10 +15,12 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import se.sowl.devlybatch.config.TestBatchConfig;
 import se.sowl.devlybatch.job.MediumBatchTest;
+import se.sowl.devlydomain.developer.domain.DeveloperType;
 import se.sowl.devlydomain.prompt.domain.GeneratePrompt;
 import se.sowl.devlydomain.prompt.repository.GeneratePromptRepository;
 import se.sowl.devlydomain.study.domain.Study;
 import se.sowl.devlydomain.study.domain.StudyStatusEnum;
+import se.sowl.devlydomain.study.domain.StudyType;
 import se.sowl.devlydomain.study.repository.StudyRepository;
 import se.sowl.devlydomain.word.domain.Word;
 import se.sowl.devlydomain.word.repository.WordRepository;
@@ -88,13 +90,16 @@ class WordCreationJobConfigTest extends MediumBatchTest {
     @DisplayName("오늘 생성된 스터디에 대해 GPT 응답을 파싱하여 단어를 저장한다")
     void createWordsStepTest() throws Exception {
         // given
+        StudyType studyType = studyTypeRepository.save(new StudyType("word", 1L));
+        DeveloperType beType = developerTypeRepository.save(new DeveloperType("backend"));
+        DeveloperType feType = developerTypeRepository.save(new DeveloperType("front"));
         Study backendStudy = Study.builder()
-            .typeId(1L)
-            .developerTypeId(1L)
+            .studyType(studyType)
+            .developerType(beType)
             .build();
         Study frontendStudy = Study.builder()
-            .typeId(1L)
-            .developerTypeId(2L)
+            .studyType(studyType)
+            .developerType(feType)
             .build();
         studyRepository.saveAll(List.of(backendStudy, frontendStudy));
 
@@ -159,10 +164,12 @@ class WordCreationJobConfigTest extends MediumBatchTest {
     @DisplayName("5번 호출 중 3번째 호출에 실패하고 나머지는 모두 성공하면 4개의 단어가 저장되어야 한다.")
     void createWordsWithFailureRequest() throws Exception {
         // given
+        StudyType studyType = studyTypeRepository.save(new StudyType("word", 1L));
+        DeveloperType beType = developerTypeRepository.save(new DeveloperType("backend"));
         List<Study> studies = IntStream.range(0, 5)
             .mapToObj(i -> Study.builder()
-                .typeId(1L)
-                .developerTypeId(1L)
+                .studyType(studyType)
+                .developerType(beType)
                 .build())
             .collect(Collectors.toList());
         studyRepository.saveAll(studies);
@@ -204,9 +211,11 @@ class WordCreationJobConfigTest extends MediumBatchTest {
     @DisplayName("특정 스터디에 대한 GPT 응답 파싱 실패 시 예외가 발생하지만 배치는 성공한다.")
     void createWordsStepWithFailureTest() throws Exception {
         // given
+        StudyType studyType = studyTypeRepository.save(new StudyType("word", 1L));
+        DeveloperType beType = developerTypeRepository.save(new DeveloperType("backend"));
         Study study = Study.builder()
-            .typeId(1L)
-            .developerTypeId(1L)
+            .studyType(studyType)
+            .developerType(beType)
             .build();
         studyRepository.save(study);
 
