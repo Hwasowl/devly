@@ -85,6 +85,12 @@ class PrCreationJobConfigTest extends MediumBatchTest {
                 "---");
             promptRepository.save(frontendGeneratePrompt);
         }
+        studyTypeRepository.saveAll(List.of(
+            StudyType.builder().name("Word").build(),
+            StudyType.builder().name("Knowledge").build(),
+            StudyType.builder().name("PR").build(),
+            StudyType.builder().name("Discussion").build()
+        ));
     }
 
     @AfterEach
@@ -99,7 +105,7 @@ class PrCreationJobConfigTest extends MediumBatchTest {
     @DisplayName("오늘 생성된 스터디에 대해 GPT 응답을 파싱하여 PR을 저장한다")
     void createPrStepTest() throws Exception {
         // given
-        StudyType studyType = studyTypeRepository.save(StudyType.builder().name("Word").build());
+        StudyType studyType = studyTypeRepository.findAll().stream().filter(s -> s.getName().equals("PR")).findFirst().orElseThrow();
         DeveloperType beType = developerTypeRepository.save(DeveloperType.builder().name("Backend").build());
         DeveloperType feType = developerTypeRepository.save(DeveloperType.builder().name("Frontend").build());
         Study backendStudy = Study.builder().studyType(studyType).developerType(beType).build();
