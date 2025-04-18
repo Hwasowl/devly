@@ -6,6 +6,7 @@ import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.test.JobLauncherTestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.jdbc.Sql;
 import se.sowl.devlydomain.developer.domain.DeveloperType;
 import se.sowl.devlydomain.developer.repository.DeveloperTypeRepository;
@@ -21,6 +22,7 @@ import java.util.List;
     "/org/springframework/batch/core/schema-h2.sql"
 }, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @SpringBootTest
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public abstract class MediumBatchTest {
     protected JobLauncherTestUtils jobLauncherTestUtils;
 
@@ -62,8 +64,9 @@ public abstract class MediumBatchTest {
         return List.of(word, knowledge, pr, discussion);
     }
 
-    protected User createUser(DeveloperType developerType, String name, String nickname, String email, String provider) {
+    protected User createUser(Long id, DeveloperType developerType, String name, String nickname, String email, String provider) {
         return User.builder()
+            .id(id)
             .name(name)
             .developerType(developerType)
             .nickname(nickname)
