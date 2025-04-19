@@ -6,13 +6,13 @@ import se.sowl.devlydomain.word.domain.WordReview;
 import java.util.List;
 
 public interface WordReviewRepository extends JpaRepository<WordReview, Long> {
-    boolean existsByStudyIdAndUserId(Long studyId, Long userId);
+    boolean existsByUserStudyId(Long userStudyId);
 
-    List<WordReview> findAllByStudyIdAndUserId(Long studyId, Long userId);
+    List<WordReview> findAllByUserStudyId(Long studyId);
 
-    long countByCorrectAndStudyIdAndUserId(boolean correct, Long studyId, Long userId);
+    long countByCorrectAndUserStudyId(boolean correct, Long userStudyId);
 
-    Long countByUserIdAndStudyIdAndCorrectIsFalse(Long userId, Long studyId);
+    Long countByUserStudyIdAndCorrectIsFalse(Long userStudyId);
 
-    List<WordReview> findByStudyIdAndUserId(Long studyId, Long userId);
+    List<WordReview> findByUserStudyId(Long userStudyId);
 }

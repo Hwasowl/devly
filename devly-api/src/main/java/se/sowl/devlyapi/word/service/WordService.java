@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import se.sowl.devlyapi.study.service.UserStudyService;
 import se.sowl.devlyapi.word.dto.WordListOfStudyResponse;
 import se.sowl.devlyapi.word.dto.reviews.WordReviewResponse;
+import se.sowl.devlydomain.user.domain.UserStudy;
 import se.sowl.devlydomain.word.domain.Word;
 import se.sowl.devlydomain.word.domain.WordReview;
 import se.sowl.devlydomain.word.repository.WordRepository;
@@ -31,7 +32,8 @@ public class WordService {
     }
 
     public WordReviewResponse getWordReviewsResponse(Long studyId, Long userId) {
-        List<WordReview> wordReviews = wordReviewRepository.findAllByStudyIdAndUserId(studyId, userId);
+        UserStudy userStudy = userStudyService.getUserStudy(userId, studyId);
+        List<WordReview> wordReviews = wordReviewRepository.findAllByUserStudyId(userStudy.getId());
         return WordReviewResponse.from(wordReviews);
     }
 }

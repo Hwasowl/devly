@@ -6,6 +6,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import net.minidev.json.annotate.JsonIgnore;
 import org.hibernate.annotations.BatchSize;
 import se.sowl.devlydomain.common.BaseTimeEntity;
 import se.sowl.devlydomain.developer.domain.DeveloperType;
@@ -38,6 +39,7 @@ public class User extends BaseTimeEntity {
     @Column(nullable = false)
     private String provider;
 
+    @JsonIgnore
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @BatchSize(size = 100)
     private List<UserStudy> userStudies = new ArrayList<>();

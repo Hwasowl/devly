@@ -5,14 +5,8 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.minidev.json.annotate.JsonIgnore;
-import org.hibernate.annotations.BatchSize;
 import se.sowl.devlydomain.common.BaseTimeEntity;
 import se.sowl.devlydomain.developer.domain.DeveloperType;
-import se.sowl.devlydomain.user.domain.UserStudy;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "studies")
@@ -35,11 +29,6 @@ public class Study extends BaseTimeEntity {
     @Column(nullable = false)
     private StudyStatusEnum status;
 
-    @JsonIgnore
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "study", cascade = CascadeType.ALL, orphanRemoval = true)
-    @BatchSize(size = 100)
-    private List<UserStudy> userStudies = new ArrayList<>();
-
     public void connect() {
         this.status = StudyStatusEnum.CONNECTED;
     }
@@ -49,6 +38,5 @@ public class Study extends BaseTimeEntity {
         this.studyType = studyType;
         this.developerType = developerType;
         this.status = StudyStatusEnum.UNCONNECTED;
-        this.userStudies = new ArrayList<>();
     }
 }

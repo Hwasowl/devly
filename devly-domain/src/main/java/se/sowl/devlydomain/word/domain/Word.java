@@ -5,7 +5,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.BatchSize;
+import net.minidev.json.annotate.JsonIgnore;
 import se.sowl.devlydomain.common.BaseTimeEntity;
 import se.sowl.devlydomain.study.domain.Study;
 
@@ -40,8 +40,8 @@ public class Word extends BaseTimeEntity {
     @Column(nullable = false, columnDefinition = "TEXT", length = 65535)
     private String quiz;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "word", cascade = CascadeType.ALL, orphanRemoval = true)
-    @BatchSize(size = 100)
     private List<WordReview> wordReviews = new ArrayList<>();
 
     @Builder

@@ -29,8 +29,8 @@ class WordServiceTest extends MediumTest {
 
     @AfterEach
     void tearDown() {
-        userStudyRepository.deleteAllInBatch();
         wordReviewRepository.deleteAllInBatch();
+        userStudyRepository.deleteAllInBatch();
         wordRepository.deleteAllInBatch();
         studyRepository.deleteAllInBatch();
         userRepository.deleteAllInBatch();

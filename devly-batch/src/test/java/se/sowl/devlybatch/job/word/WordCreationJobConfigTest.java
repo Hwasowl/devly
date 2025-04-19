@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import se.sowl.devlybatch.config.TestBatchConfig;
 import se.sowl.devlybatch.job.MediumBatchTest;
@@ -38,6 +39,7 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 @ActiveProfiles("test")
 @Import({TestBatchConfig.class, WordCreationJobConfig.class})
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class WordCreationJobConfigTest extends MediumBatchTest {
 
     @Autowired
@@ -99,7 +101,6 @@ class WordCreationJobConfigTest extends MediumBatchTest {
         // given
         StudyType studyType = studyTypeRepository.findAll().stream().filter(s -> s.getName().equals("Word")).findFirst()
             .orElseThrow(() -> new IllegalArgumentException("StudyType not found"));
-        System.out.println("스틑입: " + studyType.getId());
         DeveloperType beType = developerTypeRepository.save(new DeveloperType("Backend Developer"));
         Study backendStudy = studyRepository.save(buildStudy(studyType, beType));
         DeveloperType feType = developerTypeRepository.save(new DeveloperType("Frontend Developer"));

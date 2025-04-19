@@ -4,13 +4,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import se.sowl.devlyapi.study.service.StudyService;
+import se.sowl.devlyapi.study.service.UserStudyService;
 import se.sowl.devlyapi.user.service.UserService;
 import se.sowl.devlyapi.word.exception.AlreadyExistsReviewException;
 import se.sowl.devlyapi.word.exception.NotAssignmentWordStudyException;
 import se.sowl.devlyapi.word.exception.ReviewNotFoundException;
-import se.sowl.devlydomain.study.domain.Study;
 import se.sowl.devlydomain.study.domain.StudyTypeEnum;
-import se.sowl.devlydomain.user.domain.User;
 import se.sowl.devlydomain.user.domain.UserStudy;
 import se.sowl.devlydomain.user.repository.UserStudyRepository;
 import se.sowl.devlydomain.word.domain.Word;
@@ -29,10 +28,12 @@ public class WordReviewService {
     public final StudyService studyService;
     public final UserService userService;
     private final WordService wordService;
+    private final UserStudyService userStudyService;
 
     @Transactional
     public void createReview(Long studyId, Long userId, List<Long> correctIds, List<Long> incorrectIds) {
-        if (wordReviewRepository.existsByStudyIdAndUserId(studyId, userId)) {
+        UserStudy userStudy = userStudyService.getUserStudy(userId, studyId);
+        if (wordReviewRepository.existsByUserStudyId(userStudy.getId())) {
             throw new AlreadyExistsReviewException();
         }
         initialWordReviews(studyId, userId, correctIds, incorrectIds);
@@ -41,7 +42,8 @@ public class WordReviewService {
 
     @Transactional
     public void updateReview(Long studyId, Long userId, List<Long> correctIds) {
-        if (!wordReviewRepository.existsByStudyIdAndUserId(studyId, userId)) {
+        UserStudy userStudy = userStudyService.getUserStudy(userId, studyId);
+        if (!wordReviewRepository.existsByUserStudyId(userStudy.getId())) {
             throw new ReviewNotFoundException();
         }
         updateWordReviews(studyId, userId, correctIds);
@@ -52,13 +54,15 @@ public class WordReviewService {
         if (correctIds.isEmpty()) {
             return;
         }
-        wordReviewRepository.findAllByStudyIdAndUserId(studyId, userId).stream()
+        UserStudy userStudy = userStudyService.getUserStudy(userId, studyId);
+        wordReviewRepository.findAllByUserStudyId(userStudy.getId()).stream()
             .filter(review -> correctIds.contains(review.getWord().getId()))
             .forEach(WordReview::markAsCorrect);
     }
 
     private void updateUserStudyComplete(Long studyId, Long userId) {
-        long count = wordReviewRepository.countByCorrectAndStudyIdAndUserId(true, studyId, userId);
+        UserStudy userStudy = userStudyService.getUserStudy(userId, studyId);
+        long count = wordReviewRepository.countByCorrectAndUserStudyId(true, userStudy.getId());
         if (count == StudyTypeEnum.WORD.getRequiredCount()) {
             userStudyRepository.findByUserIdAndStudyId(userId, studyId)
                 .ifPresentOrElse(UserStudy::complete, () -> {
@@ -69,19 +73,19 @@ public class WordReviewService {
     }
 
     private void initialWordReviews(Long studyId, Long userId, List<Long> correctIds, List<Long> incorrectIds) {
-        Study study = studyService.getStudyById(studyId);
-        User user = userService.getUserById(userId);
-        List<Word> words = wordService.getList(study.getId(), user.getId());
-        List<WordReview> reviews = getWordReviews(correctIds, incorrectIds, user, words, study);
+        UserStudy userStudy = userStudyRepository.findByUserIdAndStudyId(studyId, userId)
+            .orElseThrow(() -> new IllegalArgumentException("UserStudy not found for userId: " + userId + " and studyId: " + studyId));
+        List<Word> words = wordService.getList(userStudy.getUser().getId(), userStudy.getStudy().getId());
+        List<WordReview> reviews = getWordReviews(correctIds, incorrectIds, userStudy, words);
         wordReviewRepository.saveAll(reviews);
     }
 
-    private static List<WordReview> getWordReviews(List<Long> correctIds, List<Long> incorrectIds, User user, List<Word> words, Study study) {
+    private static List<WordReview> getWordReviews(List<Long> correctIds, List<Long> incorrectIds, UserStudy userStudy, List<Word> words) {
         List<WordReview> reviews = new ArrayList<>();
         reviews.addAll(correctIds.stream()
-            .map(id -> WordReview.of(user, words.stream().filter(word -> Objects.equals(word.getId(), id)).findFirst().orElseThrow(), study, true)).toList());
+            .map(id -> WordReview.of(userStudy, words.stream().filter(word -> Objects.equals(word.getId(), id)).findFirst().orElseThrow(), true)).toList());
         reviews.addAll(incorrectIds.stream()
-            .map(id -> WordReview.of(user, words.stream().filter(word -> Objects.equals(word.getId(), id)).findFirst().orElseThrow(), study, false)).toList());
+            .map(id -> WordReview.of(userStudy, words.stream().filter(word -> Objects.equals(word.getId(), id)).findFirst().orElseThrow(), false)).toList());
         return reviews;
     }
 }

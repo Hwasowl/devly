@@ -6,8 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import se.sowl.devlydomain.common.BaseTimeEntity;
-import se.sowl.devlydomain.study.domain.Study;
-import se.sowl.devlydomain.user.domain.User;
+import se.sowl.devlydomain.user.domain.UserStudy;
 
 @Entity
 @Table(name = "word_reviews")
@@ -19,32 +18,27 @@ public class WordReview extends BaseTimeEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinColumn(name = "user_study_id", nullable = false)
+    private UserStudy userStudy;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "word_id")
+    @JoinColumn(name = "word_id", nullable = false)
     private Word word;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "study_id")
-    private Study study;
-
+    @Column(nullable = false)
     private boolean correct;
 
     @Builder
-    public WordReview(User user, Word word, Study study, boolean correct) {
-        this.user = user;
+    public WordReview(UserStudy userStudy, Word word, boolean correct) {
+        this.userStudy = userStudy;
         this.word = word;
-        this.study = study;
         this.correct = correct;
     }
 
-    public static WordReview of(User user, Word word, Study study, boolean correct) {
+    public static WordReview of(UserStudy userStudy, Word word, boolean correct) {
         return WordReview.builder()
-            .user(user)
+            .userStudy(userStudy)
             .word(word)
-            .study(study)
             .correct(correct)
             .build();
     }

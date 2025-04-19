@@ -21,9 +21,9 @@ public class StudyReviewService {
         for (UserStudy userStudy : userStudies) {
             StudyTypeEnum type = StudyTypeEnum.fromValue(studyTypeMap.get(userStudy.getStudy().getStudyType().getId()).getName());
             if (type == StudyTypeEnum.WORD && !userStudy.isCompleted()) {
-                boolean hasReviews = wordReviewRepository.existsByStudyIdAndUserId(userStudy.getStudy().getId(), userStudy.getUser().getId());
+                boolean hasReviews = wordReviewRepository.existsByUserStudyId(userStudy.getId());
                 counts.put(type, hasReviews
-                    ? wordReviewRepository.countByUserIdAndStudyIdAndCorrectIsFalse(userStudy.getUser().getId(), userStudy.getStudy().getId())
+                    ? wordReviewRepository.countByUserStudyIdAndCorrectIsFalse(userStudy.getId())
                     : type.getRequiredCount()
                 );
             }

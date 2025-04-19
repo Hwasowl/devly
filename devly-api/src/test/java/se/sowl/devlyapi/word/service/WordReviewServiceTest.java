@@ -75,7 +75,7 @@ class WordReviewServiceTest extends MediumTest {
             StudyType studyType = studyTypeRepository.save(new StudyType("word", 100L));
             Study study = studyRepository.save(buildStudy(studyType, developerType));
             wordRepository.saveAll(getBackendWordList(study));
-            userStudyRepository.save(UserStudy.builder().user(user).study(study).scheduledAt(LocalDateTime.now()).build());
+            UserStudy save = userStudyRepository.save(UserStudy.builder().user(user).study(study).scheduledAt(LocalDateTime.now()).build());
 
             List<Long> correctIds = List.of(1L, 2L);
             List<Long> incorrectIds = List.of(3L, 4L, 5L);
@@ -86,7 +86,7 @@ class WordReviewServiceTest extends MediumTest {
             wordReviewService.updateReview(study.getId(), user.getId(), newCorrectIds);
 
             // then
-            List<WordReview> all = wordReviewRepository.findByStudyIdAndUserId(study.getId(), user.getId());
+            List<WordReview> all = wordReviewRepository.findByUserStudyId(save.getId());
 
             all.forEach(review -> {
                 if (review.getWord().getId() == 1L || review.getWord().getId() == 2L || review.getWord().getId() == 3L || review.getWord().getId() == 4L) {
