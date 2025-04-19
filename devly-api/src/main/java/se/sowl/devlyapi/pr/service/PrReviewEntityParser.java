@@ -3,6 +3,7 @@ package se.sowl.devlyapi.pr.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import se.sowl.devlydomain.pr.domain.PrReview;
+import se.sowl.devlydomain.study.repository.StudyRepository;
 import se.sowl.devlyexternal.common.ParserArguments;
 import se.sowl.devlyexternal.common.gpt.GptEntityParser;
 import se.sowl.devlyexternal.common.gpt.GptRequestFactory;
@@ -13,8 +14,9 @@ import se.sowl.devlyexternal.common.gpt.exception.GPTContentProcessingException;
 @Component
 public class PrReviewEntityParser extends GptEntityParser<PrReview> {
 
-    public PrReviewEntityParser(GptRequestFactory requestFactory, GptResponseValidator responseValidator) {
-        super(requestFactory, responseValidator);
+    public PrReviewEntityParser(GptRequestFactory requestFactory, GptResponseValidator responseValidator,
+                                StudyRepository studyRepository) {
+        super(requestFactory, responseValidator, studyRepository);
     }
 
     @Override
