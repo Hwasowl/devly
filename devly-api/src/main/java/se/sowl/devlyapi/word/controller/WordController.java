@@ -24,14 +24,14 @@ public class WordController {
     @GetMapping("/{studyId}")
     @PreAuthorize("isAuthenticated()")
     public CommonResponse<WordListOfStudyResponse> getWords(@AuthenticationPrincipal CustomOAuth2User customOAuth2User, @PathVariable Long studyId) {
-        WordListOfStudyResponse response = wordService.getList(customOAuth2User.getUserId(), studyId);
+        WordListOfStudyResponse response = wordService.getListResponse(customOAuth2User.getUserId(), studyId);
         return CommonResponse.ok(response);
     }
 
     @GetMapping("/review/study/{studyId}")
     @PreAuthorize("isAuthenticated()")
     public CommonResponse<WordReviewResponse> review(@AuthenticationPrincipal CustomOAuth2User customOAuth2User, @PathVariable Long studyId) {
-        WordReviewResponse wordReviews = wordService.getWordReviews(studyId, customOAuth2User.getUserId());
+        WordReviewResponse wordReviews = wordService.getWordReviewsResponse(studyId, customOAuth2User.getUserId());
         return CommonResponse.ok(wordReviews);
     }
 

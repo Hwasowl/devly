@@ -35,9 +35,9 @@ public class Study extends BaseTimeEntity {
     @Column(nullable = false)
     private StudyStatusEnum status;
 
+    @JsonIgnore
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "study", cascade = CascadeType.ALL, orphanRemoval = true)
     @BatchSize(size = 100)
-    @JsonIgnore
     private List<UserStudy> userStudies = new ArrayList<>();
 
     public void connect() {

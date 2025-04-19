@@ -5,6 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import se.sowl.devlyapi.MediumTest;
 import se.sowl.devlyapi.word.exception.NotAssignmentWordStudyException;
 import se.sowl.devlydomain.developer.domain.DeveloperType;
@@ -20,6 +21,7 @@ import java.util.List;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @SpringBootTest
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class WordReviewServiceTest extends MediumTest {
 
     @AfterEach
@@ -27,8 +29,8 @@ class WordReviewServiceTest extends MediumTest {
         wordReviewRepository.deleteAllInBatch();
         userStudyRepository.deleteAllInBatch();
         userRepository.deleteAllInBatch();
-        studyRepository.deleteAllInBatch();
         wordRepository.deleteAllInBatch();
+        studyRepository.deleteAllInBatch();
     }
 
     @Nested
@@ -41,7 +43,7 @@ class WordReviewServiceTest extends MediumTest {
             User user = userRepository.save(createUser(1L, developerType, "박정수", "솔", "test@naver.com", "google"));
             StudyType studyType = studyTypeRepository.save(new StudyType("word", 100L));
             Study study = studyRepository.save(buildStudy(studyType, developerType));
-            wordRepository.saveAll(getBackendWordList(study.getId()));
+            wordRepository.saveAll(getBackendWordList(study));
             userStudyRepository.save(UserStudy.builder().user(user).study(study).scheduledAt(LocalDateTime.now()).build());
 
             // when
@@ -56,7 +58,7 @@ class WordReviewServiceTest extends MediumTest {
                     }
                 );
             wordReviewRepository.findAll().forEach(review -> {
-                if (review.getWordId() == 1L || review.getWordId() == 2L) {
+                if (review.getWord().getId() == 1L || review.getWord().getId() == 2L) {
                     assertThat(review.isCorrect()).isTrue();
                 } else {
                     assertThat(review.isCorrect()).isFalse();
@@ -72,7 +74,7 @@ class WordReviewServiceTest extends MediumTest {
             User user = userRepository.save(createUser(1L, developerType, "박정수", "솔", "test@naver.com", "google"));
             StudyType studyType = studyTypeRepository.save(new StudyType("word", 100L));
             Study study = studyRepository.save(buildStudy(studyType, developerType));
-            wordRepository.saveAll(getBackendWordList(study.getId()));
+            wordRepository.saveAll(getBackendWordList(study));
             userStudyRepository.save(UserStudy.builder().user(user).study(study).scheduledAt(LocalDateTime.now()).build());
 
             List<Long> correctIds = List.of(1L, 2L);
@@ -87,7 +89,7 @@ class WordReviewServiceTest extends MediumTest {
             List<WordReview> all = wordReviewRepository.findByStudyIdAndUserId(study.getId(), user.getId());
 
             all.forEach(review -> {
-                if (review.getWordId() == 1L || review.getWordId() == 2L || review.getWordId() == 3L || review.getWordId() == 4L) {
+                if (review.getWord().getId() == 1L || review.getWord().getId() == 2L || review.getWord().getId() == 3L || review.getWord().getId() == 4L) {
                     assertThat(review.isCorrect()).isTrue();
                 } else {
                     assertThat(review.isCorrect()).isFalse();
@@ -103,7 +105,7 @@ class WordReviewServiceTest extends MediumTest {
             User user = userRepository.save(createUser(1L, developerType, "박정수", "솔", "test@naver.com", "google"));
             StudyType studyType = studyTypeRepository.save(new StudyType("word", 100L));
             Study study = studyRepository.save(buildStudy(studyType, developerType));
-            wordRepository.saveAll(getBackendWordList(study.getId()));
+            wordRepository.saveAll(getBackendWordList(study));
             userStudyRepository.save(UserStudy.builder().user(user).study(study).scheduledAt(LocalDateTime.now()).build());
 
             List<Long> correctIds = List.of(1L, 2L, 3L, 4L, 5L);
@@ -130,7 +132,7 @@ class WordReviewServiceTest extends MediumTest {
             User user = userRepository.save(createUser(1L, developerType, "박정수", "솔", "test@naver.com", "google"));
             StudyType studyType = studyTypeRepository.save(new StudyType("word", 100L));
             Study study = studyRepository.save(buildStudy(studyType, developerType));
-            wordRepository.saveAll(getBackendWordList(study.getId()));
+            wordRepository.saveAll(getBackendWordList(study));
             userStudyRepository.save(UserStudy.builder().user(user).study(study).scheduledAt(LocalDateTime.now()).build());
 
             List<Long> correctIds = List.of(1L, 2L);
@@ -143,7 +145,7 @@ class WordReviewServiceTest extends MediumTest {
 
             // then
             wordReviewRepository.findAll().forEach(review -> {
-                if (review.getWordId() == 1L || review.getWordId() == 2L) {
+                if (review.getWord().getId() == 1L || review.getWord().getId() == 2L) {
                     assertThat(review.isCorrect()).isTrue();
                 } else {
                     assertThat(review.isCorrect()).isFalse();
@@ -159,7 +161,7 @@ class WordReviewServiceTest extends MediumTest {
             User user = userRepository.save(createUser(1L, developerType, "박정수", "솔", "test@naver.com", "google"));
             StudyType studyType = studyTypeRepository.save(new StudyType("word", 100L));
             Study study = studyRepository.save(buildStudy(studyType, developerType));
-            wordRepository.saveAll(getBackendWordList(study.getId()));
+            wordRepository.saveAll(getBackendWordList(study));
             userStudyRepository.save(UserStudy.builder().user(user).study(study).scheduledAt(LocalDateTime.now()).build());
 
             List<Long> correctIds = List.of(1L, 2L);

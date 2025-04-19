@@ -185,10 +185,7 @@ class StudyAssignmentJobConfigTest extends MediumBatchTest {
             .orElseThrow(() -> new IllegalStateException("No developer type found for ID " + devTypeId));
         List<Study> studies = new ArrayList<>();
         for (int i = 0; i < count; i++) {
-            studies.add(Study.builder()
-                .studyType(studyType)
-                .developerType(developerType)
-                .build());
+            studies.add(buildStudy(studyType, developerType));
         }
         studies.forEach(Study::connect);
         return studyRepository.saveAll(studies);

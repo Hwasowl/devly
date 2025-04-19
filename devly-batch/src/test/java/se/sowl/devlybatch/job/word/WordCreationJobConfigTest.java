@@ -101,9 +101,9 @@ class WordCreationJobConfigTest extends MediumBatchTest {
             .orElseThrow(() -> new IllegalArgumentException("StudyType not found"));
         System.out.println("스틑입: " + studyType.getId());
         DeveloperType beType = developerTypeRepository.save(new DeveloperType("Backend Developer"));
-        Study backendStudy = studyRepository.save(Study.builder().studyType(studyType).developerType(beType).build());
+        Study backendStudy = studyRepository.save(buildStudy(studyType, beType));
         DeveloperType feType = developerTypeRepository.save(new DeveloperType("Frontend Developer"));
-        Study frontendStudy = studyRepository.save(Study.builder().studyType(studyType).developerType(feType).build());
+        Study frontendStudy = studyRepository.save(buildStudy(studyType, feType));
 
         String backendResponse = """
         단어: implementation

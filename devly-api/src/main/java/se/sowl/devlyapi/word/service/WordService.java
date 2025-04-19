@@ -19,13 +19,18 @@ public class WordService {
     private final WordReviewRepository wordReviewRepository;
     private final UserStudyService userStudyService;
 
-    public WordListOfStudyResponse getList(Long userId, Long studyId) {
+    public List<Word> getList(Long userId, Long studyId) {
+        userStudyService.isUserStudyExist(userId, studyId);
+        return wordRepository.findAllByStudyId(studyId);
+    }
+
+    public WordListOfStudyResponse getListResponse(Long userId, Long studyId) {
         userStudyService.isUserStudyExist(userId, studyId);
         List<Word> allByStudy = wordRepository.findAllByStudyId(studyId);
         return WordListOfStudyResponse.from(allByStudy);
     }
 
-    public WordReviewResponse getWordReviews(Long studyId, Long userId) {
+    public WordReviewResponse getWordReviewsResponse(Long studyId, Long userId) {
         List<WordReview> wordReviews = wordReviewRepository.findAllByStudyIdAndUserId(studyId, userId);
         return WordReviewResponse.from(wordReviews);
     }

@@ -2,6 +2,7 @@ package se.sowl.devlyexternal.common.gpt;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import se.sowl.devlydomain.study.repository.StudyRepository;
 import se.sowl.devlyexternal.client.gpt.dto.GPTRequest;
 import se.sowl.devlyexternal.client.gpt.dto.GPTResponse;
 import se.sowl.devlyexternal.common.ParserArguments;
@@ -16,6 +17,7 @@ import java.util.List;
 public abstract class GptEntityParser<T> {
     private final GptRequestFactory requestFactory;
     private final GptResponseValidator responseValidator;
+    private final StudyRepository studyRepository;
 
     public List<T> parseGPTResponse(GPTResponse response, ParserArguments parameters) {
         responseValidator.validateResponse(response);

@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import se.sowl.devlydomain.common.BaseTimeEntity;
+import se.sowl.devlydomain.study.domain.Study;
+import se.sowl.devlydomain.user.domain.User;
 
 @Entity
 @Table(name = "word_reviews")
@@ -16,30 +18,33 @@ public class WordReview extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "user_id")
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    @Column(name = "word_id")
-    private Long wordId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "word_id")
+    private Word word;
 
-    @Column(name = "study_id")
-    private Long studyId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "study_id")
+    private Study study;
 
     private boolean correct;
 
     @Builder
-    public WordReview(Long userId, Long wordId, Long studyId, boolean correct) {
-        this.userId = userId;
-        this.wordId = wordId;
-        this.studyId = studyId;
+    public WordReview(User user, Word word, Study study, boolean correct) {
+        this.user = user;
+        this.word = word;
+        this.study = study;
         this.correct = correct;
     }
 
-    public static WordReview of(Long userId, Long wordId, Long studyId, boolean correct) {
+    public static WordReview of(User user, Word word, Study study, boolean correct) {
         return WordReview.builder()
-            .userId(userId)
-            .wordId(wordId)
-            .studyId(studyId)
+            .user(user)
+            .word(word)
+            .study(study)
             .correct(correct)
             .build();
     }

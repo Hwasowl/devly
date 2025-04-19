@@ -8,16 +8,17 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import se.sowl.devlybatch.common.JsonExtractor;
-import se.sowl.devlyexternal.common.ParserArguments;
-import se.sowl.devlyexternal.common.gpt.GptRequestFactory;
-import se.sowl.devlyexternal.common.gpt.GptResponseValidator;
 import se.sowl.devlybatch.job.pr.dto.PrWithRelations;
 import se.sowl.devlybatch.job.pr.service.PrEntityParser;
 import se.sowl.devlydomain.pr.domain.Pr;
 import se.sowl.devlydomain.pr.domain.PrChangedFile;
 import se.sowl.devlydomain.pr.domain.PrComment;
 import se.sowl.devlydomain.pr.domain.PrLabel;
+import se.sowl.devlydomain.study.repository.StudyRepository;
 import se.sowl.devlyexternal.client.gpt.dto.GPTResponse;
+import se.sowl.devlyexternal.common.ParserArguments;
+import se.sowl.devlyexternal.common.gpt.GptRequestFactory;
+import se.sowl.devlyexternal.common.gpt.GptResponseValidator;
 
 import java.util.List;
 
@@ -31,11 +32,15 @@ class PrEntityParserTest {
     @Autowired
     private final PrEntityParser prEntityParser;
 
+    @Autowired
+    private StudyRepository studyRepository;
+
     public PrEntityParserTest() {
         this.prEntityParser = new PrEntityParser(
             new JsonExtractor(new ObjectMapper()),
             new GptRequestFactory(),
-            new GptResponseValidator()
+            new GptResponseValidator(),
+            studyRepository
         );
     }
 

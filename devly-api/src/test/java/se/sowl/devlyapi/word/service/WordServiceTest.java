@@ -29,8 +29,9 @@ class WordServiceTest extends MediumTest {
 
     @AfterEach
     void tearDown() {
-        wordRepository.deleteAllInBatch();
         userStudyRepository.deleteAllInBatch();
+        wordReviewRepository.deleteAllInBatch();
+        wordRepository.deleteAllInBatch();
         studyRepository.deleteAllInBatch();
         userRepository.deleteAllInBatch();
     }
@@ -45,11 +46,11 @@ class WordServiceTest extends MediumTest {
             User user = userRepository.save(createUser(1L, developerType, "박정수", "솔", "hwasowl598@gmail.com", "google"));
             StudyType studyType = studyTypeRepository.save(new StudyType("word", 100L));
             Study study = studyRepository.save(buildStudy(studyType, developerType));
-            wordRepository.saveAll(getBackendWordList(study.getId()));
+            wordRepository.saveAll(getBackendWordList(study));
             userStudyRepository.save(UserStudy.builder().user(user).study(study).scheduledAt(LocalDateTime.now()).build());
 
             // when
-            WordListOfStudyResponse list = wordService.getList(user.getId(), study.getId());
+            WordListOfStudyResponse list = wordService.getListResponse(user.getId(), study.getId());
             List<WordResponse> words = list.getWords();
 
             // then
@@ -70,12 +71,12 @@ class WordServiceTest extends MediumTest {
             userRepository.save(createUser(1L, developerType, "박정수", "솔", "hwasowl598@gmail.com", "google"));
             StudyType studyType = studyTypeRepository.save(new StudyType("word", 100L));
             Study study = studyRepository.save(buildStudy(studyType, developerType));
-            wordRepository.saveAll(getBackendWordList(study.getId()));
+            wordRepository.saveAll(getBackendWordList(study));
 
             // when & then
             NotAssignmentWordStudyException exception = assertThrows(
                 NotAssignmentWordStudyException.class,
-                () -> wordService.getList(1L, 1L));
+                () -> wordService.getListResponse(1L, 1L));
             assertEquals("아직 학습할 수 없습니다.", exception.getMessage());
         }
     }
@@ -90,12 +91,12 @@ class WordServiceTest extends MediumTest {
             User user = userRepository.save(createUser(1L, developerType, "박정수", "솔", "test@naver.com", "google"));
             StudyType studyType = studyTypeRepository.save(new StudyType("word", 100L));
             Study study = studyRepository.save(buildStudy(studyType, developerType));
-            wordRepository.saveAll(getBackendWordList(study.getId()));
             userStudyRepository.save(UserStudy.builder().user(user).study(study).scheduledAt(LocalDateTime.now()).build());
+            wordRepository.saveAll(getBackendWordList(study));
             wordReviewService.createReview(study.getId(), user.getId(), List.of(1L, 2L), List.of(3L, 4L, 5L));
 
             // when
-            WordReviewResponse wordReviews = wordService.getWordReviews(study.getId(), user.getId());
+            WordReviewResponse wordReviews = wordService.getWordReviewsResponse(study.getId(), user.getId());
 
             // then
             assertThat(wordReviews.getCorrectIds()).containsExactly(1L, 2L);

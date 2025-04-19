@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import se.sowl.devlyapi.word.dto.WordListOfStudyResponse;
 import se.sowl.devlyapi.word.dto.WordResponse;
 import se.sowl.devlyapi.word.dto.reviews.WordReviewResponse;
+import se.sowl.devlyapi.word.service.WordReviewService;
 import se.sowl.devlyapi.word.service.WordService;
 import se.sowl.devlydomain.user.domain.CustomOAuth2User;
 import se.sowl.devlydomain.user.domain.User;
@@ -44,6 +45,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class WordControllerTest {
     @MockBean
     private WordService wordService;
+
+    @MockBean
+    private WordReviewService wordReviewService;
 
     @Autowired
     private MockMvc mockMvc;
@@ -77,7 +81,7 @@ class WordControllerTest {
                 "/ˌpɒlɪˈmɔːfɪzəm/")
         );
         WordListOfStudyResponse response = new WordListOfStudyResponse(words);
-        when(wordService.getList(anyLong(), anyLong())).thenReturn(response);
+        when(wordService.getListResponse(anyLong(), anyLong())).thenReturn(response);
 
         // when & then
         mockMvc.perform(get("/api/words/{studyId}", 1L)
@@ -106,6 +110,8 @@ class WordControllerTest {
     void createReviewTest() throws Exception {
         // given
         String request = "{\"correctIds\":[1,2],\"incorrectIds\":[3,4,5]}";
+        WordReviewResponse response = new WordReviewResponse(List.of(1L, 2L), List.of(3L, 4L, 5L));
+        when(wordService.getWordReviewsResponse(anyLong(), anyLong())).thenReturn(response);
 
         // when & then
         mockMvc.perform(post("/api/words/review/study/{studyId}", 1L)
@@ -152,7 +158,7 @@ class WordControllerTest {
     void getWordReviewsTest() throws Exception {
         // given
         WordReviewResponse response = new WordReviewResponse(List.of(1L, 2L, 3L), List.of(4L, 5L));
-        when(wordService.getWordReviews(anyLong(), anyLong())).thenReturn(response);
+        when(wordService.getWordReviewsResponse(anyLong(), anyLong())).thenReturn(response);
 
         // when & then
         mockMvc.perform(get("/api/words/review/study/{studyId}", 1L)

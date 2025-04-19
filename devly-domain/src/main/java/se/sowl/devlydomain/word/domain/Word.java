@@ -5,7 +5,12 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 import se.sowl.devlydomain.common.BaseTimeEntity;
+import se.sowl.devlydomain.study.domain.Study;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "words")
@@ -16,8 +21,9 @@ public class Word extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, name = "study_id")
-    private Long studyId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "study_id", nullable = false)
+    private Study study;
 
     @Column(nullable = false)
     private String word;
@@ -34,9 +40,13 @@ public class Word extends BaseTimeEntity {
     @Column(nullable = false, columnDefinition = "TEXT", length = 65535)
     private String quiz;
 
+    @OneToMany(mappedBy = "word", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 100)
+    private List<WordReview> wordReviews = new ArrayList<>();
+
     @Builder
-    public Word(Long studyId, String word, String pronunciation, String meaning, String example, String quiz) {
-        this.studyId = studyId;
+    public Word(Study study, String word, String pronunciation, String meaning, String example, String quiz) {
+        this.study = study;
         this.word = word;
         this.pronunciation = pronunciation;
         this.meaning = meaning;

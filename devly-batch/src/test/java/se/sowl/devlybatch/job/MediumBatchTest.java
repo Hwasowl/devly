@@ -10,6 +10,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.jdbc.Sql;
 import se.sowl.devlydomain.developer.domain.DeveloperType;
 import se.sowl.devlydomain.developer.repository.DeveloperTypeRepository;
+import se.sowl.devlydomain.study.domain.Study;
 import se.sowl.devlydomain.study.domain.StudyType;
 import se.sowl.devlydomain.study.repository.StudyRepository;
 import se.sowl.devlydomain.study.repository.StudyTypeRepository;
@@ -72,6 +73,13 @@ public abstract class MediumBatchTest {
             .nickname(nickname)
             .email(email)
             .provider(provider)
+            .build();
+    }
+
+    protected Study buildStudy(StudyType studyType, DeveloperType developerType) {
+        return Study.builder()
+            .studyType(studyType)
+            .developerType(developerType)
             .build();
     }
 }

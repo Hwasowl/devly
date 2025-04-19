@@ -14,8 +14,8 @@ public class WordReviewResponse {
 
     public static WordReviewResponse from(List<WordReview> reviews) {
         return new WordReviewResponse(
-            reviews.stream().filter(WordReview::isCorrect).map(WordReview::getWordId).toList(),
-            reviews.stream().filter(review -> !review.isCorrect()).map(WordReview::getWordId).toList()
+            reviews.stream().filter(WordReview::isCorrect).map(wr -> wr.getWord().getId()).toList(),
+            reviews.stream().filter(review -> !review.isCorrect()).map(r -> r.getWord().getId()).toList()
         );
     }
 }

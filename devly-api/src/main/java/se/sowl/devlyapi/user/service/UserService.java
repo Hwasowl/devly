@@ -22,6 +22,11 @@ public class UserService {
         return userRepository.findAll();
     }
 
+    public User getUserById(Long userId) {
+        return userRepository.findById(userId)
+            .orElseThrow(() -> new IllegalArgumentException("User not found"));
+    }
+
     public User getOrCreateUser(OAuth2Profile oAuth2Profile, Long developerType) {
         DeveloperType type = developerTypeRepository.findById(developerType).orElseThrow(
             () -> new IllegalArgumentException("Developer type not found")

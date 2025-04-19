@@ -108,8 +108,8 @@ class PrCreationJobConfigTest extends MediumBatchTest {
         StudyType studyType = studyTypeRepository.findAll().stream().filter(s -> s.getName().equals("PR")).findFirst().orElseThrow();
         DeveloperType beType = developerTypeRepository.save(DeveloperType.builder().name("Backend").build());
         DeveloperType feType = developerTypeRepository.save(DeveloperType.builder().name("Frontend").build());
-        Study backendStudy = Study.builder().studyType(studyType).developerType(beType).build();
-        Study frontendStudy = Study.builder().studyType(studyType).developerType(feType).build();
+        Study backendStudy = buildStudy(studyType, beType);
+        Study frontendStudy = buildStudy(studyType, feType);
         studyRepository.saveAll(List.of(backendStudy, frontendStudy));
 
         String backendResponse = """

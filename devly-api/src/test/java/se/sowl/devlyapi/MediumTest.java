@@ -152,11 +152,11 @@ public abstract class MediumTest {
     }
 
     // TODO: study detail factory
-    protected static List<Word> getBackendWordList(Long studyId) {
+    protected static List<Word> getBackendWordList(Study study) {
         Word word = Word.builder()
             .word("implementation")
             .pronunciation("/ˌɪmplɪmenˈteɪʃən/")
-            .studyId(studyId)
+            .study(study)
             .meaning("구현, 실행")
             .example("{\"source\":\"React Documentation\",\"text\":\"The implementation details of React components should be hidden from their consumers.\",\"translation\":\"React 컴포넌트의 구현 세부사항은 해당 컴포넌트를 사용하는 쪽으로부터 숨겨져야 합니다.\"}")
             .quiz("{\"text\":\"\",\"distractors\":[\"Imitation\",\"Implication\",\"Realization\",\"Deployment\"]}")
@@ -164,7 +164,7 @@ public abstract class MediumTest {
         Word word2 = Word.builder()
             .word("polymorphism")
             .pronunciation("/ˌpɒlɪˈmɔːfɪzəm/")
-            .studyId(studyId)
+            .study(study)
             .meaning("다형성")
             .example("{\"source\":\"Java Documentation\",\"text\":\"Polymorphism allows you to define one interface and have multiple implementations.\",\"translation\":\"다형성을 통해 하나의 인터페이스를 정의하고 여러 구현을 가질 수 있습니다.\"}")
             .quiz("{\"text\":\"\",\"distractors\":[\"Inheritance\",\"Encapsulation\",\"Abstraction\",\"Interface\"]}")
@@ -172,7 +172,7 @@ public abstract class MediumTest {
         Word word3 = Word.builder()
             .word("middleware")
             .pronunciation("/ˈmɪdəlweə/")
-            .studyId(studyId)
+            .study(study)
             .meaning("미들웨어")
             .example("{\"source\":\"Express Documentation\",\"text\":\"Middleware functions are functions that have access to the request object, the response object, and the next function in the application's request-response cycle.\",\"translation\":\"미들웨어 함수는 요청 객체, 응답 객체, 그리고 애플리케이션의 요청-응답 주기에서 다음 함수에 접근할 수 있는 함수입니다.\"}")
             .quiz("{\"text\":\"\",\"distractors\":[\"Framework\",\"Library\",\"Runtime\",\"Protocol\"]}")
@@ -180,7 +180,7 @@ public abstract class MediumTest {
         Word word4 = Word.builder()
             .word("middleware")
             .pronunciation("/ˈmɪdəlweə/")
-            .studyId(studyId)
+            .study(study)
             .meaning("미들웨어2")
             .example("{\"source\":\"Express Documentation\",\"text\":\"Middleware functions are functions that have access to the request object, the response object, and the next function in the application's request-response cycle.\",\"translation\":\"미들웨어 함수는 요청 객체, 응답 객체, 그리고 애플리케이션의 요청-응답 주기에서 다음 함수에 접근할 수 있는 함수입니다.\"}")
             .quiz("{\"text\":\"\",\"distractors\":[\"Framework\",\"Library\",\"Runtime\",\"Protocol\"]}")
@@ -188,7 +188,7 @@ public abstract class MediumTest {
         Word word5 = Word.builder()
             .word("middleware")
             .pronunciation("/ˈmɪdəlweə/")
-            .studyId(studyId)
+            .study(study)
             .meaning("미들웨어3")
             .example("{\"source\":\"Express Documentation\",\"text\":\"Middleware functions are functions that have access to the request object, the response object, and the next function in the application's request-response cycle.\",\"translation\":\"미들웨어 함수는 요청 객체, 응답 객체, 그리고 애플리케이션의 요청-응답 주기에서 다음 함수에 접근할 수 있는 함수입니다.\"}")
             .quiz("{\"text\":\"\",\"distractors\":[\"Framework\",\"Library\",\"Runtime\",\"Protocol\"]}")

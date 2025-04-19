@@ -38,9 +38,9 @@ class UserStudyServiceTest extends MediumTest {
         List<StudyType> studyTypes = studyTypeRepository.saveAll(getStudyTypes());
         StudyType wordTypeId = studyTypes.stream().filter(studyType -> studyType.getName().equals("word")).findFirst().orElseThrow();
         Study study = studyRepository.save(buildStudy(wordTypeId, backendDeveloperType));
-        wordRepository.saveAll(getBackendWordList(study.getId()));
-        wordReviewService.createReview(study.getId(), user.getId(), List.of(1L, 2L, 3L, 4L), List.of(5L)); // 리뷰 4개 정답 1개 오답
+        wordRepository.saveAll(getBackendWordList(study));
         userStudyRepository.save(UserStudy.builder().user(user).study(study).scheduledAt(LocalDateTime.now()).build());
+        wordReviewService.createReview(study.getId(), user.getId(), List.of(1L, 2L, 3L, 4L), List.of(5L)); // 리뷰 4개 정답 1개 오답
 
         // else type studies
         for (int i = 1; i <= 3; i++) {

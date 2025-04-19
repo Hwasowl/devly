@@ -3,15 +3,16 @@ package se.sowl.devlybatch.job.pr.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import se.sowl.devlybatch.common.JsonExtractor;
-import se.sowl.devlyexternal.common.ParserArguments;
-import se.sowl.devlyexternal.common.gpt.GptEntityParser;
-import se.sowl.devlyexternal.common.gpt.GptRequestFactory;
-import se.sowl.devlyexternal.common.gpt.GptResponseValidator;
 import se.sowl.devlybatch.job.pr.dto.PrWithRelations;
 import se.sowl.devlydomain.pr.domain.Pr;
 import se.sowl.devlydomain.pr.domain.PrChangedFile;
 import se.sowl.devlydomain.pr.domain.PrComment;
 import se.sowl.devlydomain.pr.domain.PrLabel;
+import se.sowl.devlydomain.study.repository.StudyRepository;
+import se.sowl.devlyexternal.common.ParserArguments;
+import se.sowl.devlyexternal.common.gpt.GptEntityParser;
+import se.sowl.devlyexternal.common.gpt.GptRequestFactory;
+import se.sowl.devlyexternal.common.gpt.GptResponseValidator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,14 +22,17 @@ import java.util.Map;
 @Component
 public class PrEntityParser extends GptEntityParser<PrWithRelations> {
     private final JsonExtractor jsonExtractor;
+    private final StudyRepository studyRepository;
 
     public PrEntityParser(
         JsonExtractor jsonExtractor,
         GptRequestFactory requestFactory,
-        GptResponseValidator responseValidator
+        GptResponseValidator responseValidator,
+        StudyRepository studyRepository
     ) {
-        super(requestFactory, responseValidator);
+        super(requestFactory, responseValidator, studyRepository);
         this.jsonExtractor = jsonExtractor;
+        this.studyRepository = studyRepository;
     }
 
     @Override
