@@ -1,6 +1,5 @@
 package se.sowl.devlyapi.pr.service;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -9,43 +8,70 @@ import se.sowl.devlyapi.MediumTest;
 import se.sowl.devlyapi.pr.dto.PrResponse;
 import se.sowl.devlydomain.developer.domain.DeveloperType;
 import se.sowl.devlydomain.pr.domain.Pr;
+import se.sowl.devlydomain.pr.domain.PrLabel;
 import se.sowl.devlydomain.study.domain.Study;
 import se.sowl.devlydomain.study.domain.StudyType;
 import se.sowl.devlydomain.user.domain.User;
 import se.sowl.devlydomain.user.domain.UserStudy;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 class PrServiceTest extends MediumTest {
 
-    @AfterEach
-    void tearDown() {
-        prLabelRepository.deleteAllInBatch();
-        prCommentRepository.deleteAllInBatch();
-        prChangedFileRepository.deleteAllInBatch();
-        prRepository.deleteAllInBatch();
-        userStudyRepository.deleteAllInBatch();
-        studyRepository.deleteAllInBatch();
-        userRepository.deleteAllInBatch();
-    }
-
     @Nested
     class GetPr {
 
         @Test
         @DisplayName("특정 스터디의 PR을 조회할 수 있다.")
-        void get() {
+        void shouldGetPrForStudy() {
             // given
-            DeveloperType developerType = developerTypeRepository.save(new DeveloperType("Backend Developer"));
-            User user = userRepository.save(createUser(1L, developerType, "박정수", "솔", "hwasowl598@gmail.com", "google"));
-            StudyType studyType = studyTypeRepository.save(new StudyType("Word", 100L));
-            Study study = studyRepository.save(buildStudy(studyType, developerType));
-            userStudyRepository.save(UserStudy.builder().user(user).study(study).scheduledAt(LocalDateTime.now()).build());
-            Pr pr = prRepository.save(buildPr(study));
-            prLabelRepository.saveAll(buildPrLabels(pr));
+            List<DeveloperType> developerTypes = createAllDeveloperTypes();
+            DeveloperType developerType = developerTypes.stream()
+                .filter(type -> type.getName().equals("Backend Developer"))
+                .findFirst()
+                .orElseThrow();
+
+            User user = userRepository.save(User.builder()
+                .id(1L)
+                .developerType(developerType)
+                .name("박정수")
+                .nickname("솔")
+                .email("hwasowl598@gmail.com")
+                .provider("google")
+                .build());
+
+            List<StudyType> studyTypes = studyTypeRepository.saveAll(getStudyTypes());
+            StudyType wordStudyType = studyTypes.stream()
+                .filter(type -> type.getName().equals("word"))
+                .findFirst()
+                .orElseThrow();
+
+            Study study = studyRepository.save(Study.builder()
+                .studyType(wordStudyType)
+                .developerType(developerType)
+                .build());
+
+            userStudyRepository.save(UserStudy.builder()
+                .user(user)
+                .study(study)
+                .scheduledAt(LocalDateTime.now())
+                .build());
+
+            Pr pr = prRepository.save(Pr.builder()
+                .study(study)
+                .title("싱글톤 패턴 구현")
+                .description("Thread-safe한 싱글톤 패턴으로 개선")
+                .build());
+
+            prLabelRepository.saveAll(List.of(
+                PrLabel.builder().pr(pr).label("backend").build(),
+                PrLabel.builder().pr(pr).label("feature").build(),
+                PrLabel.builder().pr(pr).label("thread").build()
+            ));
 
             // when
             PrResponse prResponse = prService.getPrResponse(user.getId(), study.getId());
@@ -63,14 +89,45 @@ class PrServiceTest extends MediumTest {
 
         @Test
         @DisplayName("특정 스터디의 PR을 완료할 수 있다.")
-        void complete() {
+        void shouldCompletePr() {
             // given
-            DeveloperType developerType = developerTypeRepository.save(new DeveloperType("Backend Developer"));
-            User user = userRepository.save(createUser(1L, developerType, "박정수", "솔", "hwasowl598@gmail.com", "google"));
-            StudyType studyType = studyTypeRepository.save(new StudyType("PR", 100L));
-            Study study = studyRepository.save(buildStudy(studyType, developerType));
-            userStudyRepository.save(UserStudy.builder().user(user).study(study).scheduledAt(LocalDateTime.now()).build());
-            Pr pr = prRepository.save(buildPr(study));
+            List<DeveloperType> developerTypes = createAllDeveloperTypes();
+            DeveloperType developerType = developerTypes.stream()
+                .filter(type -> type.getName().equals("Backend Developer"))
+                .findFirst()
+                .orElseThrow();
+
+            User user = userRepository.save(User.builder()
+                .id(1L)
+                .developerType(developerType)
+                .name("박정수")
+                .nickname("솔")
+                .email("hwasowl598@gmail.com")
+                .provider("google")
+                .build());
+
+            List<StudyType> studyTypes = createAllStudyTypes();
+            StudyType prStudyType = studyTypes.stream()
+                .filter(type -> type.getName().equals("pr"))
+                .findFirst()
+                .orElseThrow();
+
+            Study study = studyRepository.save(Study.builder()
+                .studyType(prStudyType)
+                .developerType(developerType)
+                .build());
+
+            userStudyRepository.save(UserStudy.builder()
+                .user(user)
+                .study(study)
+                .scheduledAt(LocalDateTime.now())
+                .build());
+
+            Pr pr = prRepository.save(Pr.builder()
+                .study(study)
+                .title("싱글톤 패턴 구현")
+                .description("Thread-safe한 싱글톤 패턴으로 개선")
+                .build());
 
             // when
             prService.complete(user.getId(), pr.getId(), study.getId());
