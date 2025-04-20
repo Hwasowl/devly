@@ -31,9 +31,9 @@ public class PrComment extends BaseTimeEntity {
     private List<PrReview> reviews = new ArrayList<>();
 
     @Builder
-    public PrComment(Long sequence, String content, Pr pr) {
+    public PrComment(Pr pr, Long sequence, String content) {
+        this.pr = pr;
         this.sequence = sequence;
         this.content = content;
-        this.pr = pr;
     }
 }

@@ -148,8 +148,8 @@ class PrControllerTest {
     void getCommentsTest() throws Exception {
         // given
         List<PrComment> comments = List.of(
-            new PrComment(0L, "이 부분은 어떻게 구현하면 좋을까요?", mock(Pr.class)),
-            new PrComment(1L, "사용자가 슬라이더를 원하는 이미지로 넘길 수 있는 기능에 대한 의견을 여쭤보고 싶습니다.", mock(Pr.class))
+            new PrComment(mock(Pr.class), 0L, "이 부분은 어떻게 구현하면 좋을까요?"),
+            new PrComment(mock(Pr.class), 1L, "사용자가 슬라이더를 원하는 이미지로 넘길 수 있는 기능에 대한 의견을 여쭤보고 싶습니다.")
         );
         PrCommentsResponse response = PrCommentsResponse.from(comments);
         when(prCommentService.getCommentsResponse(anyLong())).thenReturn(response);
