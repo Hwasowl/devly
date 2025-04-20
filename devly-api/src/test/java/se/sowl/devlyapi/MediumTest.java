@@ -1,6 +1,7 @@
 package se.sowl.devlyapi;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.AfterEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -15,27 +16,31 @@ import se.sowl.devlyapi.pr.service.PrReviewService;
 import se.sowl.devlyapi.pr.service.PrService;
 import se.sowl.devlyapi.study.service.StudyService;
 import se.sowl.devlyapi.study.service.UserStudyService;
+import se.sowl.devlyapi.word.exception.NotAssignmentWordStudyException;
 import se.sowl.devlyapi.word.service.WordReviewService;
 import se.sowl.devlyapi.word.service.WordService;
 import se.sowl.devlydomain.developer.domain.DeveloperType;
 import se.sowl.devlydomain.developer.repository.DeveloperTypeRepository;
 import se.sowl.devlydomain.pr.domain.Pr;
-import se.sowl.devlydomain.pr.domain.PrChangedFile;
 import se.sowl.devlydomain.pr.domain.PrComment;
-import se.sowl.devlydomain.pr.domain.PrLabel;
 import se.sowl.devlydomain.pr.repository.*;
 import se.sowl.devlydomain.study.domain.Study;
 import se.sowl.devlydomain.study.domain.StudyType;
 import se.sowl.devlydomain.study.repository.StudyRepository;
 import se.sowl.devlydomain.study.repository.StudyTypeRepository;
 import se.sowl.devlydomain.user.domain.User;
+import se.sowl.devlydomain.user.domain.UserStudy;
 import se.sowl.devlydomain.user.repository.UserRepository;
 import se.sowl.devlydomain.user.repository.UserStudyRepository;
 import se.sowl.devlydomain.word.domain.Word;
+import se.sowl.devlydomain.word.domain.WordReview;
 import se.sowl.devlydomain.word.repository.WordRepository;
 import se.sowl.devlydomain.word.repository.WordReviewRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -114,7 +119,24 @@ public abstract class MediumTest {
     @MockBean
     protected DefaultOAuth2UserService defaultOAuth2UserService;
 
-    protected User createUser(Long id, DeveloperType developerType, String name, String nickname, String email, String provider) {
+    // 표준 tearDown 메서드
+    @AfterEach
+    protected void baseTearDown() {
+        wordReviewRepository.deleteAllInBatch();
+        prLabelRepository.deleteAllInBatch();
+        prChangedFileRepository.deleteAllInBatch();
+        prReviewRepository.deleteAllInBatch();
+        prCommentRepository.deleteAllInBatch();
+        prRepository.deleteAllInBatch();
+        userStudyRepository.deleteAllInBatch();
+        wordRepository.deleteAllInBatch();
+        studyRepository.deleteAllInBatch();
+        userRepository.deleteAllInBatch();
+        developerTypeRepository.deleteAllInBatch();
+        studyTypeRepository.deleteAllInBatch();
+    }
+
+    protected User createUser(DeveloperType developerType, String name, String nickname, String email, String provider) {
         return User.builder()
             .name(name)
             .developerType(developerType)
@@ -122,12 +144,6 @@ public abstract class MediumTest {
             .email(email)
             .provider(provider)
             .build();
-    }
-
-    protected List<Study> generateStudiesOfStudyTypes(List<StudyType> studyTypes, DeveloperType developerType) {
-        return studyTypes.stream()
-            .map(studyType -> buildStudy(studyType, developerType))
-            .toList();
     }
 
     protected List<StudyType> getStudyTypes() {
@@ -144,6 +160,14 @@ public abstract class MediumTest {
         return List.of(frontEnd, backEnd);
     }
 
+    protected List<DeveloperType> createAllDeveloperTypes() {
+        return developerTypeRepository.saveAll(getDeveloperTypes());
+    }
+
+    protected List<StudyType> createAllStudyTypes() {
+        return studyTypeRepository.saveAll(getStudyTypes());
+    }
+
     protected Study buildStudy(StudyType studyType, DeveloperType developerType) {
         return Study.builder()
             .studyType(studyType)
@@ -151,7 +175,89 @@ public abstract class MediumTest {
             .build();
     }
 
-    // TODO: study detail factory
+    protected Pr buildPr(Study study) {
+        return Pr.builder()
+            .title("싱글톤 패턴 구현")
+            .description("Thread-safe한 싱글톤 패턴으로 개선")
+            .study(study)
+            .build();
+    }
+
+    protected List<PrComment> buildPrComments(Pr pr) {
+        return List.of(
+            PrComment.builder()
+                .pr(pr)
+                .sequence(1L)
+                .content("커밋 로그와 변경된 파일을 확인해 어떤 부분을 반영하고 개선한 PR인지 설명해주세요!")
+                .build(),
+            PrComment.builder()
+                .pr(pr)
+                .sequence(2L)
+                .content("왜 구조가 변경되었는지 상세하게 설명해주세요.")
+                .build()
+        );
+    }
+
+    protected DeveloperType createBackendDeveloperType() {
+        return developerTypeRepository.save(new DeveloperType("Backend Developer"));
+    }
+
+    protected StudyType createWordStudyType() {
+        return studyTypeRepository.save(new StudyType("word", 100L));
+    }
+
+    protected User createTestUser(DeveloperType developerType) {
+        return createTestUser(null, developerType, "테스트유저", "닉네임", "test@example.com", "google");
+    }
+
+    protected User createTestUser(Long id, DeveloperType developerType, String name, String nickname, String email, String provider) {
+        return userRepository.save(User.builder()
+            .id(id)
+            .developerType(developerType)
+            .name(name)
+            .nickname(nickname)
+            .email(email)
+            .provider(provider)
+            .build());
+    }
+
+    protected Study createStudy(StudyType studyType, DeveloperType developerType) {
+        return studyRepository.save(Study.builder()
+            .studyType(studyType)
+            .developerType(developerType)
+            .build());
+    }
+
+    protected UserStudy assignUserToStudy(User user, Study study) {
+        return userStudyRepository.save(
+            UserStudy.builder()
+                .user(user)
+                .study(study)
+                .scheduledAt(LocalDateTime.now())
+                .build()
+        );
+    }
+
+    protected List<Word> createBackendWords(Study study) {
+        return wordRepository.saveAll(getBackendWordList(study));
+    }
+
+    protected void assertWordReviews(List<WordReview> reviews, List<Long> correctIds) {
+        reviews.forEach(review -> {
+            if (correctIds.contains(review.getWord().getId())) {
+                assertThat(review.isCorrect()).isTrue();
+            } else {
+                assertThat(review.isCorrect()).isFalse();
+            }
+        });
+    }
+
+    protected void assertStudyCompleted(User user, Study study) {
+        UserStudy userStudy = userStudyRepository.findByUserIdAndStudyId(user.getId(), study.getId())
+            .orElseThrow(NotAssignmentWordStudyException::new);
+        assertThat(userStudy.isCompleted()).isTrue();
+    }
+
     protected static List<Word> getBackendWordList(Study study) {
         Word word = Word.builder()
             .word("implementation")
@@ -194,53 +300,5 @@ public abstract class MediumTest {
             .quiz("{\"text\":\"\",\"distractors\":[\"Framework\",\"Library\",\"Runtime\",\"Protocol\"]}")
             .build();
         return List.of(word, word2, word3, word4, word5);
-    }
-
-    protected Pr buildPr(Study study) {
-        return Pr.builder()
-            .title("싱글톤 패턴 구현")
-            .description("Thread-safe한 싱글톤 패턴으로 개선")
-            .study(study)
-            .build();
-    }
-
-    protected List<PrLabel> buildPrLabels(Pr pr) {
-        return List.of(
-            new PrLabel(pr, "backend"),
-            new PrLabel(pr, "feature"),
-            new PrLabel(pr, "thread")
-        );
-    }
-
-    protected List<PrChangedFile> buildPrChangedFiles(Pr pr) {
-        return List.of(
-            PrChangedFile.builder()
-                .pr(pr)
-                .fileName("src/main/java/com/example/SingletonService.java")
-                .language("Java")
-                .content("public class SingletonService {\n\n    private static volatile SingletonService instance;\n\n    private SingletonService() {\n        // private constructor\n    }\n\n    public static SingletonService getInstance() {\n        if (instance == null) {\n            synchronized (SingletonService.class) {\n                if (instance == null) {\n                    instance = new SingletonService();\n                }\n            }\n        }\n        return instance;\n    }\n}")
-                .build(),
-            PrChangedFile.builder()
-                .pr(pr)
-                .fileName("src/test/java/com/example/SingletonServiceTest.java")
-                .language("Java")
-                .content("import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\npublic class SingletonServiceTest {\n\n    @Test\n    void testSingletonInstance() {\n        SingletonService instance1 = SingletonService.getInstance();\n        SingletonService instance2 = SingletonService.getInstance();\n        assertSame(instance1, instance2);\n    }\n}")
-                .build()
-        );
-    }
-
-    protected List<PrComment> buildPrComments(Pr pr) {
-        return List.of(
-            PrComment.builder()
-                .pr(pr)
-                .sequence(1L)
-                .content("커밋 로그와 변경된 파일을 확인해 어떤 부분을 반영하고 개선한 PR인지 설명해주세요!")
-                .build(),
-            PrComment.builder()
-                .pr(pr)
-                .sequence(2L)
-                .content("왜 구조가 변경되었는지 상세하게 설명해주세요.")
-                .build()
-        );
     }
 }

@@ -1,6 +1,5 @@
 package se.sowl.devlyapi.pr.service;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -44,36 +43,65 @@ class PrReviewServiceTest extends MediumTest {
     @MockBean
     private PrReviewEntityParser prReviewEntityParser;
 
-    @AfterEach
-    void tearDown() {
-        prLabelRepository.deleteAllInBatch();
-        prChangedFileRepository.deleteAllInBatch();
-        prReviewRepository.deleteAllInBatch();
-        prCommentRepository.deleteAllInBatch();
-        prRepository.deleteAllInBatch();
-        prLabelRepository.deleteAllInBatch();
-        userStudyRepository.deleteAllInBatch();
-        studyRepository.deleteAllInBatch();
-        userRepository.deleteAllInBatch();
-    }
-
     @Nested
     class ReviewPrComment {
 
         @Test
         @DisplayName("PR 코멘트에 대한 사용자 답변을 AI로 리뷰할 수 있다")
-        void reviewPrComment_Success() {
+        void shouldReviewPrCommentSuccessfully() {
             // given
-            DeveloperType developerType = developerTypeRepository.save(new DeveloperType("Backend Developer"));
-            User user = userRepository.save(createUser(1L, developerType, "테스트", "닉네임", "test@email.com", "github"));
-            StudyType studyType = studyTypeRepository.save(new StudyType("PR", 100L));
-            Study study = studyRepository.save(buildStudy(studyType, developerType));
-            Pr pr = prRepository.save(buildPr(study));
-            PrComment prComment = prCommentRepository.save(buildPrComments(pr).getFirst());
+            List<DeveloperType> developerTypes = createAllDeveloperTypes();
+            DeveloperType developerType = developerTypes.stream()
+                .filter(type -> type.getName().equals("Backend Developer"))
+                .findFirst()
+                .orElseThrow();
+
+            User user = userRepository.save(User.builder()
+                .id(1L)
+                .developerType(developerType)
+                .name("테스트")
+                .nickname("닉네임")
+                .email("test@email.com")
+                .provider("github")
+                .build());
+
+            List<StudyType> studyTypes = createAllStudyTypes();
+            StudyType prStudyType = studyTypes.stream()
+                .filter(type -> type.getName().equals("pr"))
+                .findFirst()
+                .orElseThrow();
+
+            Study study = studyRepository.save(Study.builder()
+                .studyType(prStudyType)
+                .developerType(developerType)
+                .build());
+
+            Pr pr = prRepository.save(Pr.builder()
+                .study(study)
+                .title("싱글톤 패턴 구현")
+                .description("Thread-safe한 싱글톤 패턴으로 개선")
+                .build());
+
+            PrComment prComment = prCommentRepository.save(PrComment.builder()
+                .pr(pr)
+                .content("커밋 로그와 변경된 파일을 확인해 어떤 부분을 반영하고 개선한 PR인지 설명해주세요!")
+                .build());
 
             String answer = "테스트 답변입니다.";
 
-            mockReviewCreation();
+            GPTResponse gptResponse = mock(GPTResponse.class);
+            when(gptResponse.getContent()).thenReturn("AI 응답 내용");
+
+            PrReview prReview = PrReview.builder()
+                .review("AI 리뷰 내용")
+                .build();
+
+            GPTRequest mockRequest = mock(GPTRequest.class);
+
+            when(gptClient.generate(any())).thenReturn(gptResponse);
+            doNothing().when(gptPromptManager).addRolePrompt(anyLong(), anyLong(), any(StringBuilder.class));
+            when(prReviewEntityParser.createGPTRequest(anyString())).thenReturn(mockRequest);
+            when(prReviewEntityParser.parseEntity(any(), anyString())).thenReturn(prReview);
 
             // when
             PrCommentReviewResponse response = prReviewService.reviewPrComment(
@@ -88,14 +116,44 @@ class PrReviewServiceTest extends MediumTest {
 
         @Test
         @DisplayName("빈 답변으로 리뷰를 요청하면 예외가 발생한다")
-        void reviewPrComment_EmptyAnswer() {
+        void shouldThrowExceptionForEmptyAnswer() {
             // given
-            DeveloperType developerType = developerTypeRepository.save(new DeveloperType("Backend Developer"));
-            User user = userRepository.save(createUser(1L, developerType, "테스트", "닉네임", "test@email.com", "github"));
-            StudyType studyType = studyTypeRepository.save(new StudyType("PR", 100L));
-            Study study = studyRepository.save(buildStudy(studyType, developerType));
-            Pr pr = prRepository.save(buildPr(study));
-            PrComment prComment = prCommentRepository.save(buildPrComments(pr).getFirst());
+            List<DeveloperType> developerTypes = createAllDeveloperTypes();
+            DeveloperType developerType = developerTypes.stream()
+                .filter(type -> type.getName().equals("Backend Developer"))
+                .findFirst()
+                .orElseThrow();
+
+            User user = userRepository.save(User.builder()
+                .id(1L)
+                .developerType(developerType)
+                .name("테스트")
+                .nickname("닉네임")
+                .email("test@email.com")
+                .provider("github")
+                .build());
+
+            List<StudyType> studyTypes = createAllStudyTypes();
+            StudyType prStudyType = studyTypes.stream()
+                .filter(type -> type.getName().equals("pr"))
+                .findFirst()
+                .orElseThrow();
+
+            Study study = studyRepository.save(Study.builder()
+                .studyType(prStudyType)
+                .developerType(developerType)
+                .build());
+
+            Pr pr = prRepository.save(Pr.builder()
+                .study(study)
+                .title("싱글톤 패턴 구현")
+                .description("Thread-safe한 싱글톤 패턴으로 개선")
+                .build());
+
+            PrComment prComment = prCommentRepository.save(PrComment.builder()
+                .pr(pr)
+                .content("커밋 로그와 변경된 파일을 확인해 어떤 부분을 반영하고 개선한 PR인지 설명해주세요!")
+                .build());
 
             String emptyAnswer = "";
 
@@ -108,14 +166,45 @@ class PrReviewServiceTest extends MediumTest {
 
         @Test
         @DisplayName("이미 리뷰된 경우 예외가 발생한다.")
-        void already_reviewed() {
+        void shouldThrowExceptionIfAlreadyReviewed() {
             // given
-            DeveloperType developerType = developerTypeRepository.save(new DeveloperType("Backend Developer"));
-            User user = userRepository.save(createUser(1L, developerType, "테스트", "닉네임", "test@email.com", "github"));
-            StudyType studyType = studyTypeRepository.save(new StudyType("PR", 100L));
-            Study study = studyRepository.save(buildStudy(studyType, developerType));
-            Pr pr = prRepository.save(buildPr(study));
-            PrComment prComment = prCommentRepository.save(buildPrComments(pr).getFirst());
+            List<DeveloperType> developerTypes = createAllDeveloperTypes();
+            DeveloperType developerType = developerTypes.stream()
+                .filter(type -> type.getName().equals("Backend Developer"))
+                .findFirst()
+                .orElseThrow();
+
+            User user = userRepository.save(User.builder()
+                .id(1L)
+                .developerType(developerType)
+                .name("테스트")
+                .nickname("닉네임")
+                .email("test@email.com")
+                .provider("github")
+                .build());
+
+            List<StudyType> studyTypes = createAllStudyTypes();
+            StudyType prStudyType = studyTypes.stream()
+                .filter(type -> type.getName().equals("pr"))
+                .findFirst()
+                .orElseThrow();
+
+            Study study = studyRepository.save(Study.builder()
+                .studyType(prStudyType)
+                .developerType(developerType)
+                .build());
+
+            Pr pr = prRepository.save(Pr.builder()
+                .study(study)
+                .title("싱글톤 패턴 구현")
+                .description("Thread-safe한 싱글톤 패턴으로 개선")
+                .build());
+
+            PrComment prComment = prCommentRepository.save(PrComment.builder()
+                .pr(pr)
+                .content("커밋 로그와 변경된 파일을 확인해 어떤 부분을 반영하고 개선한 PR인지 설명해주세요!")
+                .build());
+
             PrReview prReview = PrReview.builder()
                 .user(user)
                 .comment(prComment)
@@ -134,12 +223,34 @@ class PrReviewServiceTest extends MediumTest {
 
         @Test
         @DisplayName("존재하지 않는 PR 코멘트로 리뷰를 요청하면 예외가 발생한다")
-        void reviewPrComment_NonExistentComment() {
+        void shouldThrowExceptionForNonExistentComment() {
             // given
-            DeveloperType developerType = developerTypeRepository.save(new DeveloperType("Backend Developer"));
-            User user = userRepository.save(createUser(1L, developerType, "테스트", "닉네임", "test@email.com", "github"));
-            StudyType studyType = studyTypeRepository.save(new StudyType("PR", 100L));
-            Study study = studyRepository.save(buildStudy(studyType, developerType));
+            List<DeveloperType> developerTypes = createAllDeveloperTypes();
+            DeveloperType developerType = developerTypes.stream()
+                .filter(type -> type.getName().equals("Backend Developer"))
+                .findFirst()
+                .orElseThrow();
+
+            User user = userRepository.save(User.builder()
+                .id(1L)
+                .developerType(developerType)
+                .name("테스트")
+                .nickname("닉네임")
+                .email("test@email.com")
+                .provider("github")
+                .build());
+
+            List<StudyType> studyTypes = createAllStudyTypes();
+            StudyType prStudyType = studyTypes.stream()
+                .filter(type -> type.getName().equals("pr"))
+                .findFirst()
+                .orElseThrow();
+
+            Study study = studyRepository.save(Study.builder()
+                .studyType(prStudyType)
+                .developerType(developerType)
+                .build());
+
             Long nonExistentCommentId = 999L;
             String answer = "테스트 답변입니다.";
 
@@ -151,14 +262,44 @@ class PrReviewServiceTest extends MediumTest {
 
         @Test
         @DisplayName("존재하지 않는 스터디로 리뷰를 요청하면 예외가 발생한다")
-        void reviewPrComment_NonExistentStudy() {
+        void shouldThrowExceptionForNonExistentStudy() {
             // given
-            DeveloperType developerType = developerTypeRepository.save(new DeveloperType("Backend Developer"));
-            User user = userRepository.save(createUser(1L, developerType, "테스트", "닉네임", "test@email.com", "github"));
-            StudyType studyType = studyTypeRepository.save(new StudyType("PR", 100L));
-            Study study = studyRepository.save(buildStudy(studyType, developerType));
-            Pr pr = prRepository.save(buildPr(study));
-            PrComment prComment = prCommentRepository.save(buildPrComments(pr).getFirst());
+            List<DeveloperType> developerTypes = createAllDeveloperTypes();
+            DeveloperType developerType = developerTypes.stream()
+                .filter(type -> type.getName().equals("Backend Developer"))
+                .findFirst()
+                .orElseThrow();
+
+            User user = userRepository.save(User.builder()
+                .id(1L)
+                .developerType(developerType)
+                .name("테스트")
+                .nickname("닉네임")
+                .email("test@email.com")
+                .provider("github")
+                .build());
+
+            List<StudyType> studyTypes = createAllStudyTypes();
+            StudyType prStudyType = studyTypes.stream()
+                .filter(type -> type.getName().equals("pr"))
+                .findFirst()
+                .orElseThrow();
+
+            Study study = studyRepository.save(Study.builder()
+                .studyType(prStudyType)
+                .developerType(developerType)
+                .build());
+
+            Pr pr = prRepository.save(Pr.builder()
+                .study(study)
+                .title("싱글톤 패턴 구현")
+                .description("Thread-safe한 싱글톤 패턴으로 개선")
+                .build());
+
+            PrComment prComment = prCommentRepository.save(PrComment.builder()
+                .pr(pr)
+                .content("커밋 로그와 변경된 파일을 확인해 어떤 부분을 반영하고 개선한 PR인지 설명해주세요!")
+                .build());
 
             Long nonExistentStudyId = 999L;
             String answer = "테스트 답변입니다.";
@@ -167,22 +308,6 @@ class PrReviewServiceTest extends MediumTest {
             assertThatThrownBy(() -> prReviewService.reviewPrComment(
                 user.getId(), prComment.getId(), nonExistentStudyId, answer))
                 .isInstanceOf(StudyNotExistException.class);
-        }
-
-        private void mockReviewCreation() {
-            GPTResponse gptResponse = mock(GPTResponse.class);
-            when(gptResponse.getContent()).thenReturn("AI 응답 내용");
-
-            PrReview prReview = PrReview.builder()
-                .review("AI 리뷰 내용")
-                .build();
-
-            GPTRequest mockRequest = mock(GPTRequest.class);
-
-            when(gptClient.generate(any())).thenReturn(gptResponse);
-            doNothing().when(gptPromptManager).addRolePrompt(anyLong(), anyLong(), any(StringBuilder.class));
-            when(prReviewEntityParser.createGPTRequest(anyString())).thenReturn(mockRequest);
-            when(prReviewEntityParser.parseEntity(any(), anyString())).thenReturn(prReview);
         }
     }
 }

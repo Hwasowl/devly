@@ -36,7 +36,7 @@ class JwtTokenProviderTest extends MediumTest {
     void createAuthenticationWithValidToken() {
         // given
         DeveloperType developerType = developerTypeRepository.save(new DeveloperType("Backend Developer"));
-        User user = userRepository.save(createUser(1L, developerType, "박정수", "솔", "123@naver.com", "google"));
+        User user = userRepository.save(createUser(developerType, "박정수", "솔", "123@naver.com", "google"));
         Map<String, Object> attributes = new HashMap<>();
         attributes.put("email", user.getEmail());
         attributes.put("name", user.getName());
