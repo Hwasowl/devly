@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import se.sowl.devlyapi.pr.dto.review.PrCommentReviewResponse;
 import se.sowl.devlyapi.pr.exception.AlreadyPrReviewedException;
 import se.sowl.devlyapi.study.service.StudyService;
+import se.sowl.devlyapi.user.service.UserService;
 import se.sowl.devlydomain.pr.domain.PrChangedFile;
 import se.sowl.devlydomain.pr.domain.PrComment;
 import se.sowl.devlydomain.pr.domain.PrReview;
@@ -28,6 +29,7 @@ public class PrReviewService {
     private final PrCommentService prCommentService;
     private final PrChangedFilesService prChangedFilesService;
     private final PrReviewRepository prReviewRepository;
+    private final UserService userService;
 
     @Transactional
     public PrCommentReviewResponse reviewPrComment(Long userId, Long prCommentId, Long studyId, String answer) {
@@ -61,7 +63,7 @@ public class PrReviewService {
 
     private void addCodePrompt(Long prCommentId, StringBuilder prompt) {
         PrComment comment = prCommentService.getCommentById(prCommentId);
-        List<PrChangedFile> changedFiles = prChangedFilesService.getChangedFileById(comment.getPrId());
+        List<PrChangedFile> changedFiles = prChangedFilesService.getChangedFileById(comment.getPr().getId());
         changedFiles.stream()
             .map(PrChangedFile::getContent)
             .forEach(code -> prompt.append("코드: ").append(code));
@@ -73,10 +75,7 @@ public class PrReviewService {
     }
 
     private ParserArguments createParameters(Long userId, Long prCommentId, String answer) {
-        return new ParserArguments()
-            .add("userId", userId)
-            .add("prCommentId", prCommentId)
-            .add("answer", answer);
+        return new ParserArguments().add("userId", userId).add("prCommentId", prCommentId).add("answer", answer);
     }
 
     private void validateAnswer(String answer) {

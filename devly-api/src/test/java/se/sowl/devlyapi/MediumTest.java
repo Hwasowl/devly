@@ -196,32 +196,32 @@ public abstract class MediumTest {
         return List.of(word, word2, word3, word4, word5);
     }
 
-    protected Pr buildPr(Long studyId) {
+    protected Pr buildPr(Study study) {
         return Pr.builder()
             .title("싱글톤 패턴 구현")
             .description("Thread-safe한 싱글톤 패턴으로 개선")
-            .studyId(studyId)
+            .study(study)
             .build();
     }
 
-    protected List<PrLabel> buildPrLabels(Long prId) {
+    protected List<PrLabel> buildPrLabels(Pr pr) {
         return List.of(
-            new PrLabel(prId, "backend"),
-            new PrLabel(prId, "feature"),
-            new PrLabel(prId, "thread")
+            new PrLabel(pr, "backend"),
+            new PrLabel(pr, "feature"),
+            new PrLabel(pr, "thread")
         );
     }
 
-    protected List<PrChangedFile> buildPrChangedFiles(Long prId) {
+    protected List<PrChangedFile> buildPrChangedFiles(Pr pr) {
         return List.of(
             PrChangedFile.builder()
-                .prId(prId)
+                .pr(pr)
                 .fileName("src/main/java/com/example/SingletonService.java")
                 .language("Java")
                 .content("public class SingletonService {\n\n    private static volatile SingletonService instance;\n\n    private SingletonService() {\n        // private constructor\n    }\n\n    public static SingletonService getInstance() {\n        if (instance == null) {\n            synchronized (SingletonService.class) {\n                if (instance == null) {\n                    instance = new SingletonService();\n                }\n            }\n        }\n        return instance;\n    }\n}")
                 .build(),
             PrChangedFile.builder()
-                .prId(prId)
+                .pr(pr)
                 .fileName("src/test/java/com/example/SingletonServiceTest.java")
                 .language("Java")
                 .content("import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\npublic class SingletonServiceTest {\n\n    @Test\n    void testSingletonInstance() {\n        SingletonService instance1 = SingletonService.getInstance();\n        SingletonService instance2 = SingletonService.getInstance();\n        assertSame(instance1, instance2);\n    }\n}")
@@ -229,15 +229,15 @@ public abstract class MediumTest {
         );
     }
 
-    protected List<PrComment> buildPrComments(Long prId) {
+    protected List<PrComment> buildPrComments(Pr pr) {
         return List.of(
             PrComment.builder()
-                .prId(prId)
+                .pr(pr)
                 .sequence(1L)
                 .content("커밋 로그와 변경된 파일을 확인해 어떤 부분을 반영하고 개선한 PR인지 설명해주세요!")
                 .build(),
             PrComment.builder()
-                .prId(prId)
+                .pr(pr)
                 .sequence(2L)
                 .content("왜 구조가 변경되었는지 상세하게 설명해주세요.")
                 .build()

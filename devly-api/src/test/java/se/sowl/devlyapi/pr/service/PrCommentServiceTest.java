@@ -8,7 +8,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Profile;
 import se.sowl.devlyapi.MediumTest;
 import se.sowl.devlyapi.pr.dto.comments.PrCommentsResponse;
+import se.sowl.devlydomain.developer.domain.DeveloperType;
 import se.sowl.devlydomain.pr.domain.Pr;
+import se.sowl.devlydomain.study.domain.Study;
+import se.sowl.devlydomain.study.domain.StudyType;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -18,11 +21,14 @@ class PrCommentServiceTest extends MediumTest {
 
     @AfterEach
     void tearDown() {
-        prRepository.deleteAllInBatch();
         prLabelRepository.deleteAllInBatch();
+        prCommentRepository.deleteAllInBatch();
+        prRepository.deleteAllInBatch();
         userStudyRepository.deleteAllInBatch();
         studyRepository.deleteAllInBatch();
         userRepository.deleteAllInBatch();
+        developerTypeRepository.deleteAllInBatch();
+        studyTypeRepository.deleteAllInBatch();
     }
 
     @Nested
@@ -32,8 +38,11 @@ class PrCommentServiceTest extends MediumTest {
         @DisplayName("특정 PR의 코멘트를 조회할 수 있다.")
         void get() {
             // given
-            Pr pr = prRepository.save(buildPr(1L));
-            prCommentRepository.saveAll(buildPrComments(pr.getId()));
+            DeveloperType developerType = developerTypeRepository.saveAll(getDeveloperTypes()).get(0);
+            StudyType studyType = studyTypeRepository.saveAll(getStudyTypes()).get(0);
+            Study study = studyRepository.save(buildStudy(studyType, developerType));
+            Pr pr = prRepository.save(buildPr(study));
+            prCommentRepository.saveAll(buildPrComments(pr));
 
             // when
             PrCommentsResponse commentsResponse = prCommentService.getCommentsResponse(pr.getId());

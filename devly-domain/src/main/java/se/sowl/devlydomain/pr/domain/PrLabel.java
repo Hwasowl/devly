@@ -2,8 +2,10 @@ package se.sowl.devlydomain.pr.domain;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import net.minidev.json.annotate.JsonIgnore;
 import se.sowl.devlydomain.common.BaseTimeEntity;
 
 @Entity
@@ -15,12 +17,16 @@ public class PrLabel extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long prId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "pr_id")
+    @JsonIgnore
+    private Pr pr;
 
     private String label;
 
-    public PrLabel(Long prId, String label) {
-        this.prId = prId;
+    @Builder
+    public PrLabel(Pr pr, String label) {
+        this.pr = pr;
         this.label = label;
     }
 }

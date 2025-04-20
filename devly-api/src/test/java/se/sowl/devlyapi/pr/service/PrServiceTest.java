@@ -23,8 +23,10 @@ class PrServiceTest extends MediumTest {
 
     @AfterEach
     void tearDown() {
-        prRepository.deleteAllInBatch();
         prLabelRepository.deleteAllInBatch();
+        prCommentRepository.deleteAllInBatch();
+        prChangedFileRepository.deleteAllInBatch();
+        prRepository.deleteAllInBatch();
         userStudyRepository.deleteAllInBatch();
         studyRepository.deleteAllInBatch();
         userRepository.deleteAllInBatch();
@@ -42,8 +44,8 @@ class PrServiceTest extends MediumTest {
             StudyType studyType = studyTypeRepository.save(new StudyType("Word", 100L));
             Study study = studyRepository.save(buildStudy(studyType, developerType));
             userStudyRepository.save(UserStudy.builder().user(user).study(study).scheduledAt(LocalDateTime.now()).build());
-            Pr pr = prRepository.save(buildPr(study.getId()));
-            prLabelRepository.saveAll(buildPrLabels(pr.getId()));
+            Pr pr = prRepository.save(buildPr(study));
+            prLabelRepository.saveAll(buildPrLabels(pr));
 
             // when
             PrResponse prResponse = prService.getPrResponse(user.getId(), study.getId());
@@ -68,7 +70,7 @@ class PrServiceTest extends MediumTest {
             StudyType studyType = studyTypeRepository.save(new StudyType("PR", 100L));
             Study study = studyRepository.save(buildStudy(studyType, developerType));
             userStudyRepository.save(UserStudy.builder().user(user).study(study).scheduledAt(LocalDateTime.now()).build());
-            Pr pr = prRepository.save(buildPr(study.getId()));
+            Pr pr = prRepository.save(buildPr(study));
 
             // when
             prService.complete(user.getId(), pr.getId(), study.getId());
