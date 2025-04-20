@@ -62,15 +62,12 @@ class StudyCreationJobConfigTest extends MediumBatchTest {
         assertJobExecutionCompleted(jobExecution);
 
         List<Study> allStudies = studyRepository.findAll();
-        assertThat(allStudies).hasSize(4)
-            .withFailMessage("총 4개의 스터디가 생성되어야 합니다");
+        assertThat(allStudies).hasSize(4);
 
         List<Study> backendStudies = studyRepository.findByDeveloperTypeId(backendDeveloper.getId());
-        assertThat(backendStudies).hasSize(2)
-            .withFailMessage("백엔드 개발자를 위한 스터디는 2개여야 합니다");
+        assertThat(backendStudies).hasSize(2);
 
         List<Study> frontendStudies = studyRepository.findByDeveloperTypeId(frontendDeveloper.getId());
-        assertThat(frontendStudies).hasSize(2)
-            .withFailMessage("프론트엔드 개발자를 위한 스터디는 2개여야 합니다");
+        assertThat(frontendStudies).hasSize(2);
     }
 }

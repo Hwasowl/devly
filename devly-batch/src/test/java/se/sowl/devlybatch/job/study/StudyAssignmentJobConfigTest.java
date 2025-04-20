@@ -106,7 +106,6 @@ class StudyAssignmentJobConfigTest extends MediumBatchTest {
         // then
         assertJobExecutionCompleted(execution);
 
-        // 사용자별 스터디 할당 검증
         for (Long userId : USER_IDS) {
             List<UserStudy> userStudies = userStudyRepository.findAllWithStudyByUserId(userId);
             assertStudyAssignments(userStudies);
@@ -221,11 +220,9 @@ class StudyAssignmentJobConfigTest extends MediumBatchTest {
         Map<Long, List<UserStudy>> studiesByType = userStudies.stream()
             .collect(Collectors.groupingBy(us -> us.getStudy().getStudyType().getId()));
 
-        // 완료된 타입(1-2)에 대한 검증
         for (long typeId = 1; typeId <= 2; typeId++) {
             List<UserStudy> typeStudies = studiesByType.get(typeId);
-            assertThat(typeStudies).hasSize(2)
-                .withFailMessage("타입 %d의 스터디는 2개(완료된 스터디와 새 스터디)여야 합니다", typeId);
+            assertThat(typeStudies).hasSize(2);
 
             UserStudy completedStudy = typeStudies.stream()
                 .filter(UserStudy::isCompleted)
@@ -238,21 +235,16 @@ class StudyAssignmentJobConfigTest extends MediumBatchTest {
                 .orElseThrow(() -> new AssertionError("새로 할당된 스터디가 없습니다"));
 
             assertThat(newStudy.getStudy().getId())
-                .isGreaterThan(completedStudy.getStudy().getId())
-                .withFailMessage("새 스터디의 ID는 완료된 스터디의 ID보다 커야 합니다");
+                .isGreaterThan(completedStudy.getStudy().getId());
 
             assertThat(newStudy.getStudy().getStudyType().getId())
-                .isEqualTo(completedStudy.getStudy().getStudyType().getId())
-                .withFailMessage("새 스터디는 완료된 스터디와 동일한 타입이어야 합니다");
+                .isEqualTo(completedStudy.getStudy().getStudyType().getId());
         }
 
         for (long typeId = 3; typeId <= 4; typeId++) {
             List<UserStudy> typeStudies = studiesByType.get(typeId);
-            assertThat(typeStudies).hasSize(1)
-                .withFailMessage("미완료 타입 %d의 스터디는 1개만 있어야 합니다", typeId);
-
-            assertThat(typeStudies.get(0).isCompleted()).isFalse()
-                .withFailMessage("타입 %d의 스터디는 완료되지 않은 상태여야 합니다", typeId);
+            assertThat(typeStudies).hasSize(1);
+            assertThat(typeStudies.get(0).isCompleted()).isFalse();
         }
     }
 }
