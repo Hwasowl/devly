@@ -46,6 +46,9 @@ class PrReviewServiceTest extends MediumTest {
 
     @AfterEach
     void tearDown() {
+        prLabelRepository.deleteAllInBatch();
+        prChangedFileRepository.deleteAllInBatch();
+        prReviewRepository.deleteAllInBatch();
         prCommentRepository.deleteAllInBatch();
         prRepository.deleteAllInBatch();
         prLabelRepository.deleteAllInBatch();
@@ -65,8 +68,8 @@ class PrReviewServiceTest extends MediumTest {
             User user = userRepository.save(createUser(1L, developerType, "테스트", "닉네임", "test@email.com", "github"));
             StudyType studyType = studyTypeRepository.save(new StudyType("PR", 100L));
             Study study = studyRepository.save(buildStudy(studyType, developerType));
-            Pr pr = prRepository.save(buildPr(study.getId()));
-            PrComment prComment = prCommentRepository.save(buildPrComments(pr.getId()).getFirst());
+            Pr pr = prRepository.save(buildPr(study));
+            PrComment prComment = prCommentRepository.save(buildPrComments(pr).getFirst());
 
             String answer = "테스트 답변입니다.";
 
@@ -91,8 +94,8 @@ class PrReviewServiceTest extends MediumTest {
             User user = userRepository.save(createUser(1L, developerType, "테스트", "닉네임", "test@email.com", "github"));
             StudyType studyType = studyTypeRepository.save(new StudyType("PR", 100L));
             Study study = studyRepository.save(buildStudy(studyType, developerType));
-            Pr pr = prRepository.save(buildPr(study.getId()));
-            PrComment prComment = prCommentRepository.save(buildPrComments(pr.getId()).getFirst());
+            Pr pr = prRepository.save(buildPr(study));
+            PrComment prComment = prCommentRepository.save(buildPrComments(pr).getFirst());
 
             String emptyAnswer = "";
 
@@ -111,11 +114,11 @@ class PrReviewServiceTest extends MediumTest {
             User user = userRepository.save(createUser(1L, developerType, "테스트", "닉네임", "test@email.com", "github"));
             StudyType studyType = studyTypeRepository.save(new StudyType("PR", 100L));
             Study study = studyRepository.save(buildStudy(studyType, developerType));
-            Pr pr = prRepository.save(buildPr(study.getId()));
-            PrComment prComment = prCommentRepository.save(buildPrComments(pr.getId()).getFirst());
+            Pr pr = prRepository.save(buildPr(study));
+            PrComment prComment = prCommentRepository.save(buildPrComments(pr).getFirst());
             PrReview prReview = PrReview.builder()
-                .userId(user.getId())
-                .prCommentId(prComment.getId())
+                .user(user)
+                .comment(prComment)
                 .answer("answer")
                 .review("review")
                 .build();
@@ -154,8 +157,8 @@ class PrReviewServiceTest extends MediumTest {
             User user = userRepository.save(createUser(1L, developerType, "테스트", "닉네임", "test@email.com", "github"));
             StudyType studyType = studyTypeRepository.save(new StudyType("PR", 100L));
             Study study = studyRepository.save(buildStudy(studyType, developerType));
-            Pr pr = prRepository.save(buildPr(study.getId()));
-            PrComment prComment = prCommentRepository.save(buildPrComments(pr.getId()).getFirst());
+            Pr pr = prRepository.save(buildPr(study));
+            PrComment prComment = prCommentRepository.save(buildPrComments(pr).getFirst());
 
             Long nonExistentStudyId = 999L;
             String answer = "테스트 답변입니다.";

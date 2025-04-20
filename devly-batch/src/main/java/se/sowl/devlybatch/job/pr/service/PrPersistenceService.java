@@ -29,54 +29,53 @@ public class PrPersistenceService {
     @Transactional
     public void savePrWithRelations(PrWithRelations prWithRelations) {
         Pr savedPr = prRepository.save(prWithRelations.getPr());
-        Long prId = savedPr.getId();
-        saveChangedFiles(prWithRelations, prId);
-        saveLabels(prWithRelations, prId);
-        saveComments(prWithRelations, prId);
+        saveChangedFiles(prWithRelations, savedPr);
+        saveLabels(prWithRelations, savedPr);
+        saveComments(prWithRelations, savedPr);
     }
 
-    private void saveChangedFiles(PrWithRelations prWithRelations, Long prId) {
+    private void saveChangedFiles(PrWithRelations prWithRelations, Pr pr) {
         if (!prWithRelations.getChangedFiles().isEmpty()) {
             List<PrChangedFile> changedFilesWithPrId = prWithRelations.getChangedFiles().stream()
-                .map(file -> createPrChangedFileWithPrId(file, prId))
+                .map(file -> createPrChangedFileWithPrId(file, pr))
                 .collect(Collectors.toList());
             prChangedFileRepository.saveAll(changedFilesWithPrId);
         }
     }
 
-    private void saveLabels(PrWithRelations prWithRelations, Long prId) {
+    private void saveLabels(PrWithRelations prWithRelations, Pr pr) {
         if (!prWithRelations.getLabels().isEmpty()) {
             List<PrLabel> labelsWithPrId = prWithRelations.getLabels().stream()
-                .map(label -> createPrLabelWithPrId(label, prId))
+                .map(label -> createPrLabel(label, pr))
                 .collect(Collectors.toList());
             prLabelRepository.saveAll(labelsWithPrId);
         }
     }
 
 
-    private void saveComments(PrWithRelations prWithRelations, Long prId) {
+    private void saveComments(PrWithRelations prWithRelations, Pr pr) {
         if (!prWithRelations.getComments().isEmpty()) {
             List<PrComment> commentsWithPrId = prWithRelations.getComments().stream()
-                .map(comment -> createPrCommentWithPrId(comment, prId))
+                .map(comment -> createPrComment(comment, pr))
                 .collect(Collectors.toList());
             prCommentRepository.saveAll(commentsWithPrId);
         }
     }
 
-    private PrChangedFile createPrChangedFileWithPrId(PrChangedFile original, Long prId) {
+    private PrChangedFile createPrChangedFileWithPrId(PrChangedFile original, Pr pr) {
         return PrChangedFile.builder()
-            .prId(prId)
+            .pr(pr)
             .fileName(original.getFileName())
             .language(original.getLanguage())
             .content(original.getContent())
             .build();
     }
 
-    private PrLabel createPrLabelWithPrId(PrLabel original, Long prId) {
-        return new PrLabel(prId, original.getLabel());
+    private PrLabel createPrLabel(PrLabel original, Pr pr) {
+        return new PrLabel(pr, original.getLabel());
     }
 
-    private PrComment createPrCommentWithPrId(PrComment original, Long prId) {
-        return new PrComment(prId, original.getSequence(), original.getContent());
+    private PrComment createPrComment(PrComment original, Pr pr) {
+        return new PrComment(pr, original.getSequence(), original.getContent());
     }
 }

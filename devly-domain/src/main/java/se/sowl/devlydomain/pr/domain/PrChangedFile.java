@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import net.minidev.json.annotate.JsonIgnore;
 import se.sowl.devlydomain.common.BaseTimeEntity;
 
 @Entity
@@ -16,8 +17,10 @@ public class PrChangedFile extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "pull_request_id")
-    private Long prId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "pull_request_id")
+    @JsonIgnore
+    private Pr pr;
 
     @Column(name = "file_name")
     private String fileName;
@@ -28,10 +31,10 @@ public class PrChangedFile extends BaseTimeEntity {
     private String content;
 
     @Builder
-    public PrChangedFile(Long prId, String fileName, String language, String content) {
-        this.prId = prId;
+    public PrChangedFile(String fileName, String language, String content, Pr pr) {
         this.fileName = fileName;
         this.language = language;
         this.content = content;
+        this.pr = pr;
     }
 }

@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import se.sowl.devlydomain.common.BaseTimeEntity;
+import se.sowl.devlydomain.user.domain.User;
 
 @Entity
 @Table(name = "pr_reviews")
@@ -16,20 +17,22 @@ public class PrReview extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "pull_comment_id")
-    private Long prCommentId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "pull_comment_id")
+    private PrComment prComment;
 
-    @Column(name = "user_id")
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
     private String answer;
 
     private String review;
 
     @Builder
-    public PrReview(Long userId, Long prCommentId, String answer, String review) {
-        this.userId = userId;
-        this.prCommentId = prCommentId;
+    public PrReview(User user, PrComment comment, String answer, String review) {
+        this.user = user;
+        this.prComment = comment;
         this.answer = answer;
         this.review = review;
     }

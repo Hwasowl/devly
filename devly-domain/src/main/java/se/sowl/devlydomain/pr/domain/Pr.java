@@ -6,6 +6,10 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import se.sowl.devlydomain.common.BaseTimeEntity;
+import se.sowl.devlydomain.study.domain.Study;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "pr")
@@ -18,14 +22,25 @@ public class Pr extends BaseTimeEntity {
 
     private String title;
 
-    private Long studyId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "study_id")
+    private Study study;
 
     private String description;
 
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "pr", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PrChangedFile> changedFiles = new ArrayList<>();
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "pr", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PrComment> comments = new ArrayList<>();
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "pr", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PrLabel> labels = new ArrayList<>();
+
     @Builder
-    public Pr(String title, String description, Long studyId) {
+    public Pr(String title, String description, Study study) {
         this.title = title;
         this.description = description;
-        this.studyId = studyId;
+        this.study = study;
     }
 }

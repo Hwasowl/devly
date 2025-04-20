@@ -8,13 +8,16 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import se.sowl.devlybatch.common.JsonExtractor;
+import se.sowl.devlybatch.job.MediumBatchTest;
 import se.sowl.devlybatch.job.pr.dto.PrWithRelations;
 import se.sowl.devlybatch.job.pr.service.PrEntityParser;
+import se.sowl.devlydomain.developer.domain.DeveloperType;
 import se.sowl.devlydomain.pr.domain.Pr;
 import se.sowl.devlydomain.pr.domain.PrChangedFile;
 import se.sowl.devlydomain.pr.domain.PrComment;
 import se.sowl.devlydomain.pr.domain.PrLabel;
-import se.sowl.devlydomain.study.repository.StudyRepository;
+import se.sowl.devlydomain.study.domain.Study;
+import se.sowl.devlydomain.study.domain.StudyType;
 import se.sowl.devlyexternal.client.gpt.dto.GPTResponse;
 import se.sowl.devlyexternal.common.ParserArguments;
 import se.sowl.devlyexternal.common.gpt.GptRequestFactory;
@@ -27,13 +30,10 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
-class PrEntityParserTest {
+class PrEntityParserTest extends MediumBatchTest {
 
     @Autowired
     private final PrEntityParser prEntityParser;
-
-    @Autowired
-    private StudyRepository studyRepository;
 
     public PrEntityParserTest() {
         this.prEntityParser = new PrEntityParser(
@@ -48,7 +48,10 @@ class PrEntityParserTest {
     @DisplayName("PR GPT 응답을 파싱 처리 해 PR 엔티티로 변환한다")
     void parseGPTResponseTest() {
         // given
-        Long studyId = 1L;
+        DeveloperType developerType = developerTypeRepository.saveAll(getDeveloperTypes()).get(0);
+        StudyType studyType = studyTypeRepository.saveAll(getStudyTypes()).get(0);
+        Study study = studyRepository.save(buildStudy(studyType, developerType));
+        Long studyId = study.getId();
         String responseContent = """
            제목: 싱글톤 패턴 구현 개선
            설명: Thread-safe한 싱글톤 패턴으로 개선하고, 불필요한 메모리 사용을 줄였습니다.
@@ -76,7 +79,7 @@ class PrEntityParserTest {
         Pr pr = prWithRelations.getFirst().getPr();
         assertThat(pr.getTitle()).isEqualTo("싱글톤 패턴 구현 개선");
         assertThat(pr.getDescription()).isEqualTo("Thread-safe한 싱글톤 패턴으로 개선하고, 불필요한 메모리 사용을 줄였습니다.");
-        assertThat(pr.getStudyId()).isEqualTo(studyId);
+        assertThat(pr.getStudy().getId()).isEqualTo(studyId);
 
         // Changed Files 저장 검증
         List<PrChangedFile> changedFiles = prWithRelations.get(0).getChangedFiles();

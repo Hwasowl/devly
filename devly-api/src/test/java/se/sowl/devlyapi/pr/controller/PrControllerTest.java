@@ -25,6 +25,7 @@ import se.sowl.devlyapi.pr.service.PrChangedFilesService;
 import se.sowl.devlyapi.pr.service.PrCommentService;
 import se.sowl.devlyapi.pr.service.PrReviewService;
 import se.sowl.devlyapi.pr.service.PrService;
+import se.sowl.devlydomain.pr.domain.Pr;
 import se.sowl.devlydomain.pr.domain.PrChangedFile;
 import se.sowl.devlydomain.pr.domain.PrComment;
 import se.sowl.devlydomain.user.domain.CustomOAuth2User;
@@ -113,9 +114,10 @@ class PrControllerTest {
     @DisplayName("PR ID로 변경 파일 정보를 조회한다")
     void getChangedFilesTest() throws Exception {
         // given
+
         List<PrChangedFile> changedFiles = List.of(
-            new PrChangedFile(1L, "src/main/java/com/example/SingletonService.java", "Java", "public class SingletonService {\n\n    private static volatile SingletonService instance;\n\n    private SingletonService() {\n        // private constructor\n    }\n\n    public static SingletonService getInstance() {\n        if (instance == null) {\n            synchronized (SingletonService.class) {\n                if (instance == null) {\n                    instance = new SingletonService();\n                }\n            }\n        }\n        return instance;\n    }\n}"),
-            new PrChangedFile(1L, "src/test/java/com/example/SingletonServiceTest.java", "Java", "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\npublic class SingletonServiceTest {\n\n    @Test\n    void testSingletonInstance() {\n        SingletonService instance1 = SingletonService.getInstance();\n        SingletonService instance2 = SingletonService.getInstance();\n        assertSame(instance1, instance2);\n    }\n}")
+            new PrChangedFile("src/main/java/com/example/SingletonService.java", "Java", "public class SingletonService {\n\n    private static volatile SingletonService instance;\n\n    private SingletonService() {\n        // private constructor\n    }\n\n    public static SingletonService getInstance() {\n        if (instance == null) {\n            synchronized (SingletonService.class) {\n                if (instance == null) {\n                    instance = new SingletonService();\n                }\n            }\n        }\n        return instance;\n    }\n}", mock(Pr.class)),
+            new PrChangedFile("src/test/java/com/example/SingletonServiceTest.java", "Java", "import org.junit.jupiter.api.Test;\nimport static org.junit.jupiter.api.Assertions.*;\n\npublic class SingletonServiceTest {\n\n    @Test\n    void testSingletonInstance() {\n        SingletonService instance1 = SingletonService.getInstance();\n        SingletonService instance2 = SingletonService.getInstance();\n        assertSame(instance1, instance2);\n    }\n}", mock(Pr.class))
         );
         PrChangedFilesResponse response = PrChangedFilesResponse.from(changedFiles);
         when(prChangedFilesService.getChangedFilesResponse(anyLong())).thenReturn(response);
@@ -146,8 +148,8 @@ class PrControllerTest {
     void getCommentsTest() throws Exception {
         // given
         List<PrComment> comments = List.of(
-            new PrComment(1L, 0L, "이 부분은 어떻게 구현하면 좋을까요?"),
-            new PrComment(1L, 1L, "사용자가 슬라이더를 원하는 이미지로 넘길 수 있는 기능에 대한 의견을 여쭤보고 싶습니다.")
+            new PrComment(mock(Pr.class), 0L, "이 부분은 어떻게 구현하면 좋을까요?"),
+            new PrComment(mock(Pr.class), 1L, "사용자가 슬라이더를 원하는 이미지로 넘길 수 있는 기능에 대한 의견을 여쭤보고 싶습니다.")
         );
         PrCommentsResponse response = PrCommentsResponse.from(comments);
         when(prCommentService.getCommentsResponse(anyLong())).thenReturn(response);

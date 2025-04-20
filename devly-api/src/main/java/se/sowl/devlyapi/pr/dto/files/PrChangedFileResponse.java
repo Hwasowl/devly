@@ -14,6 +14,6 @@ public class PrChangedFileResponse {
     private String content;
 
     public static PrChangedFileResponse from(PrChangedFile prChangedFile) {
-        return new PrChangedFileResponse(prChangedFile.getId(), prChangedFile.getPrId(), prChangedFile.getFileName(), prChangedFile.getLanguage(), prChangedFile.getContent());
+        return new PrChangedFileResponse(prChangedFile.getId(), prChangedFile.getPr().getId(), prChangedFile.getFileName(), prChangedFile.getLanguage(), prChangedFile.getContent());
     }
 }

@@ -13,6 +13,6 @@ public class PrCommentResponse {
     private String content;
 
     public static PrCommentResponse from(PrComment comment) {
-        return new PrCommentResponse(comment.getId(), comment.getSequence(), comment.getPrId(), comment.getContent());
+        return new PrCommentResponse(comment.getId(), comment.getSequence(), comment.getPr().getId(), comment.getContent());
     }
 }

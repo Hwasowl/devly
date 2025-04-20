@@ -19,9 +19,9 @@ public class WordEntityParser extends GptEntityParser<Word> {
     public WordEntityParser(
         JsonExtractor jsonExtractor,
         GptRequestFactory gptRequestFactory,
-        GptResponseValidator gptResponseValidator, StudyRepository studyRepository
-    ) {
-        super(gptRequestFactory, gptResponseValidator, studyRepository);
+        GptResponseValidator gptResponseValidator,
+        StudyRepository studyRepository) {
+        super(gptRequestFactory, gptResponseValidator);
         this.jsonExtractor = jsonExtractor;
         this.studyRepository = studyRepository;
     }

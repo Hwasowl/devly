@@ -7,6 +7,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import se.sowl.devlydomain.common.BaseTimeEntity;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "pr_comments")
 @Getter
@@ -16,16 +19,20 @@ public class PrComment extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "pull_request_id")
-    private Long prId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "pull_request_id")
+    private Pr pr;
 
     private Long sequence;
 
     private String content;
 
+    @OneToMany(mappedBy = "prComment", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PrReview> reviews = new ArrayList<>();
+
     @Builder
-    public PrComment(Long prId, Long sequence, String content) {
-        this.prId = prId;
+    public PrComment(Pr pr, Long sequence, String content) {
+        this.pr = pr;
         this.sequence = sequence;
         this.content = content;
     }

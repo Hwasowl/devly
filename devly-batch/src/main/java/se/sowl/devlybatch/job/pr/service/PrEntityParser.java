@@ -8,6 +8,7 @@ import se.sowl.devlydomain.pr.domain.Pr;
 import se.sowl.devlydomain.pr.domain.PrChangedFile;
 import se.sowl.devlydomain.pr.domain.PrComment;
 import se.sowl.devlydomain.pr.domain.PrLabel;
+import se.sowl.devlydomain.study.domain.Study;
 import se.sowl.devlydomain.study.repository.StudyRepository;
 import se.sowl.devlyexternal.common.ParserArguments;
 import se.sowl.devlyexternal.common.gpt.GptEntityParser;
@@ -17,6 +18,7 @@ import se.sowl.devlyexternal.common.gpt.GptResponseValidator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @Component
@@ -28,20 +30,21 @@ public class PrEntityParser extends GptEntityParser<PrWithRelations> {
         JsonExtractor jsonExtractor,
         GptRequestFactory requestFactory,
         GptResponseValidator responseValidator,
-        StudyRepository studyRepository
-    ) {
-        super(requestFactory, responseValidator, studyRepository);
+        StudyRepository studyRepository) {
+        super(requestFactory, responseValidator);
         this.jsonExtractor = jsonExtractor;
         this.studyRepository = studyRepository;
     }
 
     @Override
     protected PrWithRelations parseEntity(ParserArguments parameters, String entry) {
-        Long studyId = parameters.get("studyId", Long.class);
+        Study study = studyRepository.findById(parameters.get("studyId", Long.class)).orElseThrow(
+            () -> new IllegalArgumentException("Study not found with ID: " + parameters.get("studyId", Long.class))
+        );
         try {
             String title = jsonExtractor.extractField(entry, "제목:");
             String description = jsonExtractor.extractField(entry, "설명:");
-            Pr pr = Pr.builder().title(title).description(description).studyId(studyId).build();
+            Pr pr = Pr.builder().title(title).description(description).study(study).build();
             return getPrWithRelations(entry, pr);
         } catch (Exception e) {
             log.error("PR Parsing Error: {}", e.getMessage(), e);
