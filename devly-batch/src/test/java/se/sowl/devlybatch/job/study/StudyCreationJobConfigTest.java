@@ -4,9 +4,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.batch.core.BatchStatus;
+import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
-import org.springframework.batch.test.JobLauncherTestUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
@@ -24,12 +24,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Import({TestBatchConfig.class, StudyCreationJobConfig.class})
 class StudyCreationJobConfigTest extends MediumBatchTest {
 
+    @Autowired
+    private Job studyCreationJob;
+
     @BeforeEach
     void setUp() {
-        jobLauncherTestUtils = new JobLauncherTestUtils();
-        jobLauncherTestUtils.setJobLauncher(jobLauncher);
-        jobLauncherTestUtils.setJob(studyCreationJob);
-        jobLauncherTestUtils.setJobRepository(jobRepository);
+        initializeJobLauncherTestUtils(studyCreationJob);
+        studyTypeRepository.saveAll(createStandardStudyTypes());
     }
 
     @AfterEach
@@ -40,27 +41,36 @@ class StudyCreationJobConfigTest extends MediumBatchTest {
 
     @Test
     @DisplayName("createStudiesStep은 각 개발자 타입별로 스터디를 생성한다")
-    void createStudiesStepTest() throws Exception {
+    void shouldCreateStudiesForEachDeveloperType() throws Exception {
         // given
         List<DeveloperType> developerTypes = developerTypeRepository.saveAll(createStandardDeveloperTypes());
-        studyTypeRepository.saveAll(createStandardStudyTypes());
 
-        DeveloperType backend = developerTypes.stream().filter(developerType -> developerType.getName().equals("Backend Developer")).findFirst().orElseThrow();
-        DeveloperType frontend = developerTypes.stream().filter(developerType -> developerType.getName().equals("Frontend Developer")).findFirst().orElseThrow();
+        DeveloperType backendDeveloper = developerTypes.stream()
+            .filter(developerType -> developerType.getName().equals("Backend Developer"))
+            .findFirst()
+            .orElseThrow(() -> new IllegalStateException("Backend Developer type not found"));
+
+        DeveloperType frontendDeveloper = developerTypes.stream()
+            .filter(developerType -> developerType.getName().equals("Frontend Developer"))
+            .findFirst()
+            .orElseThrow(() -> new IllegalStateException("Frontend Developer type not found"));
 
         // when
         JobExecution jobExecution = jobLauncherTestUtils.launchStep("createStudiesStep");
 
         // then
-        assertThat(jobExecution.getStatus()).isEqualTo(BatchStatus.COMPLETED);
+        assertJobExecutionCompleted(jobExecution);
 
-        List<Study> savedStudies = studyRepository.findAll();
-        assertThat(savedStudies).hasSize(4);
+        List<Study> allStudies = studyRepository.findAll();
+        assertThat(allStudies).hasSize(4)
+            .withFailMessage("총 4개의 스터디가 생성되어야 합니다");
 
-        List<Study> backendStudy = studyRepository.findByDeveloperTypeId(backend.getId());
-        assertThat(backendStudy.size()).isEqualTo(2L);
+        List<Study> backendStudies = studyRepository.findByDeveloperTypeId(backendDeveloper.getId());
+        assertThat(backendStudies).hasSize(2)
+            .withFailMessage("백엔드 개발자를 위한 스터디는 2개여야 합니다");
 
-        List<Study> frontendStudy = studyRepository.findByDeveloperTypeId(frontend.getId());
-        assertThat(frontendStudy.size()).isEqualTo(2L);
+        List<Study> frontendStudies = studyRepository.findByDeveloperTypeId(frontendDeveloper.getId());
+        assertThat(frontendStudies).hasSize(2)
+            .withFailMessage("프론트엔드 개발자를 위한 스터디는 2개여야 합니다");
     }
 }

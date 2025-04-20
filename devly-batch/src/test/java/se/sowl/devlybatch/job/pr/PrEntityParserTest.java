@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
 import se.sowl.devlybatch.common.JsonExtractor;
 import se.sowl.devlybatch.job.MediumBatchTest;
 import se.sowl.devlybatch.job.pr.dto.PrWithRelations;
@@ -29,7 +28,6 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 @SpringBootTest
 @ActiveProfiles("test")
-@Transactional
 class PrEntityParserTest extends MediumBatchTest {
 
     @Autowired

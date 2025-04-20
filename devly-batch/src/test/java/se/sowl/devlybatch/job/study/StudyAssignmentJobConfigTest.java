@@ -4,14 +4,11 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
-import org.springframework.batch.test.JobLauncherTestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 import se.sowl.devlybatch.config.TestBatchConfig;
@@ -38,7 +35,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 @ActiveProfiles("test")
 @Import({TestBatchConfig.class, StudyAssignmentJobConfig.class})
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class StudyAssignmentJobConfigTest extends MediumBatchTest {
 
     @Autowired
@@ -53,58 +49,64 @@ class StudyAssignmentJobConfigTest extends MediumBatchTest {
     @Autowired
     private StudyCache studyCache;
 
+    @Autowired
+    private UserRepository userRepository;
+
     private static final int STUDIES_PER_TYPE = 20;
     private static final Long[] USER_IDS = {1L, 2L, 3L, 4L, 5L};
     private static final LocalDateTime YESTERDAY = LocalDateTime.now().minusDays(1)
         .withHour(12).withMinute(0).withSecond(0).withNano(0);
-    @Autowired
-    private UserRepository userRepository;
 
     @BeforeEach
     void setUp() {
-        jobLauncherTestUtils = new JobLauncherTestUtils();
-        jobLauncherTestUtils.setJobLauncher(jobLauncher);
-        jobLauncherTestUtils.setJob(studyAssignmentJob);
-        jobLauncherTestUtils.setJobRepository(jobRepository);
+        initializeJobLauncherTestUtils(studyAssignmentJob);
         studyCache.clearCache();
-        studyTypeRepository.saveAll(List.of(
-            StudyType.builder().name("Word").build(),
-            StudyType.builder().name("Knowledge").build(),
-            StudyType.builder().name("PR").build(),
-            StudyType.builder().name("Discussion").build()
-        ));
-        developerTypeRepository.saveAll(List.of(
-            DeveloperType.builder().name("Backend Developer").build(),
-            DeveloperType.builder().name("Frontend Developer").build()
-        ));
+        initializeStudyTypes();
+        initializeDeveloperTypes();
     }
+
     @AfterEach
     void cleanUp() {
         userStudyRepository.deleteAll();
         studyRepository.deleteAll();
         userRepository.deleteAll();
     }
+
+    private void initializeDeveloperTypes() {
+        developerTypeRepository.saveAll(List.of(
+            DeveloperType.builder().name("Backend Developer").build(),
+            DeveloperType.builder().name("Frontend Developer").build()
+        ));
+    }
+
     @Test
     @DisplayName("완료된 스터디가 없으면 새로운 스터디가 할당되지 않는다")
-    void noCompletedStudiesShouldNotAssignNewStudies() throws Exception {
+    void shouldNotAssignNewStudiesWhenNoCompletedStudies() throws Exception {
+        // given
         createConnectedStudies(1L, 1L, 2);
 
+        // when
         JobExecution execution = jobLauncherTestUtils.launchJob();
 
-        assertThat(execution.getStatus()).isEqualTo(BatchStatus.COMPLETED);
+        // then
+        assertJobExecutionCompleted(execution);
         assertThat(userStudyRepository.findAll()).isEmpty();
     }
 
     @Test
     @DisplayName("완료된 스터디들에 대해 같은 타입의 다음 스터디가 할당된다")
-    void completedStudiesShouldBeAssignedNextStudyOfSameType() throws Exception {
+    void shouldAssignNextStudyOfSameTypeForCompletedStudies() throws Exception {
+        // given
         Map<Long, List<Study>> studiesByType = createStudiesForAllTypes();
         setupUserStudies(studiesByType);
 
+        // when
         JobExecution execution = jobLauncherTestUtils.launchJob();
 
-        assertThat(execution.getStatus()).isEqualTo(BatchStatus.COMPLETED);
+        // then
+        assertJobExecutionCompleted(execution);
 
+        // 사용자별 스터디 할당 검증
         for (Long userId : USER_IDS) {
             List<UserStudy> userStudies = userStudyRepository.findAllWithStudyByUserId(userId);
             assertStudyAssignments(userStudies);
@@ -112,16 +114,20 @@ class StudyAssignmentJobConfigTest extends MediumBatchTest {
     }
 
     @Test
-    @DisplayName("할당 로직이 여러번 수행되도 조건이 맞지 않는다면 스터디가 추가로 할당되지 않아야 한다.")
-    void shouldBeNotAssignmentDuplicateUserStudy() throws Exception {
+    @DisplayName("할당 로직이 여러번 수행되도 조건이 맞지 않는다면 스터디가 추가로 할당되지 않아야 한다")
+    void shouldNotAssignDuplicateUserStudyWhenExecutedMultipleTimes() throws Exception {
+        // given
         Map<Long, List<Study>> studiesByType = createStudiesForAllTypes();
         setupUserStudies(studiesByType);
 
-        JobExecution execution = jobLauncherTestUtils.launchJob();
-        assertThat(execution.getStatus()).isEqualTo(BatchStatus.COMPLETED);
-        JobExecution execution2 = jobLauncherTestUtils.launchJob();
-        assertThat(execution2.getStatus()).isEqualTo(BatchStatus.COMPLETED);
+        // when
+        JobExecution execution1 = jobLauncherTestUtils.launchJob();
+        assertJobExecutionCompleted(execution1);
 
+        JobExecution execution2 = jobLauncherTestUtils.launchJob();
+        assertJobExecutionCompleted(execution2);
+
+        // then
         for (Long userId : USER_IDS) {
             List<UserStudy> userStudies = userStudyRepository.findAllWithStudyByUserId(userId);
             assertStudyAssignments(userStudies);
@@ -140,12 +146,8 @@ class StudyAssignmentJobConfigTest extends MediumBatchTest {
     }
 
     private void setupUserStudies(Map<Long, List<Study>> studiesByType) {
-        DeveloperType developerType = developerTypeRepository.findAll().stream()
-            .filter(d -> d.getId().equals(1L))
-            .findFirst()
-            .orElseThrow();
+        DeveloperType developerType = findDeveloperTypeByName("Backend Developer");
 
-        // 먼저 모든 사용자를 한 번씩만 생성
         Map<Long, User> userMap = new HashMap<>();
         for (Long userId : USER_IDS) {
             User user = userRepository.save(createUser(
@@ -159,18 +161,17 @@ class StudyAssignmentJobConfigTest extends MediumBatchTest {
             userMap.put(userId, user);
         }
 
-        // 생성된 사용자를 재사용하여 UserStudy 생성
         for (Long userId : USER_IDS) {
             User user = userMap.get(userId);
 
             for (long typeId = 1; typeId <= 2; typeId++) {
                 Study study = studiesByType.get(typeId).get(0);
-                userStudyRepository.save(createUserStudy(user, study, true, YESTERDAY));
+                userStudyRepository.save(createCompletedUserStudy(user, study, YESTERDAY));
             }
 
             for (long typeId = 3; typeId <= 4; typeId++) {
                 Study study = studiesByType.get(typeId).get(0);
-                userStudyRepository.save(createUserStudy(user, study, false, null));
+                userStudyRepository.save(createScheduledUserStudy(user, study));
             }
         }
     }
@@ -180,36 +181,47 @@ class StudyAssignmentJobConfigTest extends MediumBatchTest {
             .filter(s -> s.getId().equals(typeId))
             .findFirst()
             .orElseThrow(() -> new IllegalStateException("No study type found for ID " + typeId));
-        DeveloperType developerType = developerTypeRepository.findAll().stream().filter(d -> d.getId().equals(devTypeId))
+
+        DeveloperType developerType = developerTypeRepository.findAll().stream()
+            .filter(d -> d.getId().equals(devTypeId))
             .findFirst()
             .orElseThrow(() -> new IllegalStateException("No developer type found for ID " + devTypeId));
+
         List<Study> studies = new ArrayList<>();
         for (int i = 0; i < count; i++) {
             studies.add(buildStudy(studyType, developerType));
         }
+
         studies.forEach(Study::connect);
         return studyRepository.saveAll(studies);
     }
 
-    private UserStudy createUserStudy(User user, Study study, boolean completed, LocalDateTime completedAt) {
+    private UserStudy createCompletedUserStudy(User user, Study study, LocalDateTime completedAt) {
         UserStudy userStudy = UserStudy.builder()
             .user(user)
             .study(study)
             .scheduledAt(LocalDateTime.now().minusDays(1))
             .build();
 
-        if (completed) {
-            userStudy.complete();
-            ReflectionTestUtils.setField(userStudy, "completedAt", completedAt);
-        }
+        userStudy.complete();
+        ReflectionTestUtils.setField(userStudy, "completedAt", completedAt);
 
         return userStudy;
+    }
+
+    private UserStudy createScheduledUserStudy(User user, Study study) {
+        return UserStudy.builder()
+            .user(user)
+            .study(study)
+            .scheduledAt(LocalDateTime.now().minusDays(1))
+            .build();
     }
 
     private void assertStudyAssignments(List<UserStudy> userStudies) {
         Map<Long, List<UserStudy>> studiesByType = userStudies.stream()
             .collect(Collectors.groupingBy(us -> us.getStudy().getStudyType().getId()));
 
+        // 완료된 타입(1-2)에 대한 검증
         for (long typeId = 1; typeId <= 2; typeId++) {
             List<UserStudy> typeStudies = studiesByType.get(typeId);
             assertThat(typeStudies).hasSize(2)
@@ -226,10 +238,12 @@ class StudyAssignmentJobConfigTest extends MediumBatchTest {
                 .orElseThrow(() -> new AssertionError("새로 할당된 스터디가 없습니다"));
 
             assertThat(newStudy.getStudy().getId())
-                .isGreaterThan(completedStudy.getStudy().getId());
+                .isGreaterThan(completedStudy.getStudy().getId())
+                .withFailMessage("새 스터디의 ID는 완료된 스터디의 ID보다 커야 합니다");
 
             assertThat(newStudy.getStudy().getStudyType().getId())
-                .isEqualTo(completedStudy.getStudy().getStudyType().getId());
+                .isEqualTo(completedStudy.getStudy().getStudyType().getId())
+                .withFailMessage("새 스터디는 완료된 스터디와 동일한 타입이어야 합니다");
         }
 
         for (long typeId = 3; typeId <= 4; typeId++) {
@@ -237,7 +251,8 @@ class StudyAssignmentJobConfigTest extends MediumBatchTest {
             assertThat(typeStudies).hasSize(1)
                 .withFailMessage("미완료 타입 %d의 스터디는 1개만 있어야 합니다", typeId);
 
-            assertThat(typeStudies.get(0).isCompleted()).isFalse();
+            assertThat(typeStudies.get(0).isCompleted()).isFalse()
+                .withFailMessage("타입 %d의 스터디는 완료되지 않은 상태여야 합니다", typeId);
         }
     }
 }
