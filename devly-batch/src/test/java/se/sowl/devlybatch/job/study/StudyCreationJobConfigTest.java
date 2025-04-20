@@ -42,8 +42,8 @@ class StudyCreationJobConfigTest extends MediumBatchTest {
     @DisplayName("createStudiesStep은 각 개발자 타입별로 스터디를 생성한다")
     void createStudiesStepTest() throws Exception {
         // given
-        List<DeveloperType> developerTypes = developerTypeRepository.saveAll(getDeveloperTypes());
-        studyTypeRepository.saveAll(getStudyTypes());
+        List<DeveloperType> developerTypes = developerTypeRepository.saveAll(createStandardDeveloperTypes());
+        studyTypeRepository.saveAll(createStandardStudyTypes());
 
         DeveloperType backend = developerTypes.stream().filter(developerType -> developerType.getName().equals("Backend Developer")).findFirst().orElseThrow();
         DeveloperType frontend = developerTypes.stream().filter(developerType -> developerType.getName().equals("Frontend Developer")).findFirst().orElseThrow();

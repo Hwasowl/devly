@@ -48,8 +48,8 @@ class PrEntityParserTest extends MediumBatchTest {
     @DisplayName("PR GPT 응답을 파싱 처리 해 PR 엔티티로 변환한다")
     void parseGPTResponseTest() {
         // given
-        DeveloperType developerType = developerTypeRepository.saveAll(getDeveloperTypes()).get(0);
-        StudyType studyType = studyTypeRepository.saveAll(getStudyTypes()).get(0);
+        DeveloperType developerType = developerTypeRepository.saveAll(createStandardDeveloperTypes()).get(0);
+        StudyType studyType = studyTypeRepository.saveAll(createStandardStudyTypes()).get(0);
         Study study = studyRepository.save(buildStudy(studyType, developerType));
         Long studyId = study.getId();
         String responseContent = """
