@@ -1,6 +1,8 @@
 package se.sowl.devlybatch.job;
 
+import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.test.JobLauncherTestUtils;
@@ -15,8 +17,11 @@ import se.sowl.devlydomain.study.domain.StudyType;
 import se.sowl.devlydomain.study.repository.StudyRepository;
 import se.sowl.devlydomain.study.repository.StudyTypeRepository;
 import se.sowl.devlydomain.user.domain.User;
+import se.sowl.devlyexternal.client.gpt.dto.GPTResponse;
 
 import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @Sql(scripts = {
     "/org/springframework/batch/core/schema-drop-h2.sql",
@@ -51,13 +56,13 @@ public abstract class MediumBatchTest {
     @Autowired
     protected DeveloperTypeRepository developerTypeRepository;
 
-    protected List<DeveloperType> getDeveloperTypes() {
+    protected List<DeveloperType> createStandardDeveloperTypes() {
         DeveloperType frontEnd = new DeveloperType("Backend Developer");
         DeveloperType backEnd = new DeveloperType("Frontend Developer");
         return List.of(frontEnd, backEnd);
     }
 
-    protected List<StudyType> getStudyTypes() {
+    protected List<StudyType> createStandardStudyTypes() {
         StudyType word = new StudyType("word", 100L);
         StudyType knowledge = new StudyType("knowledge", 150L);
         StudyType pr = new StudyType("pr", 300L);
@@ -81,5 +86,49 @@ public abstract class MediumBatchTest {
             .studyType(studyType)
             .developerType(developerType)
             .build();
+    }
+
+    protected void initializeJobLauncherTestUtils(Job job) {
+        jobLauncherTestUtils = new JobLauncherTestUtils();
+        jobLauncherTestUtils.setJobLauncher(jobLauncher);
+        jobLauncherTestUtils.setJob(job);
+        jobLauncherTestUtils.setJobRepository(jobRepository);
+    }
+
+    protected GPTResponse createGptResponse(String content) {
+        return new GPTResponse(
+            List.of(new GPTResponse.Choice(
+                new GPTResponse.Message("assistant", content),
+                "stop",
+                0
+            ))
+        );
+    }
+
+    protected void assertJobExecutionCompleted(JobExecution jobExecution) {
+        assertThat(jobExecution.getStatus()).isEqualTo(BatchStatus.COMPLETED);
+    }
+
+    protected StudyType findStudyTypeByName(String typeName) {
+        return studyTypeRepository.findAll().stream()
+            .filter(s -> s.getName().equals(typeName))
+            .findFirst()
+            .orElseThrow(() -> new IllegalArgumentException("StudyType not found: " + typeName));
+    }
+
+    protected DeveloperType findDeveloperTypeByName(String typeName) {
+        return developerTypeRepository.findAll().stream()
+            .filter(d -> d.getName().equals(typeName))
+            .findFirst()
+            .orElseThrow(() -> new IllegalArgumentException("DeveloperType not found: " + typeName));
+    }
+
+    protected void initializeStudyTypes() {
+        studyTypeRepository.saveAll(List.of(
+            StudyType.builder().name("Word").build(),
+            StudyType.builder().name("Knowledge").build(),
+            StudyType.builder().name("PR").build(),
+            StudyType.builder().name("Discussion").build()
+        ));
     }
 }

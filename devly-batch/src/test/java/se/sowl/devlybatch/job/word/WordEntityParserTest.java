@@ -27,13 +27,10 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 @ActiveProfiles("test")
 class WordEntityParserTest extends MediumBatchTest {
 
-    @Autowired
-    private WordEntityParser wordEntityParser;
+    private final WordEntityParser wordEntityParser;
 
     @Autowired
-    private StudyRepository studyRepository;
-
-    public WordEntityParserTest() {
+    public WordEntityParserTest(StudyRepository studyRepository) {
         this.wordEntityParser = new WordEntityParser(
             new JsonExtractor(new ObjectMapper()),
             new GptRequestFactory(),
@@ -43,8 +40,8 @@ class WordEntityParserTest extends MediumBatchTest {
     }
 
     @Test
-    @DisplayName("단어 GPT 응답을 파싱 처리 해 Word 엔티티로 변환한다")
-    void parseGPTResponseTest() {
+    @DisplayName("GPT 응답을 파싱하여 Word 엔티티로 정확히 변환한다")
+    void shouldParseGptResponseToWordEntities() {
         // given
         String responseContent = """
            단어: implementation
@@ -60,29 +57,29 @@ class WordEntityParserTest extends MediumBatchTest {
            퀴즈: {"text": "", "distractors": ["Inheritance", "Encapsulation", "Abstraction", "Interface"]}
            ---
            """;
-        GPTResponse gptResponse = new GPTResponse(
-            List.of(new GPTResponse.Choice(
-                new GPTResponse.Message("assistant", responseContent), "stop", 0
-            ))
-        );
+        GPTResponse gptResponse = createGptResponse(responseContent);
 
         // when
         DeveloperType beType = developerTypeRepository.save(new DeveloperType("Backend Developer"));
         StudyType studyType = studyTypeRepository.save(StudyType.builder().name("Word").build());
-        Study save = studyRepository.save(buildStudy(studyType, beType));
-        ParserArguments parseParameters = new ParserArguments().add("studyId", save.getId());
+        Study study = studyRepository.save(buildStudy(studyType, beType));
+
+        ParserArguments parseParameters = new ParserArguments().add("studyId", study.getId());
         List<Word> words = wordEntityParser.parseGPTResponse(gptResponse, parseParameters);
 
+        // then
+        // 첫 번째 단어 검증
         Word firstWord = words.getFirst();
-        assertThat(firstWord.getStudy().getId()).isEqualTo(save.getId());
+        assertThat(firstWord.getStudy().getId()).isEqualTo(study.getId());
         assertThat(firstWord.getWord()).isEqualTo("implementation");
         assertThat(firstWord.getPronunciation()).isEqualTo("/ˌɪmplɪmenˈteɪʃən/");
         assertThat(firstWord.getMeaning()).isEqualTo("구현, 실행");
         assertThat(firstWord.getExample()).contains("Spring Documentation");
         assertThat(firstWord.getQuiz()).contains("Interface");
 
+        // 두 번째 단어 검증
         Word secondWord = words.get(1);
-        assertThat(secondWord.getStudy().getId()).isEqualTo(save.getId());
+        assertThat(secondWord.getStudy().getId()).isEqualTo(study.getId());
         assertThat(secondWord.getWord()).isEqualTo("polymorphism");
         assertThat(secondWord.getPronunciation()).isEqualTo("/ˌpɒlɪˈmɔːfɪzəm/");
         assertThat(secondWord.getMeaning()).isEqualTo("다형성");
