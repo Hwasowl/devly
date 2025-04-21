@@ -6,7 +6,6 @@ import org.springframework.transaction.annotation.Transactional;
 import se.sowl.devlyapi.pr.dto.review.PrCommentReviewResponse;
 import se.sowl.devlyapi.pr.exception.AlreadyPrReviewedException;
 import se.sowl.devlyapi.study.service.StudyService;
-import se.sowl.devlyapi.user.service.UserService;
 import se.sowl.devlydomain.pr.domain.PrChangedFile;
 import se.sowl.devlydomain.pr.domain.PrComment;
 import se.sowl.devlydomain.pr.domain.PrReview;
@@ -29,12 +28,11 @@ public class PrReviewService {
     private final PrCommentService prCommentService;
     private final PrChangedFilesService prChangedFilesService;
     private final PrReviewRepository prReviewRepository;
-    private final UserService userService;
 
     @Transactional
     public PrCommentReviewResponse reviewPrComment(Long userId, Long prCommentId, Long studyId, String answer) {
         validateAnswer(answer);
-        validateIsAlreadyReviewed(prCommentId);
+        validateIsAlreadyReviewed(userId, prCommentId);
         Study study = studyService.getStudyById(studyId);
         GPTResponse gptResponse = gptClient.generate(prReviewEntityParser.createGPTRequest(
             createCommentReviewRequestPrompt(study.getDeveloperType().getId(), study.getStudyType().getId(), prCommentId, answer)
@@ -84,8 +82,8 @@ public class PrReviewService {
         }
     }
 
-    private void validateIsAlreadyReviewed(Long prCommentId) {
-        if (prReviewRepository.findByPrCommentId(prCommentId).isPresent()) {
+    private void validateIsAlreadyReviewed(Long userId, Long prCommentId) {
+        if (prReviewRepository.findByUserIdAndPrCommentId(userId, prCommentId).isPresent()) {
             throw new AlreadyPrReviewedException("Already reviewed comment. Please check your argument");
         }
     }

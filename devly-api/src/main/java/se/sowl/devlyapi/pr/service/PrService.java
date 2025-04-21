@@ -27,7 +27,7 @@ public class PrService {
 
     @Transactional
     public void complete(Long userId, Long prId, Long studyId) {
-        validateCanComplete(prId);
+        validateCanComplete(userId, prId);
         UserStudy userStudy = userStudyService.getUserStudy(userId, studyId);
         userStudy.complete();
     }
@@ -39,11 +39,11 @@ public class PrService {
         return PrResponse.from(pr, prLabels);
     }
 
-    private void validateCanComplete(Long prId) {
+    private void validateCanComplete(Long userId, Long prId) {
         List<PrComment> comments = prCommentService.getCommentsByPrId(prId);
         if (comments.isEmpty()) return;
         for (PrComment comment : comments) {
-            if (prReviewRepository.findByPrCommentId(comment.getId()).isEmpty()) {
+            if (prReviewRepository.findByUserIdAndPrCommentId(userId, comment.getId()).isEmpty()) {
                 throw new IncompletePrReviewException("Pr Review Is Not Completed.");
             }
         }

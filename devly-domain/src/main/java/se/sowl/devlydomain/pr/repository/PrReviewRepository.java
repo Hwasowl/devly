@@ -6,5 +6,5 @@ import se.sowl.devlydomain.pr.domain.PrReview;
 import java.util.Optional;
 
 public interface PrReviewRepository extends JpaRepository<PrReview, Long> {
-    Optional<PrReview> findByPrCommentId(Long prCommentId);
+    Optional<PrReview> findByUserIdAndPrCommentId(Long userId, Long prCommentId);
 }
