@@ -78,7 +78,7 @@ front:
   url: ${FRONT_URL}
 jwt:
   secret-key: ${JWT_SECRET_KEY}
-  access-token-validity-in-seconds: 3600
+  access-token-validity-in-seconds: 604800
   refresh-token-validity-in-seconds: 604800
 openai:
   api-url: https://api.openai.com
