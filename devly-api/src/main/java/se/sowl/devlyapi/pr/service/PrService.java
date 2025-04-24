@@ -33,7 +33,7 @@ public class PrService {
     }
 
     public PrResponse getPrResponse(Long userId, Long studyId) {
-        userStudyService.isUserStudyExist(userId, studyId);
+        userStudyService.validateUserStudyExist(userId, studyId);
         Pr pr = prRepository.findByStudyId(studyId);
         List<PrLabel> prLabels = prLabelRepository.findAllByPrId(pr.getId());
         return PrResponse.from(pr, prLabels);

@@ -23,7 +23,7 @@ public class UserStudyService {
     private final StudyTypeRepository studyTypeRepository;
     private final StudyReviewService studyReviewService;
 
-    public void isUserStudyExist(Long userId, Long studyId) {
+    public void validateUserStudyExist(Long userId, Long studyId) {
         Optional<UserStudy> optionalUserStudy = userStudyRepository.findByUserIdAndStudyId(userId, studyId);
         if (optionalUserStudy.isEmpty()) {
             throw new NotAssignmentWordStudyException();

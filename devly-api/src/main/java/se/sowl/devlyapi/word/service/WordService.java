@@ -21,12 +21,12 @@ public class WordService {
     private final UserStudyService userStudyService;
 
     public List<Word> getList(Long userId, Long studyId) {
-        userStudyService.isUserStudyExist(userId, studyId);
+        userStudyService.validateUserStudyExist(userId, studyId);
         return wordRepository.findAllByStudyId(studyId);
     }
 
     public WordListOfStudyResponse getListResponse(Long userId, Long studyId) {
-        userStudyService.isUserStudyExist(userId, studyId);
+        userStudyService.validateUserStudyExist(userId, studyId);
         List<Word> allByStudy = wordRepository.findAllByStudyId(studyId);
         return WordListOfStudyResponse.from(allByStudy);
     }
