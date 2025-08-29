@@ -27,16 +27,34 @@ public class Study extends BaseTimeEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private StudyStatusEnum status;
+    private StudyStatus status;
 
     public void connect() {
-        this.status = StudyStatusEnum.CONNECTED;
+        if (this.status == StudyStatus.CONNECTED) {
+            throw new IllegalStateException("Study is already connected");
+        }
+        this.status = StudyStatus.CONNECTED;
+    }
+
+    public void disconnect() {
+        if (this.status == StudyStatus.UNCONNECTED) {
+            throw new IllegalStateException("Study is already disconnected");
+        }
+        this.status = StudyStatus.UNCONNECTED;
+    }
+
+    public boolean isConnected() {
+        return this.status == StudyStatus.CONNECTED;
+    }
+
+    public boolean isValid() {
+        return studyType != null && developerType != null && status != null;
     }
 
     @Builder
     public Study(StudyType studyType, DeveloperType developerType) {
         this.studyType = studyType;
         this.developerType = developerType;
-        this.status = StudyStatusEnum.UNCONNECTED;
+        this.status = StudyStatus.UNCONNECTED;
     }
 }

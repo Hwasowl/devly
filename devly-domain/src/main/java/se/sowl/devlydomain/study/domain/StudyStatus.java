@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public enum StudyStatusEnum {
+public enum StudyStatus {
     UNCONNECTED,
     CONNECTED
 }

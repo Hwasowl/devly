@@ -8,7 +8,7 @@ import se.sowl.devlyapi.study.dto.UserStudyTasksResponse;
 import se.sowl.devlydomain.developer.domain.DeveloperType;
 import se.sowl.devlydomain.study.domain.Study;
 import se.sowl.devlydomain.study.domain.StudyType;
-import se.sowl.devlydomain.study.domain.StudyTypeEnum;
+import se.sowl.devlydomain.study.domain.StudyTypeClassification;
 import se.sowl.devlydomain.user.domain.User;
 import se.sowl.devlydomain.user.domain.UserStudy;
 
@@ -30,7 +30,7 @@ class UserStudyServiceTest extends MediumTest {
 
         List<StudyType> allStudyTypes = createAllStudyTypes();
         StudyType wordStudyType = allStudyTypes.stream()
-            .filter(studyType -> Objects.equals(studyType.getId(), StudyTypeEnum.WORD.getId()))
+            .filter(studyType -> Objects.equals(studyType.getId(), StudyTypeClassification.WORD.getId()))
             .findFirst()
             .orElseThrow(() -> new IllegalArgumentException("단어 학습 타입을 찾을 수 없습니다."));
         Study wordStudy = createStudy(wordStudyType, backendDeveloperType);

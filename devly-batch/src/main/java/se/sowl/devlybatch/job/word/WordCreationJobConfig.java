@@ -14,8 +14,8 @@ import org.springframework.transaction.PlatformTransactionManager;
 import se.sowl.devlybatch.job.study.service.StudyService;
 import se.sowl.devlybatch.job.word.service.WordProcessService;
 import se.sowl.devlydomain.study.domain.Study;
-import se.sowl.devlydomain.study.domain.StudyStatusEnum;
-import se.sowl.devlydomain.study.domain.StudyTypeEnum;
+import se.sowl.devlydomain.study.domain.StudyStatus;
+import se.sowl.devlydomain.study.domain.StudyTypeClassification;
 
 import java.util.List;
 
@@ -44,7 +44,7 @@ public class WordCreationJobConfig {
     }
 
     public void createTodayWordStudies() {
-        List<Study> todayStudies = studyService.getTodayStudiesOf(StudyTypeEnum.WORD.getId(), StudyStatusEnum.UNCONNECTED);
+        List<Study> todayStudies = studyService.getTodayStudiesOf(StudyTypeClassification.WORD.getId(), StudyStatus.UNCONNECTED);
         for (Study study : todayStudies) {
             try {
                 Long studyId = wordProcessService.progressWordsOfStudy(study);

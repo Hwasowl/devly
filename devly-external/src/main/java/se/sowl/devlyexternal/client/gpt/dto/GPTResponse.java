@@ -30,8 +30,8 @@ public class GPTResponse {
     }
 
     public String getContent() {
-        if (choices != null && !choices.isEmpty() && choices.getFirst().getMessage() != null) {
-            return choices.getFirst().getMessage().getContent();
+        if (choices != null && !choices.isEmpty() && choices.get(0).getMessage() != null) {
+            return choices.get(0).getMessage().getContent();
         }
         return null;
     }

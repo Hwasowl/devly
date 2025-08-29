@@ -14,8 +14,8 @@ import org.springframework.transaction.PlatformTransactionManager;
 import se.sowl.devlybatch.job.pr.service.PrProcessService;
 import se.sowl.devlybatch.job.study.service.StudyService;
 import se.sowl.devlydomain.study.domain.Study;
-import se.sowl.devlydomain.study.domain.StudyStatusEnum;
-import se.sowl.devlydomain.study.domain.StudyTypeEnum;
+import se.sowl.devlydomain.study.domain.StudyStatus;
+import se.sowl.devlydomain.study.domain.StudyTypeClassification;
 
 import java.util.List;
 
@@ -44,7 +44,7 @@ public class PrCreationJobConfig {
     }
 
     public void createTodayPrStudies() {
-        List<Study> todayStudies = studyService.getTodayStudiesOf(StudyTypeEnum.PULL_REQUEST.getId(), StudyStatusEnum.UNCONNECTED);
+        List<Study> todayStudies = studyService.getTodayStudiesOf(StudyTypeClassification.PULL_REQUEST.getId(), StudyStatus.UNCONNECTED);
         log.info("Create pr batch started! studies total count: {}", todayStudies.size());
         for (Study study : todayStudies) {
             try {

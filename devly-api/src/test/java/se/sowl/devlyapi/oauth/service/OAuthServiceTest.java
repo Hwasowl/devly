@@ -21,7 +21,7 @@ import se.sowl.devlydomain.developer.domain.DeveloperType;
 import se.sowl.devlydomain.oauth.domain.OAuth2Provider;
 import se.sowl.devlydomain.study.domain.Study;
 import se.sowl.devlydomain.study.domain.StudyType;
-import se.sowl.devlydomain.study.domain.StudyTypeEnum;
+import se.sowl.devlydomain.study.domain.StudyTypeClassification;
 import se.sowl.devlydomain.user.domain.CustomOAuth2User;
 import se.sowl.devlydomain.user.domain.User;
 import se.sowl.devlydomain.user.domain.UserStudy;
@@ -180,7 +180,7 @@ public class OAuthServiceTest extends MediumTest {
 
         // then
         List<UserStudy> userStudies = userStudyRepository.findAllByUserId(loadedUser.getUserId());
-        assertThat(userStudies.size()).isEqualTo(StudyTypeEnum.values().length);
+        assertThat(userStudies.size()).isEqualTo(StudyTypeClassification.values().length);
 
         for (UserStudy userStudy : userStudies) {
             assertThat(userStudy.getUser()).isEqualTo(loadedUser.getUser());

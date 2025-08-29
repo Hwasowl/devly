@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import se.sowl.devlybatch.job.study.cache.StudyCache;
 import se.sowl.devlydomain.study.domain.Study;
-import se.sowl.devlydomain.study.domain.StudyStatusEnum;
+import se.sowl.devlydomain.study.domain.StudyStatus;
 import se.sowl.devlydomain.study.repository.StudyRepository;
 import se.sowl.devlydomain.user.domain.UserStudy;
 import se.sowl.devlydomain.user.repository.UserStudyRepository;
@@ -53,7 +53,7 @@ public class StudyAssignmentService {
 
     private void ensureCachePopulated() {
         if (studyCache.isEmpty()) {
-            List<Study> allStudies = studyRepository.findAllByStatusOrderById(StudyStatusEnum.CONNECTED);
+            List<Study> allStudies = studyRepository.findAllByStatusOrderById(StudyStatus.CONNECTED);
             studyCache.cacheStudies(allStudies);
         }
     }

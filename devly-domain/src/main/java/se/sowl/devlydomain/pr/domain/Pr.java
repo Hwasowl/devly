@@ -43,4 +43,26 @@ public class Pr extends BaseTimeEntity {
         this.description = description;
         this.study = study;
     }
+
+//    public boolean isValid() {
+//        return title != null && !title.trim().isEmpty() &&
+//               study != null;
+//    }
+//
+//    public void validateForCreation() {
+//        if (!isValid()) {
+//            throw new IllegalArgumentException("PR information is incomplete");
+//        }
+//        if (!study.isConnected()) {
+//            throw new IllegalStateException("Cannot create PR for disconnected study");
+//        }
+//    }
+//
+//    public int getTotalChangedFilesCount() {
+//        return changedFiles.size();
+//    }
+//
+//    public int getTotalCommentsCount() {
+//        return comments.size();
+//    }
 }

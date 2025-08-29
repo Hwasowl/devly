@@ -69,7 +69,7 @@ class PrEntityParserTest extends MediumBatchTest {
         // then
         assertThat(prWithRelations).hasSize(1);
 
-        PrWithRelations prWithRelation = prWithRelations.getFirst();
+        PrWithRelations prWithRelation = prWithRelations.get(0);
         Pr pr = prWithRelation.getPr();
         assertPrBasicProperties(pr, studyId);
 

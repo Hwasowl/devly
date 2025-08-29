@@ -23,7 +23,7 @@ import se.sowl.devlydomain.pr.repository.PrRepository;
 import se.sowl.devlydomain.prompt.domain.GeneratePrompt;
 import se.sowl.devlydomain.prompt.repository.GeneratePromptRepository;
 import se.sowl.devlydomain.study.domain.Study;
-import se.sowl.devlydomain.study.domain.StudyStatusEnum;
+import se.sowl.devlydomain.study.domain.StudyStatus;
 import se.sowl.devlydomain.study.domain.StudyType;
 import se.sowl.devlydomain.study.repository.StudyRepository;
 import se.sowl.devlyexternal.client.gpt.GPTClient;
@@ -103,7 +103,7 @@ class PrCreationJobConfigTest extends MediumBatchTest {
         verify(gptClient, times(2)).generate(any());
 
         studyRepository.findAll().forEach(study -> {
-            assertThat(study.getStatus()).isEqualTo(StudyStatusEnum.CONNECTED)
+            assertThat(study.getStatus()).isEqualTo(StudyStatus.CONNECTED)
                 .withFailMessage("스터디 상태가 CONNECTED로 변경되어야 합니다");
         });
 

@@ -69,7 +69,7 @@ class WordEntityParserTest extends MediumBatchTest {
 
         // then
         // 첫 번째 단어 검증
-        Word firstWord = words.getFirst();
+        Word firstWord = words.get(0);
         assertThat(firstWord.getStudy().getId()).isEqualTo(study.getId());
         assertThat(firstWord.getWord()).isEqualTo("implementation");
         assertThat(firstWord.getPronunciation()).isEqualTo("/ˌɪmplɪmenˈteɪʃən/");

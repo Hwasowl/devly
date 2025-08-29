@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import se.sowl.devlyapi.study.dto.UserStudyTasksResponse;
 import se.sowl.devlyapi.word.exception.NotAssignmentWordStudyException;
 import se.sowl.devlydomain.study.domain.StudyType;
-import se.sowl.devlydomain.study.domain.StudyTypeEnum;
+import se.sowl.devlydomain.study.domain.StudyTypeClassification;
 import se.sowl.devlydomain.study.repository.StudyTypeRepository;
 import se.sowl.devlydomain.user.domain.UserStudy;
 import se.sowl.devlydomain.user.repository.UserStudyRepository;
@@ -40,7 +40,7 @@ public class UserStudyService {
         Map<Long, StudyType> studyTypeMap = studyTypeRepository.findAll()
             .stream()
             .collect(Collectors.toMap(StudyType::getId, Function.identity()));
-        Map<StudyTypeEnum, Long> reviewCounts = studyReviewService.calculateReviewCounts(userStudies, studyTypeMap);
+        Map<StudyTypeClassification, Long> reviewCounts = studyReviewService.calculateReviewCounts(userStudies, studyTypeMap);
         UserStudyTaskGroup taskGroup = UserStudyTaskGroup.from(userStudies, studyTypeMap, reviewCounts);
         return taskGroup.toUserStudyTasksResponse();
     }

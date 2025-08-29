@@ -7,7 +7,7 @@ import se.sowl.devlyapi.study.exception.DuplicateInitialUserStudiesException;
 import se.sowl.devlyapi.study.exception.StudyNotExistException;
 import se.sowl.devlydomain.study.domain.Study;
 import se.sowl.devlydomain.study.domain.StudyType;
-import se.sowl.devlydomain.study.domain.StudyTypeEnum;
+import se.sowl.devlydomain.study.domain.StudyTypeClassification;
 import se.sowl.devlydomain.study.repository.StudyRepository;
 import se.sowl.devlydomain.study.repository.StudyTypeRepository;
 import se.sowl.devlydomain.user.domain.User;
@@ -29,7 +29,7 @@ public class StudyService {
         isStudyInitialed(user);
         try {
             List<StudyType> studyTypes = studyTypeRepository.findAll();
-            for (StudyTypeEnum typeEnum : StudyTypeEnum.values()) {
+            for (StudyTypeClassification typeEnum : StudyTypeClassification.values()) {
                 StudyType studyType = validateStudyType(typeEnum, studyTypes);
                 Study study = studyRepository.findFirstByStudyTypeId(studyType.getId())
                     .orElseThrow(() -> new StudyNotExistException("Study Not Exist"));
@@ -53,7 +53,7 @@ public class StudyService {
         }
     }
 
-    private static StudyType validateStudyType(StudyTypeEnum typeEnum, List<StudyType> studyTypes) {
+    private static StudyType validateStudyType(StudyTypeClassification typeEnum, List<StudyType> studyTypes) {
         return studyTypes.stream()
             .filter(st -> st.getName().equals(typeEnum.getValue()))
             .findFirst()

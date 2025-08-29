@@ -9,7 +9,7 @@ import se.sowl.devlyapi.user.service.UserService;
 import se.sowl.devlyapi.word.exception.AlreadyExistsReviewException;
 import se.sowl.devlyapi.word.exception.NotAssignmentWordStudyException;
 import se.sowl.devlyapi.word.exception.ReviewNotFoundException;
-import se.sowl.devlydomain.study.domain.StudyTypeEnum;
+import se.sowl.devlydomain.study.domain.StudyTypeClassification;
 import se.sowl.devlydomain.user.domain.UserStudy;
 import se.sowl.devlydomain.user.repository.UserStudyRepository;
 import se.sowl.devlydomain.word.domain.Word;
@@ -63,7 +63,7 @@ public class WordReviewService {
     private void updateUserStudyComplete(Long studyId, Long userId) {
         UserStudy userStudy = userStudyService.getUserStudy(userId, studyId);
         long count = wordReviewRepository.countByCorrectAndUserStudyId(true, userStudy.getId());
-        if (count == StudyTypeEnum.WORD.getRequiredCount()) {
+        if (count == StudyTypeClassification.WORD.getRequiredCount()) {
             userStudyRepository.findByUserIdAndStudyId(userId, studyId)
                 .ifPresentOrElse(UserStudy::complete, () -> {
                         throw new NotAssignmentWordStudyException(); // TODO: should make validate manager class? cannot assign exception in domain entity

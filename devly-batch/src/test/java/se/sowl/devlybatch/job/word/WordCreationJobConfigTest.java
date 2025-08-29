@@ -17,7 +17,7 @@ import se.sowl.devlydomain.developer.domain.DeveloperType;
 import se.sowl.devlydomain.prompt.domain.GeneratePrompt;
 import se.sowl.devlydomain.prompt.repository.GeneratePromptRepository;
 import se.sowl.devlydomain.study.domain.Study;
-import se.sowl.devlydomain.study.domain.StudyStatusEnum;
+import se.sowl.devlydomain.study.domain.StudyStatus;
 import se.sowl.devlydomain.study.domain.StudyType;
 import se.sowl.devlydomain.study.repository.StudyRepository;
 import se.sowl.devlydomain.word.domain.Word;
@@ -131,7 +131,7 @@ class WordCreationJobConfigTest extends MediumBatchTest {
         verify(gptClient, times(2)).generate(any());
 
         studyRepository.findAll().forEach(study -> {
-            assertThat(study.getStatus()).isEqualTo(StudyStatusEnum.CONNECTED);
+            assertThat(study.getStatus()).isEqualTo(StudyStatus.CONNECTED);
         });
 
         List<Word> savedWords = wordRepository.findAll();
@@ -190,7 +190,7 @@ class WordCreationJobConfigTest extends MediumBatchTest {
 
         List<Study> updatedStudies = studyRepository.findAll();
         long connectedCount = updatedStudies.stream()
-            .filter(s -> s.getStatus() == StudyStatusEnum.CONNECTED)
+            .filter(s -> s.getStatus() == StudyStatus.CONNECTED)
             .count();
         assertThat(connectedCount).isEqualTo(4);
     }

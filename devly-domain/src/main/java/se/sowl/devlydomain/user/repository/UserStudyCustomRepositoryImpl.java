@@ -6,19 +6,20 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
-import se.sowl.devlydomain.user.domain.QUserStudy;
 import se.sowl.devlydomain.user.domain.UserStudy;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
 public class UserStudyCustomRepositoryImpl implements UserStudyCustomRepository {
-    private final JPAQueryFactory queryFactory;
+    private final EntityManager entityManager;
 
     @Autowired
-    public UserStudyCustomRepositoryImpl(JPAQueryFactory queryFactory) {
-        this.queryFactory = queryFactory;
+    public UserStudyCustomRepositoryImpl(EntityManager entityManager) {
+        this.entityManager = entityManager;
     }
 
     @Override
@@ -28,25 +29,44 @@ public class UserStudyCustomRepositoryImpl implements UserStudyCustomRepository 
         LocalDateTime today,
         Pageable pageable
     ) {
-        QUserStudy userStudy = QUserStudy.userStudy;
-        QUserStudy nextStudy = new QUserStudy("nextStudy");
+        String jpql = """
+            SELECT us FROM UserStudy us 
+            WHERE us.completedAt BETWEEN :yesterday AND :todayStart 
+            AND us.isCompleted = true 
+            AND NOT EXISTS (
+                SELECT 1 FROM UserStudy nextStudy 
+                WHERE nextStudy.user.id = us.user.id 
+                AND nextStudy.scheduledAt = :today
+            )
+            ORDER BY us.id ASC
+            """;
 
-        List<UserStudy> content = queryFactory
-            .selectFrom(userStudy)
-            .leftJoin(nextStudy)
-            .on(nextStudy.user.id.eq(userStudy.user.id), nextStudy.scheduledAt.eq(today))
-            .where(userStudy.completedAt.between(yesterday, todayStart), userStudy.isCompleted.isTrue(), nextStudy.id.isNull())
-            .orderBy(userStudy.id.asc())
-            .offset(pageable.getOffset())
-            .limit(pageable.getPageSize())
-            .fetch();
+        TypedQuery<UserStudy> query = entityManager.createQuery(jpql, UserStudy.class)
+            .setParameter("yesterday", yesterday)
+            .setParameter("todayStart", todayStart)
+            .setParameter("today", today)
+            .setFirstResult((int) pageable.getOffset())
+            .setMaxResults(pageable.getPageSize());
 
-        long total = queryFactory
-            .selectFrom(userStudy)
-            .leftJoin(nextStudy)
-            .on(nextStudy.user.id.eq(userStudy.user.id), nextStudy.scheduledAt.eq(today))
-            .where(userStudy.completedAt.between(yesterday, todayStart), userStudy.isCompleted.isTrue(), nextStudy.id.isNull())
-            .fetch().size();
+        List<UserStudy> content = query.getResultList();
+
+        String countJpql = """
+            SELECT COUNT(us) FROM UserStudy us 
+            WHERE us.completedAt BETWEEN :yesterday AND :todayStart 
+            AND us.isCompleted = true 
+            AND NOT EXISTS (
+                SELECT 1 FROM UserStudy nextStudy 
+                WHERE nextStudy.user.id = us.user.id 
+                AND nextStudy.scheduledAt = :today
+            )
+            """;
+
+        TypedQuery<Long> countQuery = entityManager.createQuery(countJpql, Long.class)
+            .setParameter("yesterday", yesterday)
+            .setParameter("todayStart", todayStart)
+            .setParameter("today", today);
+
+        long total = countQuery.getSingleResult();
 
         return new PageImpl<>(content, pageable, total);
     }

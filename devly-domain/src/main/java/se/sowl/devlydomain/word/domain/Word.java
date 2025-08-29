@@ -53,4 +53,22 @@ public class Word extends BaseTimeEntity {
         this.example = example;
         this.quiz = quiz;
     }
+
+    public boolean isValid() {
+        return study != null &&
+               word != null && !word.trim().isEmpty() &&
+               pronunciation != null && !pronunciation.trim().isEmpty() &&
+               meaning != null && !meaning.trim().isEmpty() &&
+               example != null && !example.trim().isEmpty() &&
+               quiz != null && !quiz.trim().isEmpty();
+    }
+
+    public void validateForCreation() {
+        if (!isValid()) {
+            throw new IllegalArgumentException("Word information is incomplete");
+        }
+        if (!study.isConnected()) {
+            throw new IllegalStateException("Cannot create word for disconnected study");
+        }
+    }
 }

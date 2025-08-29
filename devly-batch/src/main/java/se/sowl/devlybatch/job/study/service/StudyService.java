@@ -9,7 +9,7 @@ import se.sowl.devlybatch.job.study.cache.StudyCache;
 import se.sowl.devlydomain.developer.domain.DeveloperType;
 import se.sowl.devlydomain.developer.repository.DeveloperTypeRepository;
 import se.sowl.devlydomain.study.domain.Study;
-import se.sowl.devlydomain.study.domain.StudyStatusEnum;
+import se.sowl.devlydomain.study.domain.StudyStatus;
 import se.sowl.devlydomain.study.domain.StudyType;
 import se.sowl.devlydomain.study.repository.StudyRepository;
 import se.sowl.devlydomain.study.repository.StudyTypeRepository;
@@ -54,7 +54,7 @@ public class StudyService {
             PageRequest.of(page, size));
     }
 
-    public List<Study> getTodayStudiesOf(Long StudyTypeId, StudyStatusEnum statusEnum) {
+    public List<Study> getTodayStudiesOf(Long StudyTypeId, StudyStatus statusEnum) {
         LocalDateTime startOfDay = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0).withNano(0);
         LocalDateTime endOfDay = startOfDay.plusDays(1);
         return studyRepository.findByCreatedAtBetweenAndStudyTypeIdAndStatus(startOfDay, endOfDay, StudyTypeId, statusEnum);
