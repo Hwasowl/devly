@@ -35,8 +35,9 @@ class PrEntityParserTest extends MediumBatchTest {
 
     @Autowired
     public PrEntityParserTest(StudyRepository studyRepository) {
+        ObjectMapper objectMapper = new ObjectMapper();
         this.prEntityParser = new PrEntityParser(
-            new JsonExtractor(new ObjectMapper()),
+            objectMapper,
             new GptRequestFactory(),
             new GptResponseValidator(),
             studyRepository
@@ -53,12 +54,23 @@ class PrEntityParserTest extends MediumBatchTest {
         Long studyId = study.getId();
 
         String responseContent = """
-           제목: 싱글톤 패턴 구현 개선
-           설명: Thread-safe한 싱글톤 패턴으로 개선하고, 불필요한 메모리 사용을 줄였습니다.
-           변경 파일: [{"fileName": "src/main/java/com/example/SingletonService.java", "language": "Java", "content": "public class SingletonService {\\n\\n    private static volatile SingletonService instance;\\n\\n    private SingletonService() {\\n        // private constructor\\n    }\\n\\n    public static SingletonService getInstance() {\\n        if (instance == null) {\\n            synchronized (SingletonService.class) {\\n                if (instance == null) {\\n                    instance = new SingletonService();\\n                }\\n            }\\n        }\\n        return instance;\\n    }\\n}"},{"fileName": "src/test/java/com/example/SingletonServiceTest.java", "language": "Java", "content": "import org.junit.jupiter.api.Test;\\nimport static org.junit.jupiter.api.Assertions.*;\\n\\npublic class SingletonServiceTest {\\n\\n    @Test\\n    void testSingletonInstance() {\\n        SingletonService instance1 = SingletonService.getInstance();\\n        SingletonService instance2 = SingletonService.getInstance();\\n        assertSame(instance1, instance2);\\n    }\\n}"}]
-           라벨: ["Java", "Thread-safe", "Singleton", "Design Pattern", "Performance"]
-           질문: ["싱글톤 패턴을 사용하는 이유는 무엇인가요?", "volatile 키워드의 역할은 무엇인가요?"]
-           ---
+           [{
+             "title": "싱글톤 패턴 구현 개선",
+             "description": "Thread-safe한 싱글톤 패턴으로 개선하고, 불필요한 메모리 사용을 줄였습니다.",
+             "changedFiles": [
+               {
+                 "fileName": "src/main/java/com/example/SingletonService.java",
+                 "language": "Java",
+                 "content": "public class SingletonService {\\n\\n    private static volatile SingletonService instance;\\n\\n    private SingletonService() {\\n        // private constructor\\n    }\\n\\n    public static SingletonService getInstance() {\\n        if (instance == null) {\\n            synchronized (SingletonService.class) {\\n                if (instance == null) {\\n                    instance = new SingletonService();\\n                }\\n            }\\n        }\\n        return instance;\\n    }\\n}"
+               },
+               {
+                 "fileName": "src/test/java/com/example/SingletonServiceTest.java",
+                 "language": "Java",
+                 "content": "import org.junit.jupiter.api.Test;\\nimport static org.junit.jupiter.api.Assertions.*;\\n\\npublic class SingletonServiceTest {\\n\\n    @Test\\n    void testSingletonInstance() {\\n        SingletonService instance1 = SingletonService.getInstance();\\n        SingletonService instance2 = SingletonService.getInstance();\\n        assertSame(instance1, instance2);\\n    }\\n}"
+               }
+             ],
+             "labels": ["Java", "Thread-safe", "Singleton", "Design Pattern", "Performance"]
+           }]
            """;
         GPTResponse gptResponse = createGptResponse(responseContent);
 

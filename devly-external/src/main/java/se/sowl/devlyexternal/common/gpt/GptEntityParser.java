@@ -1,5 +1,7 @@
 package se.sowl.devlyexternal.common.gpt;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import se.sowl.devlyexternal.client.gpt.dto.GPTRequest;
@@ -16,6 +18,7 @@ import java.util.List;
 public abstract class GptEntityParser<T> {
     private final GptRequestFactory requestFactory;
     private final GptResponseValidator responseValidator;
+    private final ObjectMapper objectMapper;
 
     public List<T> parseGPTResponse(GPTResponse response, ParserArguments parameters) {
         responseValidator.validateResponse(response);
@@ -35,21 +38,30 @@ public abstract class GptEntityParser<T> {
     }
 
     private void parseContents(ParserArguments parameters, String content, List<T> contents) {
-        String[] entries = content.split("---");
-        responseValidator.validateEntries(entries);
-        parseEntities(parameters, entries, contents);
-        if (contents.isEmpty()) {
-            throw new GPTContentProcessingException("Failed to parse any valid entities from GPT response");
-        }
-    }
-
-    private void parseEntities(ParserArguments parameters, String[] entries, List<T> contents) {
-        for (String entry : entries) {
-            if (entry.trim().isEmpty()) continue;
-            T entity = parseEntity(parameters, entry);
-            if (entity != null) {
-                contents.add(entity);
+        try {
+            String trimmedContent = content.trim();
+            JsonNode jsonNode = objectMapper.readTree(trimmedContent);
+            
+            if (jsonNode.isArray()) {
+                for (JsonNode node : jsonNode) {
+                    String entry = objectMapper.writeValueAsString(node);
+                    T entity = parseEntity(parameters, entry);
+                    if (entity != null) {
+                        contents.add(entity);
+                    }
+                }
+            } else {
+                T entity = parseEntity(parameters, trimmedContent);
+                if (entity != null) {
+                    contents.add(entity);
+                }
             }
+            
+            if (contents.isEmpty()) {
+                throw new GPTContentProcessingException("Failed to parse any valid entities from GPT response");
+            }
+        } catch (Exception e) {
+            throw new GPTContentProcessingException("Error processing GPT response: " + e.getMessage(), e);
         }
     }
 

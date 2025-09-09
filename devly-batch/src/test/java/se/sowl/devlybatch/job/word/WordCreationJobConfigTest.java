@@ -67,32 +67,6 @@ class WordCreationJobConfigTest extends MediumBatchTest {
         developerTypeRepository.deleteAll();
     }
 
-    private void initializePrompts() {
-        if (promptRepository.findByDeveloperTypeIdAndStudyTypeId(1L, 1L).isEmpty()) {
-            StudyPrompt backendWordPrompt = new StudyPrompt(1L, 1L,
-                "당신은 백엔드 개발자를 위한 전문 용어 교육 전문가입니다.",
-                "백엔드 개발자를 위한 전문 용어를 생성해주세요.\n" +
-                    "단어: [영문 용어]\n" +
-                    "발음: [발음 기호]\n" +
-                    "의미: [한글 의미]\n" +
-                    "예문: {\"source\": \"공식 문서 출처\", \"text\": \"영문 예문\", \"translation\": \"한글 번역\"}\n" +
-                    "퀴즈: {\"text\": \"\", \"distractors\": [\"오답1\", \"오답2\", \"오답3\", \"오답4\"]}\n" +
-                    "---");
-            promptRepository.save(backendWordPrompt);
-
-            StudyPrompt frontendWordPrompt = new StudyPrompt(2L, 1L,
-                "당신은 프론트엔드 개발자를 위한 전문 용어 교육 전문가입니다.",
-                "프론트엔드 개발자를 위한 전문 용어를 생성해주세요.\n" +
-                    "단어: [영문 용어]\n" +
-                    "발음: [발음 기호]\n" +
-                    "의미: [한글 의미]\n" +
-                    "예문: {\"source\": \"공식 문서 출처\", \"text\": \"영문 예문\", \"translation\": \"한글 번역\"}\n" +
-                    "퀴즈: {\"text\": \"\", \"distractors\": [\"오답1\", \"오답2\", \"오답3\", \"오답4\"]}\n" +
-                    "---");
-            promptRepository.save(frontendWordPrompt);
-        }
-    }
-
     @Test
     @DisplayName("오늘 생성된 스터디에 대해 GPT 응답을 파싱하여 단어를 저장한다")
     void shouldCreateWordsFromGptResponse() throws Exception {
@@ -104,21 +78,37 @@ class WordCreationJobConfigTest extends MediumBatchTest {
         Study frontendStudy = studyRepository.save(buildStudy(studyType, feType));
 
         String backendResponse = """
-        단어: implementation
-        발음: /ˌɪmplɪmenˈteɪʃən/
-        의미: 구현, 실행
-        예문: {"source": "Spring Documentation", "text": "The implementation details should be hidden.", "translation": "구현 세부사항은 숨겨져야 합니다."}
-        퀴즈: {"text": "", "distractors": ["Interface", "Abstract", "Class", "Object"]}
-        ---
+        {
+          "word": "dependency injection",
+          "pronunciation": "/dɪˈpendənsi ɪnˈdʒekʃən/",
+          "meaning": "의존성 주입",
+          "example": {
+            "source": "Spring Framework Documentation",
+            "text": "Dependency injection is a design pattern that allows objects to receive their dependencies from external sources.",
+            "translation": "의존성 주입은 객체가 외부 소스로부터 의존성을 받을 수 있게 하는 설계 패턴입니다."
+          },
+          "quiz": {
+            "text": "",
+            "distractors": ["Constructor Injection", "Setter Injection", "Field Injection", "Method Injection"]
+          }
+        }
         """;
 
         String frontendResponse = """
-        단어: component
-        발음: /kəmˈpəʊnənt/
-        의미: 구성 요소
-        예문: {"source": "React Documentation", "text": "Components let you split the UI into independent pieces.", "translation": "컴포넌트를 사용하면 UI를 독립적인 부분으로 분할할 수 있습니다."}
-        퀴즈: {"text": "", "distractors": ["Module", "Package", "Library", "Framework"]}
-        ---
+        {
+          "word": "virtual DOM",
+          "pronunciation": "/ˈvɜːrtʃuəl diː oʊ ɛm/",
+          "meaning": "가상 돔",
+          "example": {
+            "source": "React Official Documentation",
+            "text": "The virtual DOM is a JavaScript representation of the actual DOM.",
+            "translation": "가상 돔은 실제 돔의 자바스크립트 표현입니다."
+          },
+          "quiz": {
+            "text": "",
+            "distractors": ["Real DOM", "Shadow DOM", "Document Fragment", "HTML Element"]
+          }
+        }
         """;
 
         when(gptClient.generate(any()))
@@ -141,13 +131,15 @@ class WordCreationJobConfigTest extends MediumBatchTest {
 
         // 백엔드 단어 검증
         Word backendWord = wordRepository.findByStudyId(backendStudy.getId());
-        assertThat(backendWord.getWord()).isEqualTo("implementation");
-        assertThat(backendWord.getMeaning()).isEqualTo("구현, 실행");
+        assertThat(backendWord.getWord()).isEqualTo("dependency injection");
+        assertThat(backendWord.getMeaning()).isEqualTo("의존성 주입");
+        assertThat(backendWord.getPronunciation()).isEqualTo("/dɪˈpendənsi ɪnˈdʒekʃən/");
 
         // 프론트엔드 단어 검증
         Word frontendWord = wordRepository.findByStudyId(frontendStudy.getId());
-        assertThat(frontendWord.getWord()).isEqualTo("component");
-        assertThat(frontendWord.getMeaning()).isEqualTo("구성 요소");
+        assertThat(frontendWord.getWord()).isEqualTo("virtual DOM");
+        assertThat(frontendWord.getMeaning()).isEqualTo("가상 돔");
+        assertThat(frontendWord.getPronunciation()).isEqualTo("/ˈvɜːrtʃuəl diː oʊ ɛm/");
     }
 
     @Test
@@ -165,12 +157,20 @@ class WordCreationJobConfigTest extends MediumBatchTest {
         studyRepository.saveAll(studies);
 
         String validResponse = """
-        단어: implementation
-        발음: /ˌɪmplɪmenˈteɪʃən/
-        의미: 구현, 실행
-        예문: {"source": "Spring Documentation", "text": "The implementation details should be hidden.", "translation": "구현 세부사항은 숨겨져야 합니다."}
-        퀴즈: {"text": "", "distractors": ["Interface", "Abstract", "Class", "Object"]}
-        ---
+        {
+          "word": "microservice",
+          "pronunciation": "/ˈmaɪkroʊsɜːrvɪs/",
+          "meaning": "마이크로서비스",
+          "example": {
+            "source": "Spring Boot Documentation",
+            "text": "A microservice is a small, independent service that can be deployed separately.",
+            "translation": "마이크로서비스는 독립적으로 배포할 수 있는 작고 독립적인 서비스입니다."
+          },
+          "quiz": {
+            "text": "",
+            "distractors": ["Monolith", "Serverless", "Container", "API Gateway"]
+          }
+        }
         """;
 
         when(gptClient.generate(any()))
@@ -217,5 +217,49 @@ class WordCreationJobConfigTest extends MediumBatchTest {
 
         List<Word> savedWords = wordRepository.findAll();
         assertThat(savedWords).isEmpty();
+    }
+
+    private void initializePrompts() {
+        if (promptRepository.findByDeveloperTypeIdAndStudyTypeId(1L, 1L).isEmpty()) {
+            StudyPrompt backendWordPrompt = new StudyPrompt(1L, 1L,
+                    "You are an expert in technical terminology education for backend developers.\n" +
+                            "Generate technical terms for backend developers.\n\n" +
+                            "Please respond with a JSON object in the following format:\n" +
+                            "{\n" +
+                            "  \"word\": \"[English term]\",\n" +
+                            "  \"pronunciation\": \"[pronunciation guide]\",\n" +
+                            "  \"meaning\": \"[Korean meaning]\",\n" +
+                            "  \"example\": {\n" +
+                            "    \"source\": \"[official documentation source]\",\n" +
+                            "    \"text\": \"[English example sentence]\",\n" +
+                            "    \"translation\": \"[Korean translation]\"\n" +
+                            "  },\n" +
+                            "  \"quiz\": {\n" +
+                            "    \"text\": \"\",\n" +
+                            "    \"distractors\": [\"wrong1\", \"wrong2\", \"wrong3\", \"wrong4\"]\n" +
+                            "  }\n" +
+                            "}");
+            promptRepository.save(backendWordPrompt);
+
+            StudyPrompt frontendWordPrompt = new StudyPrompt(2L, 1L,
+                    "You are an expert in technical terminology education for frontend developers.\n" +
+                            "Generate technical terms for frontend developers.\n\n" +
+                            "Please respond with a JSON object in the following format:\n" +
+                            "{\n" +
+                            "  \"word\": \"[English term]\",\n" +
+                            "  \"pronunciation\": \"[pronunciation guide]\",\n" +
+                            "  \"meaning\": \"[Korean meaning]\",\n" +
+                            "  \"example\": {\n" +
+                            "    \"source\": \"[official documentation source]\",\n" +
+                            "    \"text\": \"[English example sentence]\",\n" +
+                            "    \"translation\": \"[Korean translation]\"\n" +
+                            "  },\n" +
+                            "  \"quiz\": {\n" +
+                            "    \"text\": \"\",\n" +
+                            "    \"distractors\": [\"wrong1\", \"wrong2\", \"wrong3\", \"wrong4\"]\n" +
+                            "  }\n" +
+                            "}");
+            promptRepository.save(frontendWordPrompt);
+        }
     }
 }

@@ -31,8 +31,9 @@ class WordEntityParserTest extends MediumBatchTest {
 
     @Autowired
     public WordEntityParserTest(StudyRepository studyRepository) {
+        ObjectMapper objectMapper = new ObjectMapper();
         this.wordEntityParser = new WordEntityParser(
-            new JsonExtractor(new ObjectMapper()),
+            objectMapper,
             new GptRequestFactory(),
             new GptResponseValidator(),
             studyRepository
@@ -44,18 +45,34 @@ class WordEntityParserTest extends MediumBatchTest {
     void shouldParseGptResponseToWordEntities() {
         // given
         String responseContent = """
-           단어: implementation
-           발음: /ˌɪmplɪmenˈteɪʃən/
-           의미: 구현, 실행
-           예문: {"source": "Spring Documentation", "text": "The implementation details should be hidden.", "translation": "구현 세부사항은 숨겨져야 합니다."}
-           퀴즈: {"text": "", "distractors": ["Interface", "Abstract", "Class", "Object"]}
-           ---
-           단어: polymorphism
-           발음: /ˌpɒlɪˈmɔːfɪzəm/
-           의미: 다형성
-           예문: {"source": "Java Documentation", "text": "Polymorphism allows multiple implementations.", "translation": "다형성은 여러 구현을 허용합니다."}
-           퀴즈: {"text": "", "distractors": ["Inheritance", "Encapsulation", "Abstraction", "Interface"]}
-           ---
+           [{
+             "word": "implementation",
+             "pronunciation": "/ˌɪmplɪmenˈteɪʃən/",
+             "meaning": "구현, 실행",
+             "example": {
+               "source": "Spring Documentation",
+               "text": "The implementation details should be hidden.",
+               "translation": "구현 세부사항은 숨겨져야 합니다."
+             },
+             "quiz": {
+               "text": "",
+               "distractors": ["Interface", "Abstract", "Class", "Object"]
+             }
+           },
+           {
+             "word": "polymorphism",
+             "pronunciation": "/ˌpɒlɪˈmɔːfɪzəm/",
+             "meaning": "다형성",
+             "example": {
+               "source": "Java Documentation",
+               "text": "Polymorphism allows multiple implementations.",
+               "translation": "다형성은 여러 구현을 허용합니다."
+             },
+             "quiz": {
+               "text": "",
+               "distractors": ["Inheritance", "Encapsulation", "Abstraction", "Interface"]
+             }
+           }]
            """;
         GPTResponse gptResponse = createGptResponse(responseContent);
 
@@ -68,6 +85,8 @@ class WordEntityParserTest extends MediumBatchTest {
         List<Word> words = wordEntityParser.parseGPTResponse(gptResponse, parseParameters);
 
         // then
+        assertThat(words).hasSize(2);
+        
         // 첫 번째 단어 검증
         Word firstWord = words.get(0);
         assertThat(firstWord.getStudy().getId()).isEqualTo(study.getId());

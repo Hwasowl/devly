@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.jdbc.Sql;
 import se.sowl.devlybatch.config.TestBatchConfig;
 import se.sowl.devlybatch.job.MediumBatchTest;
 import se.sowl.devlydomain.developer.domain.DeveloperType;
@@ -37,6 +38,10 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 @ActiveProfiles("test")
 @Import({TestBatchConfig.class, PrCreationJobConfig.class})
+@Sql(scripts = {
+    "/org/springframework/batch/core/schema-drop-h2.sql",
+    "/org/springframework/batch/core/schema-h2.sql"
+}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 class PrCreationJobConfigTest extends MediumBatchTest {
 
     @Autowired
@@ -117,21 +122,35 @@ class PrCreationJobConfigTest extends MediumBatchTest {
 
     private String createBackendPrResponseContent() {
         return """
-        제목: 싱글톤 패턴 구현 개선
-        설명: Thread-safe한 싱글톤 패턴으로 개선하고, 불필요한 메모리 사용을 줄였습니다.
-        변경 파일: [{"fileName": "src/main/java/com/example/SingletonService.java", "language": "Java", "content": "public class SingletonService {\\n\\n    private static volatile SingletonService instance;\\n\\n    private SingletonService() {\\n        // private constructor\\n    }\\n\\n    public static SingletonService getInstance() {\\n        if (instance == null) {\\n            synchronized (SingletonService.class) {\\n                if (instance == null) {\\n                    instance = new SingletonService();\\n                }\\n            }\\n        }\\n        return instance;\\n    }\\n}"}]
-        라벨: ["Java", "Thread-safe", "Singleton"]
-        ---
+        {
+          "title": "싱글톤 패턴 구현 개선",
+          "description": "Thread-safe한 싱글톤 패턴으로 개선하고, 불필요한 메모리 사용을 줄였습니다.",
+          "changedFiles": [
+            {
+              "fileName": "src/main/java/com/example/SingletonService.java",
+              "language": "Java",
+              "content": "public class SingletonService {\\n\\n    private static volatile SingletonService instance;\\n\\n    private SingletonService() {\\n        // private constructor\\n    }\\n\\n    public static SingletonService getInstance() {\\n        if (instance == null) {\\n            synchronized (SingletonService.class) {\\n                if (instance == null) {\\n                    instance = new SingletonService();\\n                }\\n            }\\n        }\\n        return instance;\\n    }\\n}"
+            }
+          ],
+          "labels": ["Java", "Thread-safe", "Singleton"]
+        }
         """;
     }
 
     private String createFrontendPrResponseContent() {
         return """
-        제목: 리액트 컴포넌트 최적화
-        설명: 불필요한 렌더링을 방지하기 위해 React.memo와 useCallback 훅을 적용했습니다.
-        변경 파일: [{"fileName": "src/components/ProductList.jsx", "language": "JavaScript", "content": "import React, { useCallback } from 'react';\\n\\nconst ProductItem = React.memo(({ product, onSelect }) => {\\n  return (\\n    <div className=\\"product-item\\" onClick={() => onSelect(product.id)}>\\n      <h3>{product.name}</h3>\\n      <p>{product.price}</p>\\n    </div>\\n  );\\n});\\n\\nconst ProductList = ({ products, onSelectProduct }) => {\\n  const handleSelect = useCallback((id) => {\\n    onSelectProduct(id);\\n  }, [onSelectProduct]);\\n\\n  return (\\n    <div className=\\"product-list\\">\\n      {products.map(product => (\\n        <ProductItem\\n          key={product.id}\\n          product={product}\\n          onSelect={handleSelect}\\n        />\\n      ))}\\n    </div>\\n  );\\n};\\n\\nexport default ProductList;"}]
-        라벨: ["React", "Performance", "Optimization"]
-        ---
+        {
+          "title": "리액트 컴포넌트 최적화",
+          "description": "불필요한 렌더링을 방지하기 위해 React.memo와 useCallback 훅을 적용했습니다.",
+          "changedFiles": [
+            {
+              "fileName": "src/components/ProductList.jsx",
+              "language": "JavaScript",
+              "content": "import React, { useCallback } from 'react';\\n\\nconst ProductItem = React.memo(({ product, onSelect }) => {\\n  return (\\n    <div className=\\"product-item\\" onClick={() => onSelect(product.id)}>\\n      <h3>{product.name}</h3>\\n      <p>{product.price}</p>\\n    </div>\\n  );\\n});\\n\\nconst ProductList = ({ products, onSelectProduct }) => {\\n  const handleSelect = useCallback((id) => {\\n    onSelectProduct(id);\\n  }, [onSelectProduct]);\\n\\n  return (\\n    <div className=\\"product-list\\">\\n      {products.map(product => (\\n        <ProductItem\\n          key={product.id}\\n          product={product}\\n          onSelect={handleSelect}\\n        />\\n      ))}\\n    </div>\\n  );\\n};\\n\\nexport default ProductList;"
+            }
+          ],
+          "labels": ["React", "Performance", "Optimization"]
+        }
         """;
     }
 
@@ -176,26 +195,54 @@ class PrCreationJobConfigTest extends MediumBatchTest {
     }
 
     private StudyPrompt createBackendPrPrompt() {
-        String roleContent = "당신은 백엔드 개발자를 위한 PR 리뷰 및 작성 전문가입니다.";
-        String generateContent = "백엔드 개발자를 위한 PR(Pull Request) 예시를 생성해주세요.\n" +
-            "각 PR은 다음 형식으로 정확히 작성해주세요:\n" +
-            "제목: [PR의 간결하고 명확한 제목]\n" +
-            "설명: [PR에 대한 자세한 설명]\n" +
-            "변경 파일: [{\"fileName\": \"파일 경로와 이름\", \"language\": \"프로그래밍 언어\", \"content\": \"파일 내용\"}]\n" +
-            "라벨: [\"변경 파일에 해당하는 태그1\", \"변경 파일에 해당하는 태그2\", \"변경 파일에 해당하는 태그3\"]\n" +
-            "---";
-        return new StudyPrompt(1L, 3L, roleContent, generateContent);
+        String generateContent = """
+        You are an expert in writing Pull Request examples for backend developers.
+        Please respond only with a JSON object in the following format.
+
+        Requirements:
+        - "title" and "description" must be written in Korean.
+        - "fileName", "language", "content", and "labels" should be in English if appropriate.
+
+        JSON Schema:
+        {
+          "title": "[Concise and clear PR title in Korean]",
+          "description": "[Detailed PR description in Korean]",
+          "changedFiles": [
+            {
+              "fileName": "file path and name",
+              "language": "programming language",
+              "content": "file content"
+            }
+          ],
+          "labels": ["tag1", "tag2", "tag3"]
+        }
+        """;
+        return new StudyPrompt(1L, 3L, generateContent);
     }
 
     private StudyPrompt createFrontendPrPrompt() {
-        String roleContent = "당신은 프론트엔드 개발자를 위한 PR 리뷰 및 작성 전문가입니다.";
-        String generateContent = "프론트엔드 개발자를 위한 PR(Pull Request) 예시를 생성해주세요.\n" +
-            "각 PR은 다음 형식으로 정확히 작성해주세요:\n" +
-            "제목: [PR의 간결하고 명확한 제목]\n" +
-            "설명: [PR에 대한 자세한 설명]\n" +
-            "변경 파일: [{\"fileName\": \"파일 경로와 이름\", \"language\": \"프로그래밍 언어\", \"content\": \"파일 내용\"}]\n" +
-            "라벨: [\"변경 파일에 해당하는 태그1\", \"변경 파일에 해당하는 태그2\", \"변경 파일에 해당하는 태그3\"]\n" +
-            "---";
-        return new StudyPrompt(2L, 3L, roleContent, generateContent);
+        String generateContent = """
+        You are an expert in writing Pull Request examples for frontend developers.
+        Please respond only with a JSON object in the following format.
+
+        Requirements:
+        - "title" and "description" must be written in Korean.
+        - "fileName", "language", "content", and "labels" should be in English if appropriate.
+
+        JSON Schema:
+        {
+          "title": "[Concise and clear PR title in Korean]",
+          "description": "[Detailed PR description in Korean]",
+          "changedFiles": [
+            {
+              "fileName": "file path and name",
+              "language": "programming language",
+              "content": "file content"
+            }
+          ],
+          "labels": ["tag1", "tag2", "tag3"]
+        }
+        """;
+        return new StudyPrompt(2L, 3L, generateContent);
     }
 }

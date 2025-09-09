@@ -1,5 +1,6 @@
 package se.sowl.devlyapi.pr.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import se.sowl.devlyapi.user.service.UserService;
@@ -20,12 +21,13 @@ public class PrReviewEntityParser extends GptEntityParser<PrReview> {
     private final PrCommentService prCommentService;
 
     public PrReviewEntityParser(
+        ObjectMapper objectMapper,
         GptRequestFactory requestFactory,
         GptResponseValidator responseValidator,
         UserService userService,
         PrCommentService prCommentService
     ) {
-        super(requestFactory, responseValidator);
+        super(requestFactory, responseValidator, objectMapper);
         this.userService = userService;
         this.prCommentService = prCommentService;
     }

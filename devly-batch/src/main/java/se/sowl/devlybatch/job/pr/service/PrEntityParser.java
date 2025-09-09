@@ -1,8 +1,8 @@
 package se.sowl.devlybatch.job.pr.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import se.sowl.devlybatch.common.JsonExtractor;
 import se.sowl.devlybatch.job.pr.dto.PrWithRelations;
 import se.sowl.devlydomain.pr.domain.Pr;
 import se.sowl.devlydomain.pr.domain.PrChangedFile;
@@ -10,6 +10,8 @@ import se.sowl.devlydomain.pr.domain.PrComment;
 import se.sowl.devlydomain.pr.domain.PrLabel;
 import se.sowl.devlydomain.study.domain.Study;
 import se.sowl.devlydomain.study.repository.StudyRepository;
+import se.sowl.devlyexternal.client.gpt.dto.ChangedFileDto;
+import se.sowl.devlyexternal.client.gpt.dto.PrGPTResponse;
 import se.sowl.devlyexternal.common.ParserArguments;
 import se.sowl.devlyexternal.common.gpt.GptEntityParser;
 import se.sowl.devlyexternal.common.gpt.GptRequestFactory;
@@ -17,22 +19,20 @@ import se.sowl.devlyexternal.common.gpt.GptResponseValidator;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 @Slf4j
 @Component
 public class PrEntityParser extends GptEntityParser<PrWithRelations> {
-    private final JsonExtractor jsonExtractor;
+    private final ObjectMapper objectMapper;
     private final StudyRepository studyRepository;
 
     public PrEntityParser(
-        JsonExtractor jsonExtractor,
+        ObjectMapper objectMapper,
         GptRequestFactory requestFactory,
         GptResponseValidator responseValidator,
         StudyRepository studyRepository) {
-        super(requestFactory, responseValidator);
-        this.jsonExtractor = jsonExtractor;
+        super(requestFactory, responseValidator, objectMapper);
+        this.objectMapper = objectMapper;
         this.studyRepository = studyRepository;
     }
 
@@ -42,84 +42,70 @@ public class PrEntityParser extends GptEntityParser<PrWithRelations> {
             () -> new IllegalArgumentException("Study not found with ID: " + parameters.get("studyId", Long.class))
         );
         try {
-            String title = jsonExtractor.extractField(entry, "제목:");
-            String description = jsonExtractor.extractField(entry, "설명:");
-            Pr pr = Pr.builder().title(title).description(description).study(study).build();
-            return getPrWithRelations(entry, pr);
+            PrGPTResponse prResponse = objectMapper.readValue(entry, PrGPTResponse.class);
+            Pr pr = Pr.builder()
+                .title(prResponse.getTitle())
+                .description(prResponse.getDescription())
+                .study(study)
+                .build();
+            return getPrWithRelations(prResponse, pr);
         } catch (Exception e) {
             log.error("PR Parsing Error: {}", e.getMessage(), e);
             return null;
         }
     }
 
-    private PrWithRelations getPrWithRelations(String entry, Pr pr) {
-        List<PrChangedFile> changedFiles = parseChangedFiles(entry);
-        List<PrLabel> labels = parseLabels(entry);
-        List<PrComment> comments = parseComments(entry);
+    private PrWithRelations getPrWithRelations(PrGPTResponse prResponse, Pr pr) {
+        List<PrChangedFile> changedFiles = parseChangedFiles(prResponse.getChangedFiles());
+        List<PrLabel> labels = parseLabels(prResponse.getLabels());
+        List<PrComment> comments = parseComments();
         return new PrWithRelations(pr, changedFiles, labels, comments);
     }
 
-    private List<PrChangedFile> parseChangedFiles(String entry) {
+    private List<PrChangedFile> parseChangedFiles(List<ChangedFileDto> changedFilesDtos) {
         List<PrChangedFile> changedFiles = new ArrayList<>();
-        String changedFilesJson = jsonExtractor.extractJsonArray(entry, "변경 파일:");
-        if (jsonExtractor.isInvalidJson(changedFilesJson)) {
+        if (changedFilesDtos == null) {
             return changedFiles;
         }
         try {
-            List<Map<String, String>> filesData = jsonExtractor.parseStringMap(changedFilesJson);
-            for (Map<String, String> file : filesData) {
+            for (ChangedFileDto fileDto : changedFilesDtos) {
                 PrChangedFile changedFile = PrChangedFile.builder()
-                    .fileName(file.get("fileName"))
-                    .language(file.get("language"))
-                    .content(file.get("content"))
+                    .fileName(fileDto.getFileName())
+                    .language(fileDto.getLanguage())
+                    .content(fileDto.getContent())
                     .build();
                 changedFiles.add(changedFile);
             }
         } catch (Exception e) {
             log.error("Changed File Parsing Error: {}", e.getMessage(), e);
         }
-
         return changedFiles;
     }
 
-    private List<PrLabel> parseLabels(String entry) {
+    private List<PrLabel> parseLabels(List<String> labelStrings) {
         List<PrLabel> prLabels = new ArrayList<>();
-        String labelsJson = jsonExtractor.extractJsonArray(entry, "라벨:");
-        if (jsonExtractor.isInvalidJson(labelsJson)) {
+        if (labelStrings == null) {
             return prLabels;
         }
         try {
-            List<String> labels = jsonExtractor.parseListString(labelsJson);
-            for (String label : labels) {
+            for (String label : labelStrings) {
                 prLabels.add(new PrLabel(null, label));
             }
         } catch (Exception e) {
             log.error("Label Parsing Error: {}", e.getMessage(), e);
         }
-
         return prLabels;
     }
 
-    private List<PrComment> parseComments(String entry) {
+    private List<PrComment> parseComments() {
         List<PrComment> prComments = new ArrayList<>();
-        String commentsJson = jsonExtractor.extractJsonArray(entry, "질문:");
-
         String firstComment = "커밋 로그와 변경된 파일을 확인해 어떤 부분을 반영하고 개선한 PR인지 설명해주세요!";
+        String secondComment = "코드 변경사항에 대한 설명을 추가해주세요.";
+        String thirdComment = "테스트 코드도 함께 작성해주시면 좋겠습니다.";
+        
         prComments.add(new PrComment(null, 0L, firstComment));
-
-        if (jsonExtractor.isInvalidJson(commentsJson)) {
-            return prComments;
-        }
-
-        try {
-            List<String> comments = jsonExtractor.parseListString(commentsJson);
-            for (int i = 0; i < comments.size(); i++) {
-                prComments.add(new PrComment(null, (long) (i + 1), comments.get(i)));
-            }
-        } catch (Exception e) {
-            log.error("Comment Parsing Error: {}", e.getMessage(), e);
-        }
-
+        prComments.add(new PrComment(null, 1L, secondComment));
+        prComments.add(new PrComment(null, 2L, thirdComment));
         return prComments;
     }
 }

@@ -10,14 +10,12 @@ class StudyPromptTest {
     void createStudyPrompt() {
         Long developerTypeId = 1L;
         Long studyTypeId = 2L;
-        String roleContent = "당신은 백엔드 개발자입니다.";
-        String generateContent = "자바 스프링 관련 단어를 생성하세요.";
+        String generateContent = "You are a backend developer expert. Generate Java Spring related terms in JSON format.";
 
-        StudyPrompt studyPrompt = new StudyPrompt(developerTypeId, studyTypeId, roleContent, generateContent);
+        StudyPrompt studyPrompt = new StudyPrompt(developerTypeId, studyTypeId, generateContent);
 
         assertThat(studyPrompt.getDeveloperTypeId()).isEqualTo(developerTypeId);
         assertThat(studyPrompt.getStudyTypeId()).isEqualTo(studyTypeId);
-        assertThat(studyPrompt.getRoleContent()).isEqualTo(roleContent);
         assertThat(studyPrompt.getGenerateContent()).isEqualTo(generateContent);
     }
 
@@ -28,7 +26,6 @@ class StudyPromptTest {
         assertThat(studyPrompt).isNotNull();
         assertThat(studyPrompt.getDeveloperTypeId()).isNull();
         assertThat(studyPrompt.getStudyTypeId()).isNull();
-        assertThat(studyPrompt.getRoleContent()).isNull();
         assertThat(studyPrompt.getGenerateContent()).isNull();
     }
 }

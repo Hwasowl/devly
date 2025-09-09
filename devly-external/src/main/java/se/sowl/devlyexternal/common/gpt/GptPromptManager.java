@@ -19,7 +19,6 @@ public class GptPromptManager {
             
         StringBuilder builder = new StringBuilder();
         addExcludePrompt(excludeContents, builder);
-        builder.append(studyPrompt.getRoleContent());
         builder.append(studyPrompt.getGenerateContent());
         return builder.toString();
     }
