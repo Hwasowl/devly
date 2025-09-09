@@ -14,8 +14,8 @@ import org.springframework.test.context.ActiveProfiles;
 import se.sowl.devlybatch.config.TestBatchConfig;
 import se.sowl.devlybatch.job.MediumBatchTest;
 import se.sowl.devlydomain.developer.domain.DeveloperType;
-import se.sowl.devlydomain.prompt.domain.GeneratePrompt;
-import se.sowl.devlydomain.prompt.repository.GeneratePromptRepository;
+import se.sowl.devlydomain.prompt.domain.StudyPrompt;
+import se.sowl.devlydomain.prompt.repository.StudyPromptRepository;
 import se.sowl.devlydomain.study.domain.Study;
 import se.sowl.devlydomain.study.domain.StudyStatus;
 import se.sowl.devlydomain.study.domain.StudyType;
@@ -44,7 +44,7 @@ class WordCreationJobConfigTest extends MediumBatchTest {
     private WordRepository wordRepository;
 
     @Autowired
-    private GeneratePromptRepository promptRepository;
+    private StudyPromptRepository promptRepository;
 
     @Autowired
     private Job wordCreationJob;
@@ -68,8 +68,9 @@ class WordCreationJobConfigTest extends MediumBatchTest {
     }
 
     private void initializePrompts() {
-        if (promptRepository.findFirstByDeveloperTypeIdAndStudyTypeId(1L, 1L).isEmpty()) {
-            GeneratePrompt backendGeneratePrompt = new GeneratePrompt(1L, 1L,
+        if (promptRepository.findByDeveloperTypeIdAndStudyTypeId(1L, 1L).isEmpty()) {
+            StudyPrompt backendWordPrompt = new StudyPrompt(1L, 1L,
+                "당신은 백엔드 개발자를 위한 전문 용어 교육 전문가입니다.",
                 "백엔드 개발자를 위한 전문 용어를 생성해주세요.\n" +
                     "단어: [영문 용어]\n" +
                     "발음: [발음 기호]\n" +
@@ -77,9 +78,10 @@ class WordCreationJobConfigTest extends MediumBatchTest {
                     "예문: {\"source\": \"공식 문서 출처\", \"text\": \"영문 예문\", \"translation\": \"한글 번역\"}\n" +
                     "퀴즈: {\"text\": \"\", \"distractors\": [\"오답1\", \"오답2\", \"오답3\", \"오답4\"]}\n" +
                     "---");
-            promptRepository.save(backendGeneratePrompt);
+            promptRepository.save(backendWordPrompt);
 
-            GeneratePrompt frontendGeneratePrompt = new GeneratePrompt(2L, 1L,
+            StudyPrompt frontendWordPrompt = new StudyPrompt(2L, 1L,
+                "당신은 프론트엔드 개발자를 위한 전문 용어 교육 전문가입니다.",
                 "프론트엔드 개발자를 위한 전문 용어를 생성해주세요.\n" +
                     "단어: [영문 용어]\n" +
                     "발음: [발음 기호]\n" +
@@ -87,7 +89,7 @@ class WordCreationJobConfigTest extends MediumBatchTest {
                     "예문: {\"source\": \"공식 문서 출처\", \"text\": \"영문 예문\", \"translation\": \"한글 번역\"}\n" +
                     "퀴즈: {\"text\": \"\", \"distractors\": [\"오답1\", \"오답2\", \"오답3\", \"오답4\"]}\n" +
                     "---");
-            promptRepository.save(frontendGeneratePrompt);
+            promptRepository.save(frontendWordPrompt);
         }
     }
 

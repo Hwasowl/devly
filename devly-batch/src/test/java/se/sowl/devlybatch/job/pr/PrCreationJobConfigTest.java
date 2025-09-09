@@ -20,8 +20,8 @@ import se.sowl.devlydomain.pr.domain.PrLabel;
 import se.sowl.devlydomain.pr.repository.PrChangedFileRepository;
 import se.sowl.devlydomain.pr.repository.PrLabelRepository;
 import se.sowl.devlydomain.pr.repository.PrRepository;
-import se.sowl.devlydomain.prompt.domain.GeneratePrompt;
-import se.sowl.devlydomain.prompt.repository.GeneratePromptRepository;
+import se.sowl.devlydomain.prompt.domain.StudyPrompt;
+import se.sowl.devlydomain.prompt.repository.StudyPromptRepository;
 import se.sowl.devlydomain.study.domain.Study;
 import se.sowl.devlydomain.study.domain.StudyStatus;
 import se.sowl.devlydomain.study.domain.StudyType;
@@ -52,7 +52,7 @@ class PrCreationJobConfigTest extends MediumBatchTest {
     private PrLabelRepository prLabelRepository;
 
     @Autowired
-    private GeneratePromptRepository promptRepository;
+    private StudyPromptRepository promptRepository;
 
     @Autowired
     private Job prCreationJob;
@@ -169,31 +169,33 @@ class PrCreationJobConfigTest extends MediumBatchTest {
     }
 
     private void initializePrompts() {
-        if (promptRepository.findFirstByDeveloperTypeIdAndStudyTypeId(1L, 3L).isEmpty()) {
+        if (promptRepository.findByDeveloperTypeIdAndStudyTypeId(1L, 3L).isEmpty()) {
             promptRepository.save(createBackendPrPrompt());
             promptRepository.save(createFrontendPrPrompt());
         }
     }
 
-    private GeneratePrompt createBackendPrPrompt() {
-        String promptContent = "백엔드 개발자를 위한 PR(Pull Request) 예시를 생성해주세요.\n" +
+    private StudyPrompt createBackendPrPrompt() {
+        String roleContent = "당신은 백엔드 개발자를 위한 PR 리뷰 및 작성 전문가입니다.";
+        String generateContent = "백엔드 개발자를 위한 PR(Pull Request) 예시를 생성해주세요.\n" +
             "각 PR은 다음 형식으로 정확히 작성해주세요:\n" +
             "제목: [PR의 간결하고 명확한 제목]\n" +
             "설명: [PR에 대한 자세한 설명]\n" +
             "변경 파일: [{\"fileName\": \"파일 경로와 이름\", \"language\": \"프로그래밍 언어\", \"content\": \"파일 내용\"}]\n" +
             "라벨: [\"변경 파일에 해당하는 태그1\", \"변경 파일에 해당하는 태그2\", \"변경 파일에 해당하는 태그3\"]\n" +
             "---";
-        return new GeneratePrompt(1L, 3L, promptContent);
+        return new StudyPrompt(1L, 3L, roleContent, generateContent);
     }
 
-    private GeneratePrompt createFrontendPrPrompt() {
-        String promptContent = "프론트엔드 개발자를 위한 PR(Pull Request) 예시를 생성해주세요.\n" +
+    private StudyPrompt createFrontendPrPrompt() {
+        String roleContent = "당신은 프론트엔드 개발자를 위한 PR 리뷰 및 작성 전문가입니다.";
+        String generateContent = "프론트엔드 개발자를 위한 PR(Pull Request) 예시를 생성해주세요.\n" +
             "각 PR은 다음 형식으로 정확히 작성해주세요:\n" +
             "제목: [PR의 간결하고 명확한 제목]\n" +
             "설명: [PR에 대한 자세한 설명]\n" +
             "변경 파일: [{\"fileName\": \"파일 경로와 이름\", \"language\": \"프로그래밍 언어\", \"content\": \"파일 내용\"}]\n" +
             "라벨: [\"변경 파일에 해당하는 태그1\", \"변경 파일에 해당하는 태그2\", \"변경 파일에 해당하는 태그3\"]\n" +
             "---";
-        return new GeneratePrompt(2L, 3L, promptContent);
+        return new StudyPrompt(2L, 3L, roleContent, generateContent);
     }
 }

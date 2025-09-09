@@ -43,7 +43,7 @@ public class PrReviewService {
 
     private String createCommentReviewRequestPrompt (Long developerTypeId, Long studyTypeId, Long prCommentId, String answer) {
         StringBuilder prompt = new StringBuilder();
-        gptPromptManager.addRolePrompt(developerTypeId, studyTypeId, prompt);
+        gptPromptManager.addBasePrompt(developerTypeId, studyTypeId, prompt);
         addPrCommentPrompt(prCommentId, prompt);
         addUserAnswerPrompt(answer, prompt);
         addCodePrompt(prCommentId, prompt);

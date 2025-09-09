@@ -56,11 +56,8 @@ public class WordProcessService {
     }
 
     private String createWordGeneratePrompt(Long developerTypeId, Long studyTypeId) {
-        StringBuilder prompt = new StringBuilder();
         List<String> recentWords = wordRepository.findWordsByCreatedAtAfter(LocalDateTime.now().minusDays(7))
             .stream().map(Word::getWord).collect(Collectors.toList());
-        gptPromptManager.addExcludePrompt(recentWords, prompt);
-        gptPromptManager.addBasePrompt(developerTypeId, studyTypeId, prompt);
-        return prompt.toString();
+        return gptPromptManager.buildCompletePrompt(developerTypeId, studyTypeId, recentWords);
     }
 }

@@ -48,11 +48,8 @@ public class PrProcessService {
     }
 
     private String createPrGeneratePrompt(Long developerTypeId, Long studyTypeId) {
-        StringBuilder prompt = new StringBuilder();
         List<String> recentTitles = prRepository.findPrsByCreatedAtAfter(LocalDateTime.now().minusDays(7))
             .stream().map(Pr::getTitle).toList();
-        gptPromptManager.addExcludePrompt(recentTitles, prompt);
-        gptPromptManager.addBasePrompt(developerTypeId, studyTypeId, prompt);
-        return prompt.toString();
+        return gptPromptManager.buildCompletePrompt(developerTypeId, studyTypeId, recentTitles);
     }
 }

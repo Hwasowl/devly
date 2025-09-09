@@ -99,7 +99,7 @@ class PrReviewServiceTest extends MediumTest {
             GPTRequest mockRequest = mock(GPTRequest.class);
 
             when(gptClient.generate(any())).thenReturn(gptResponse);
-            doNothing().when(gptPromptManager).addRolePrompt(anyLong(), anyLong(), any(StringBuilder.class));
+            doNothing().when(gptPromptManager).addBasePrompt(anyLong(), anyLong(), any(StringBuilder.class));
             when(prReviewEntityParser.createGPTRequest(anyString())).thenReturn(mockRequest);
             when(prReviewEntityParser.parseEntity(any(), anyString())).thenReturn(prReview);
 
