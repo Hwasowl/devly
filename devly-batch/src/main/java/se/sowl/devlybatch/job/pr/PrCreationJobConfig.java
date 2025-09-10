@@ -7,18 +7,15 @@ import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
-import se.sowl.devlybatch.job.common.BaseStudyJobConfig;
+import se.sowl.devlybatch.job.common.BaseContentCreationJobConfig;
 import se.sowl.devlybatch.job.pr.service.PrProcessService;
 import se.sowl.devlybatch.job.study.service.StudyService;
 import se.sowl.devlydomain.study.domain.Study;
-import se.sowl.devlydomain.study.domain.StudyStatus;
 import se.sowl.devlydomain.study.domain.StudyTypeClassification;
-
-import java.util.List;
 
 @Slf4j
 @Configuration
-public class PrCreationJobConfig extends BaseStudyJobConfig {
+public class PrCreationJobConfig extends BaseContentCreationJobConfig {
     private final PrProcessService prProcessService;
 
     public PrCreationJobConfig(StudyService studyService, PrProcessService prProcessService) {
@@ -37,17 +34,13 @@ public class PrCreationJobConfig extends BaseStudyJobConfig {
     }
 
     @Override
-    protected void processTodayStudies() {
-        List<Study> todayStudies = studyService.getTodayStudiesOf(StudyTypeClassification.PULL_REQUEST.getId(), StudyStatus.UNCONNECTED);
-        log.info("Create pr batch started! studies total count: {}", todayStudies.size());
-        for (Study study : todayStudies) {
-            try {
-                prProcessService.processPrStudies(study);
-                log.info("Created pr for study {}", study.getId());
-            } catch (Exception e) {
-                log.error("[Warning] pr create failed : Study ID={}, Error={}", study.getId(), e.getMessage(), e);
-            }
-        }
+    protected void processStudyContent(Study study) {
+        prProcessService.processPrStudies(study);
+    }
+
+    @Override
+    protected Long getStudyTypeId() {
+        return StudyTypeClassification.PULL_REQUEST.getId();
     }
 
     @Override
@@ -61,7 +54,7 @@ public class PrCreationJobConfig extends BaseStudyJobConfig {
     }
 
     @Override
-    protected String getStudyTypeName() {
+    protected String getContentTypeName() {
         return "PR";
     }
 }

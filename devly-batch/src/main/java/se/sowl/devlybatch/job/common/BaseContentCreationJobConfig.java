@@ -11,38 +11,53 @@ import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
 import se.sowl.devlybatch.job.study.service.StudyService;
+import se.sowl.devlydomain.study.domain.Study;
+import se.sowl.devlydomain.study.domain.StudyStatus;
+
+import java.util.List;
 
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
-public abstract class BaseStudyJobConfig {
+public abstract class BaseContentCreationJobConfig {
     protected final StudyService studyService;
-
+    
     protected Job createJob(JobRepository jobRepository, Step step) {
         return new JobBuilder(getJobName(), jobRepository)
             .start(step)
             .build();
     }
-
+    
     protected Step createStep(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
         return new StepBuilder(getStepName(), jobRepository)
             .tasklet((contribution, chunkContext) -> {
                 try {
-                    processTodayStudies();
+                    processTodayContent();
                     return RepeatStatus.FINISHED;
                 } catch (Exception e) {
-                    log.error("Failed to process {} studies: {}", getStudyTypeName(), e.getMessage(), e);
+                    log.error("{} 콘텐츠 생성 처리 실패: {}", getContentTypeName(), e.getMessage(), e);
                     throw e;
                 }
             }, transactionManager)
             .build();
     }
-
-    protected abstract void processTodayStudies();
-
+    
+    protected void processTodayContent() {
+        List<Study> todayStudies = studyService.getTodayStudiesOf(getStudyTypeId(), StudyStatus.UNCONNECTED);
+        for (Study study : todayStudies) {
+            try {
+                processStudyContent(study);
+                log.info("스터디 {}에 {} 생성 완료", study.getId(), getContentTypeName());
+            } catch (Exception e) {
+                log.error("{} 생성 실패 - 스터디 ID: {}, 오류: {}",
+                    getContentTypeName(), study.getId(), e.getMessage(), e);
+            }
+        }
+    }
+    
+    protected abstract void processStudyContent(Study study);
+    protected abstract Long getStudyTypeId();
     protected abstract String getJobName();
-
     protected abstract String getStepName();
-
-    protected abstract String getStudyTypeName();
+    protected abstract String getContentTypeName();
 }

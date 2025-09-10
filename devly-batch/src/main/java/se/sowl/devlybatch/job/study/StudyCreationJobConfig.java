@@ -7,7 +7,7 @@ import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
-import se.sowl.devlybatch.job.common.BaseStudyJobConfig;
+import se.sowl.devlybatch.job.common.BaseStudyCreationJobConfig;
 import se.sowl.devlybatch.job.study.exception.CreateStudyFailedException;
 import se.sowl.devlybatch.job.study.service.StudyService;
 import se.sowl.devlydomain.study.domain.Study;
@@ -16,7 +16,7 @@ import java.util.List;
 
 @Slf4j
 @Configuration
-public class StudyCreationJobConfig extends BaseStudyJobConfig {
+public class StudyCreationJobConfig extends BaseStudyCreationJobConfig {
 
     public StudyCreationJobConfig(StudyService studyService) {
         super(studyService);
@@ -33,14 +33,19 @@ public class StudyCreationJobConfig extends BaseStudyJobConfig {
     }
 
     @Override
-    protected void processTodayStudies() {
-        try {
-            List<Study> studies = studyService.generateStudiesOf();
-            log.info("Created {} studies", studies.size());
-        } catch (Exception error) {
-            log.error("Failed to create studies!", error);
-            throw new CreateStudyFailedException("Failed to create studies", error);
-        }
+    protected Object executeStudyCreation() {
+        return studyService.generateStudiesOf();
+    }
+
+    @Override
+    protected void logCreationResult(Object result) {
+        List<Study> studies = (List<Study>) result;
+        log.info("스터디 {}개 생성 완료", studies.size());
+    }
+
+    @Override
+    protected RuntimeException createJobException(String message, Throwable cause) {
+        return new CreateStudyFailedException(message, cause);
     }
 
     @Override
@@ -51,10 +56,5 @@ public class StudyCreationJobConfig extends BaseStudyJobConfig {
     @Override
     protected String getStepName() {
         return "createStudiesStep";
-    }
-
-    @Override
-    protected String getStudyTypeName() {
-        return "Study";
     }
 }
