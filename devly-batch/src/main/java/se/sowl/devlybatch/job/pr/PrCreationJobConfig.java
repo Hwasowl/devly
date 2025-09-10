@@ -1,16 +1,13 @@
 package se.sowl.devlybatch.job.pr;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
-import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
-import org.springframework.batch.core.step.builder.StepBuilder;
-import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
+import se.sowl.devlybatch.job.common.BaseStudyJobConfig;
 import se.sowl.devlybatch.job.pr.service.PrProcessService;
 import se.sowl.devlybatch.job.study.service.StudyService;
 import se.sowl.devlydomain.study.domain.Study;
@@ -21,29 +18,26 @@ import java.util.List;
 
 @Slf4j
 @Configuration
-@RequiredArgsConstructor
-public class PrCreationJobConfig {
-    private final StudyService studyService;
+public class PrCreationJobConfig extends BaseStudyJobConfig {
     private final PrProcessService prProcessService;
+
+    public PrCreationJobConfig(StudyService studyService, PrProcessService prProcessService) {
+        super(studyService);
+        this.prProcessService = prProcessService;
+    }
 
     @Bean
     public Job prCreationJob(JobRepository jobRepository, Step createPrStep) {
-        return new JobBuilder("createPrJob", jobRepository)
-            .start(createPrStep)
-            .build();
+        return createJob(jobRepository, createPrStep);
     }
 
     @Bean
     public Step createPrStep(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
-        return new StepBuilder("createPrStep", jobRepository)
-            .tasklet((contribution, chunkContext) -> {
-                createTodayPrStudies();
-                return RepeatStatus.FINISHED;
-            }, transactionManager)
-            .build();
+        return createStep(jobRepository, transactionManager);
     }
 
-    public void createTodayPrStudies() {
+    @Override
+    protected void processTodayStudies() {
         List<Study> todayStudies = studyService.getTodayStudiesOf(StudyTypeClassification.PULL_REQUEST.getId(), StudyStatus.UNCONNECTED);
         log.info("Create pr batch started! studies total count: {}", todayStudies.size());
         for (Study study : todayStudies) {
@@ -56,5 +50,19 @@ public class PrCreationJobConfig {
         }
     }
 
+    @Override
+    protected String getJobName() {
+        return "createPrJob";
+    }
+
+    @Override
+    protected String getStepName() {
+        return "createPrStep";
+    }
+
+    @Override
+    protected String getStudyTypeName() {
+        return "PR";
+    }
 }
 
