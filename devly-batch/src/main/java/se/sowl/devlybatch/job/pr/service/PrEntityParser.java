@@ -58,7 +58,7 @@ public class PrEntityParser extends GptEntityParser<PrWithRelations> {
     private PrWithRelations getPrWithRelations(PrGPTResponse prResponse, Pr pr) {
         List<PrChangedFile> changedFiles = parseChangedFiles(prResponse.getChangedFiles());
         List<PrLabel> labels = parseLabels(prResponse.getLabels());
-        List<PrComment> comments = parseComments();
+        List<PrComment> comments = parseComments(prResponse);
         return new PrWithRelations(pr, changedFiles, labels, comments);
     }
 
@@ -97,15 +97,14 @@ public class PrEntityParser extends GptEntityParser<PrWithRelations> {
         return prLabels;
     }
 
-    private List<PrComment> parseComments() {
+    private List<PrComment> parseComments(PrGPTResponse prResponse) {
         List<PrComment> prComments = new ArrayList<>();
-        String firstComment = "커밋 로그와 변경된 파일을 확인해 어떤 부분을 반영하고 개선한 PR인지 설명해주세요!";
-        String secondComment = "코드 변경사항에 대한 설명을 추가해주세요.";
-        String thirdComment = "테스트 코드도 함께 작성해주시면 좋겠습니다.";
-        
-        prComments.add(new PrComment(null, 0L, firstComment));
-        prComments.add(new PrComment(null, 1L, secondComment));
-        prComments.add(new PrComment(null, 2L, thirdComment));
+        List<String> comments = prResponse.getReviewComments();
+        if (comments != null && !comments.isEmpty()) {
+            for (int i = 0; i < comments.size(); i++) {
+                prComments.add(new PrComment(null, (long) i, comments.get(i)));
+            }
+        }
         return prComments;
     }
 }

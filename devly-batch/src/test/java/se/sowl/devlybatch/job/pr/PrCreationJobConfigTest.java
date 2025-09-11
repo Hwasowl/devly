@@ -132,7 +132,11 @@ class PrCreationJobConfigTest extends MediumBatchTest {
               "content": "public class SingletonService {\\n\\n    private static volatile SingletonService instance;\\n\\n    private SingletonService() {\\n        // private constructor\\n    }\\n\\n    public static SingletonService getInstance() {\\n        if (instance == null) {\\n            synchronized (SingletonService.class) {\\n                if (instance == null) {\\n                    instance = new SingletonService();\\n                }\\n            }\\n        }\\n        return instance;\\n    }\\n}"
             }
           ],
-          "labels": ["Java", "Thread-safe", "Singleton"]
+          "labels": ["Java", "Thread-safe", "Singleton"],
+          "reviewComments": [
+            "이 싱글톤 패턴에서 double-checked locking의 성능 이점은 무엇인가요?",
+            "volatile 키워드를 사용한 이유와 메모리 가시성에 대해 설명해주세요."
+          ]
         }
         """;
     }
@@ -149,7 +153,12 @@ class PrCreationJobConfigTest extends MediumBatchTest {
               "content": "import React, { useCallback } from 'react';\\n\\nconst ProductItem = React.memo(({ product, onSelect }) => {\\n  return (\\n    <div className=\\"product-item\\" onClick={() => onSelect(product.id)}>\\n      <h3>{product.name}</h3>\\n      <p>{product.price}</p>\\n    </div>\\n  );\\n});\\n\\nconst ProductList = ({ products, onSelectProduct }) => {\\n  const handleSelect = useCallback((id) => {\\n    onSelectProduct(id);\\n  }, [onSelectProduct]);\\n\\n  return (\\n    <div className=\\"product-list\\">\\n      {products.map(product => (\\n        <ProductItem\\n          key={product.id}\\n          product={product}\\n          onSelect={handleSelect}\\n        />\\n      ))}\\n    </div>\\n  );\\n};\\n\\nexport default ProductList;"
             }
           ],
-          "labels": ["React", "Performance", "Optimization"]
+          "labels": ["React", "Performance", "Optimization"],
+          "reviewComments": [
+            "React.memo와 useCallback을 사용한 최적화 전략에 대해 설명해주세요.",
+            "이 최적화가 성능에 미치는 구체적인 영향은 무엇인가요?",
+            "props comparison function을 추가로 고려해보셨나요?"
+          ]
         }
         """;
     }
@@ -200,7 +209,7 @@ class PrCreationJobConfigTest extends MediumBatchTest {
         Please respond only with a JSON object in the following format.
 
         Requirements:
-        - "title" and "description" must be written in Korean.
+        - "title" and "description" and "reviewComments" must be written in Korean.
         - "fileName", "language", "content", and "labels" should be in English if appropriate.
 
         JSON Schema:
@@ -214,7 +223,8 @@ class PrCreationJobConfigTest extends MediumBatchTest {
               "content": "file content"
             }
           ],
-          "labels": ["tag1", "tag2", "tag3"]
+          "labels": ["tag1", "tag2", "tag3"],
+          "reviewComments": ["question of code review comment 1", "question of code review comment 2", "question of code review comment 3"]
         }
         """;
         return new StudyPrompt(1L, 3L, generateContent);
@@ -226,7 +236,7 @@ class PrCreationJobConfigTest extends MediumBatchTest {
         Please respond only with a JSON object in the following format.
 
         Requirements:
-        - "title" and "description" must be written in Korean.
+        - "title" and "description" and "reviewComments" must be written in Korean.
         - "fileName", "language", "content", and "labels" should be in English if appropriate.
 
         JSON Schema:
@@ -240,7 +250,8 @@ class PrCreationJobConfigTest extends MediumBatchTest {
               "content": "file content"
             }
           ],
-          "labels": ["tag1", "tag2", "tag3"]
+          "labels": ["tag1", "tag2", "tag3"],
+          "reviewComments": ["question of code review comment 1", "question of code review comment 2", "question of code review comment 3"]
         }
         """;
         return new StudyPrompt(2L, 3L, generateContent);

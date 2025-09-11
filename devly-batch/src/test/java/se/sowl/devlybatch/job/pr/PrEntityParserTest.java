@@ -69,7 +69,12 @@ class PrEntityParserTest extends MediumBatchTest {
                  "content": "import org.junit.jupiter.api.Test;\\nimport static org.junit.jupiter.api.Assertions.*;\\n\\npublic class SingletonServiceTest {\\n\\n    @Test\\n    void testSingletonInstance() {\\n        SingletonService instance1 = SingletonService.getInstance();\\n        SingletonService instance2 = SingletonService.getInstance();\\n        assertSame(instance1, instance2);\\n    }\\n}"
                }
              ],
-             "labels": ["Java", "Thread-safe", "Singleton", "Design Pattern", "Performance"]
+             "labels": ["Java", "Thread-safe", "Singleton", "Design Pattern", "Performance"],
+             "reviewComments": [
+               "이 싱글톤 패턴에서 double-checked locking의 성능 이점은 무엇인가요?",
+               "volatile 키워드를 사용한 이유와 메모리 가시성에 대해 설명해주세요.",
+               "concurrent 환경에서의 테스트 시나리오도 추가해보시는 것은 어떨까요?"
+             ]
            }]
            """;
         GPTResponse gptResponse = createGptResponse(responseContent);
@@ -133,6 +138,8 @@ class PrEntityParserTest extends MediumBatchTest {
 
     private void assertComments(List<PrComment> comments) {
         assertThat(comments).hasSize(3);
-        assertThat(comments.get(0).getContent()).contains("커밋 로그와 변경된 파일을 확인해 어떤 부분을 반영하고 개선한 PR인지 설명해주세요!");
+        assertThat(comments.get(0).getContent()).isEqualTo("이 싱글톤 패턴에서 double-checked locking의 성능 이점은 무엇인가요?");
+        assertThat(comments.get(1).getContent()).isEqualTo("volatile 키워드를 사용한 이유와 메모리 가시성에 대해 설명해주세요.");
+        assertThat(comments.get(2).getContent()).isEqualTo("concurrent 환경에서의 테스트 시나리오도 추가해보시는 것은 어떨까요?");
     }
 }

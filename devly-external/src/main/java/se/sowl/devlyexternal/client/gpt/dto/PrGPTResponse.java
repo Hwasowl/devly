@@ -24,4 +24,7 @@ public class PrGPTResponse {
     
     @JsonProperty("labels")
     private List<String> labels;
+    
+    @JsonProperty("reviewComments")
+    private List<String> reviewComments;
 }
